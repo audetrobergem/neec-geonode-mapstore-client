@@ -218,9 +218,9 @@ function DetailsPanel({
     resourceThumbnailUpdating,
     initialBbox,
     enableMapViewer,
-    onClose,
-    onAction,
-    canDownload
+    onClose
+    // onAction,
+    // canDownload
 }) {
     const detailsContainerNode = useRef();
     const isMounted = useRef();
@@ -268,8 +268,8 @@ function DetailsPanel({
     const detailUrl = resource?.pk && formatDetailUrl(resource);
     const resourceCanPreviewed = resource?.pk && canPreviewed && canPreviewed(resource);
     const canView = resource?.pk && hasPermission && hasPermission(resource);
-    const downloadUrl = (resource?.href && resource?.href.includes('download')) ? resource?.href
-        : (resource?.download_url && canDownload) ? resource?.download_url : undefined;
+    // const downloadUrl = (resource?.href && resource?.href.includes('download')) ? resource?.href
+    //     : (resource?.download_url && canDownload) ? resource?.download_url : undefined;
     const metadataDetailUrl = resource?.pk && getMetadataDetailUrl(resource);
 
     const validateDataType = (data) => {
@@ -562,11 +562,11 @@ function DetailsPanel({
                                         <FaIcon name={favorite ? 'star' : 'star-o'} />
                                     </Button>
                                     }
-                                    {downloadUrl &&
+                                    {/* {downloadUrl &&
                                     <Button variant="default"
                                         onClick={() => onAction(resource)} >
                                         <FaIcon name="download" />
-                                    </Button>}
+                                    </Button>} */}
 
                                     {detailUrl && <CopyToClipboard
                                         tooltipPosition="top"
