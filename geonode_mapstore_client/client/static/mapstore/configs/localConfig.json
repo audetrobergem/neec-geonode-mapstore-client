@@ -320,10 +320,38 @@
                     ],
                     "items": [
                         {
+                            "labelId": "gnhome.uploadDataset",
+                            "value": "layer",
+                            "type": "link",
+                            "href": "/catalogue/#/upload/dataset",
+                            "disableIf": "{!state('user').is_staff}",
+                            "authenticated": true,
+                            "perms": [
+                                {
+                                    "type": "user",
+                                    "value": "add_resource"
+                                }
+                            ]
+                        },
+                        {
                             "labelId": "gnhome.uploadDocument",
                             "value": "document",
                             "type": "link",
                             "href": "/catalogue/#/upload/document",
+                            "authenticated": true,
+                            "perms": [
+                                {
+                                    "type": "user",
+                                    "value": "add_resource"
+                                }
+                            ]
+                        },
+                        {
+                            "labelId": "gnhome.createDataset",
+                            "value": "layer",
+                            "type": "link",
+                            "href": "/createlayer/",
+                            "disableIf": "{(state('settings') && state('settings').createLayer) && !state('user').is_staff}",
                             "authenticated": true,
                             "perms": [
                                 {
@@ -376,6 +404,7 @@
                             "value": "remote",
                             "type": "link",
                             "href": "/services/?limit=5",
+                            "disableIf": "{!state('user').is_staff}",
                             "authenticated": true,
                             "perms": [
                                 {
