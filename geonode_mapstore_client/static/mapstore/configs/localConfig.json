@@ -320,6 +320,21 @@
                     ],
                     "items": [
                         {
+                            "labelId": "gnhome.emergencyMapping",
+                            "value": "map",
+                            "type": "link",
+                            "href": "/emergency-mapping/create-resources-at-risk-map/",
+                            "disableIf": "{!state('user').info.groups.includes('neec')}",
+                            "authenticated": true,
+                            "perms": [
+                                {
+                                    "type": "user",
+                                    "value": "add_resource"
+                                }
+                            ]
+                        },
+
+                        {
                             "labelId": "gnhome.uploadDataset",
                             "value": "layer",
                             "type": "link",

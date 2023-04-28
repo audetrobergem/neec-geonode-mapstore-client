@@ -126,6 +126,7 @@
             "featuredList": "Featured",
             "uploadDataset": "Upload dataset",
             "createDataset": "Create dataset",
+            "emergencyMapping": "Create a resources at risk map",
             "search": "Search...",
             "permissionsMissing": "You don't have permission to view or download the resource",
             "filter": "Filter",
