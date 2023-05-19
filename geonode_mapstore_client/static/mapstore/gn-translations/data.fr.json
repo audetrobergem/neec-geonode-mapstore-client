@@ -296,7 +296,11 @@
             "embeddashboard": "Intégrer ce Tableau de bord",
             "directLink": "BLien direct",
             "iso": "Métadonnées ISO",
-            "dublinCore": "Métadonnées de Dublin Core"
+            "dublinCore": "Métadonnées de Dublin Core",
+
+            "editFields": "Éditer les champs",
+            "appendData": "Ajouter au jeu de données",
+            "replaceData": "Remplacer le jeu de données"
         }
     }
 }

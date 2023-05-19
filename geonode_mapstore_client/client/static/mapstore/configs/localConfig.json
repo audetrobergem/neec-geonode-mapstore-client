@@ -917,6 +917,12 @@
                                 },
                                 {
                                     "type": "link",
+                                    "href": "{'../data-management/datasets/' + (state('gnResourceData') || {}).store + ':' + (state('gnResourceData') || {}).alternate + '/edit_fields'}",
+                                    "labelId": "gnviewer.editFields",
+                                    "disableIf": "{!state('user').info.groups.includes('geomatics-and-technology') && !context.resourceHasPermission(state('gnResourceData'), 'change_dataset_data')}"
+                                },
+                                {
+                                    "type": "link",
                                     "href": "{'#/dataset/' + (state('gnResourceData') || {}).pk + '/edit/style'}",
                                     "labelId": "gnviewer.editStyle",
                                     "disableIf": "{!context.resourceHasPermission(state('gnResourceData'), 'change_dataset_style')}"
@@ -925,6 +931,18 @@
                                     "type": "link",
                                     "href": "{context.getMetadataUrl(state('gnResourceData'))}",
                                     "labelId": "gnviewer.editMetadata"
+                                },
+                                {
+                                    "type": "link",
+                                    "href": "{'../datasets/' + (state('gnResourceData') || {}).store + ':' + (state('gnResourceData') || {}).alternate + '/append'}",
+                                    "labelId": "gnviewer.appendData",
+                                    "disableIf": "{!state('user').info.groups.includes('geomatics-and-technology') && !context.resourceHasPermission(state('gnResourceData'), 'change_dataset_data')}"
+                                },
+                                {
+                                    "type": "link",
+                                    "href": "{'../datasets/' + (state('gnResourceData') || {}).store + ':' + (state('gnResourceData') || {}).alternate + '/replace'}",
+                                    "labelId": "gnviewer.replaceData",
+                                    "disableIf": "{!state('user').info.groups.includes('geomatics-and-technology') && !context.resourceHasPermission(state('gnResourceData'), 'change_dataset_data')}"
                                 },
                                 {
                                     "type": "link",
@@ -1291,9 +1309,6 @@
             },
             {
                 "name": "Notifications"
-            },
-            {
-                "name": "Locate"
             },
             {
                 "name": "FitBounds"
@@ -1957,9 +1972,6 @@
                 "name": "Swipe"
             },
             {
-                "name": "Locate"
-            },
-            {
                 "name": "WidgetsBuilder",
                 "cfg": {
                     "disablePluginIf": "{!state('selectedLayerPermissions').includes('download_resourcebase')}"
@@ -2563,9 +2575,6 @@
                 "name": "FitBounds"
             },
             {
-                "name": "Locate"
-            },
-            {
                 "name": "BackgroundSelector",
                 "cfg": {
                     "bottom": 25,
@@ -2676,9 +2685,6 @@
             },
             {
                 "name": "FitBounds"
-            },
-            {
-                "name": "Locate"
             },
             {
                 "name": "BackgroundSelector",

@@ -296,7 +296,11 @@
             "embeddashboard": "Embed this Dashboard",
             "directLink": "Direct Link",
             "iso": "ISO Metadata",
-            "dublinCore": "Dublin Core Metadata"
+            "dublinCore": "Dublin Core Metadata",
+
+            "editFields": "Edit Fields",
+            "appendData": "Append to Dataset",
+            "replaceData": "Replace Dataset"
         }
     }
 }

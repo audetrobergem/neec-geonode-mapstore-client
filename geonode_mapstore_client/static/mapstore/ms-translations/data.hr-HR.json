@@ -1369,7 +1369,6 @@
         },
         "layerdownload": {
             "title": "Izvezi podatke",
-            "service": "Service",
             "format": "Format datoteke",
             "srs":  "Koordinatni sustav",
             "export": "Izvoz",
@@ -1725,13 +1724,7 @@
             "setDefaultStyleSuccessTitle": "Uspješna primjena zadanog stila",
             "setDefaultStyleSuccessMessage": "Zadani stil je uspješno postavljen",
             "setDefaultStyleErrorTitle": "Greška pri postavljanju zadanog stila",
-            "setDefaultStyleErrorMessage": "Nije moguće postaviti odabrani stil kao zadani",
-            "heightReferenceFromGround": "Height reference from ground",
-            "height": "Height",
-            "constantValue": "Constant value",
-            "attributeValue": "Attribute value",
-            "relative": "Relative",
-            "clamp": "Clamp"
+            "setDefaultStyleErrorMessage": "Nije moguće postaviti odabrani stil kao zadani"
         },
         "playback": {
             "settings": {
