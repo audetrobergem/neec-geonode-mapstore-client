@@ -28,7 +28,8 @@
   "devDependencies": {
     "@mapstore/project": "1.0.25",
     "dotenv": "10.0.0",
-    "jsdoc": "4.0.0"
+    "jsdoc": "4.0.0",
+    "karma": "^6.4.2"
   },
   "dependencies": {
     "@jsdoc/salty": "0.2.1",
