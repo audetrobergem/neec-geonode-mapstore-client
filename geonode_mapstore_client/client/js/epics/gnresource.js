@@ -181,27 +181,27 @@ const resourceTypes = {
             Observable.defer(() => axios.all([
                 getNewMapConfiguration(),
                 getMapByPk(pk),
-                ...options?.query?.['center'] ? [options.query['center']] : [],
-                ...options?.query?.['incident'] ? [options.query['incident']] : []
+                ...options?.query?.center ? [options.query.center] : [],
+                ...options?.query?.incident ? [options.query.incident] : []
             ]))
                 .switchMap(([baseConfig, resource, center, incident]) => {
                     const mapConfig = options.data
                         ? options.data
                         : toMapStoreMapConfig(resource, baseConfig);
                     // finds the incident layer in the map if it exists.
-                    let incidentLayerId = null
+                    let incidentLayerId = null;
                     for (let i = 0; i < mapConfig.map.layers.length; i++) {
                         if (mapConfig.map.layers[i].name === "neec_geodb:neeoc_incidents") {
-                            incidentLayerId = i
+                            incidentLayerId = i;
                         }
                     }
-                    if (incidentLayerId != null && typeof (incident) !== "undefined") {
-                        mapConfig.map.layers[incidentLayerId].layerFilter.filterFields[0].value = incident
+                    if (incidentLayerId !== null && typeof (incident) !== "undefined") {
+                        mapConfig.map.layers[incidentLayerId].layerFilter.filterFields[0].value = incident;
                     }
-                    mapConfig.map.zoom = center ? 14 : mapConfig.map.zoom
+                    mapConfig.map.zoom = center ? 14 : mapConfig.map.zoom;
                     mapConfig.map.center = center
                         ? { "crs": "EPSG:4326", "x": center.split(',')[1], "y": center.split(',')[0] }
-                        : mapConfig.map.center
+                        : mapConfig.map.center;
                     return Observable.of(
                         configureMap(mapConfig),
                         setControlProperty('toolbar', 'expanded', false),

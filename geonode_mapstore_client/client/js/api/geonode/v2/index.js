@@ -169,18 +169,18 @@ export const getMaps = ({
         .get(
             parseDevHostname(endpoints[MAPS]), {
             // axios will format query params array to `key[]=value1&key[]=value2`
-            params: {
-                ...params,
-                ...(q && {
-                    search: q,
-                    search_fields: ['title', 'abstract']
-                }),
-                ...(sort && { sort: isArray(sort) ? sort : [sort] }),
-                page,
-                page_size: pageSize
-            },
-            paramsSerializer
-        })
+                params: {
+                    ...params,
+                    ...(q && {
+                        search: q,
+                        search_fields: ['title', 'abstract']
+                    }),
+                    ...(sort && { sort: isArray(sort) ? sort : [sort] }),
+                    page,
+                    page_size: pageSize
+                },
+                paramsSerializer
+            })
         .then(({ data }) => {
             return {
                 totalCount: data.total,
@@ -204,18 +204,18 @@ export const getDatasets = ({
         .get(
             parseDevHostname(endpoints[DATASETS]), {
             // axios will format query params array to `key[]=value1&key[]=value2`
-            params: {
-                ...params,
-                ...(q && {
-                    search: q,
-                    search_fields: ['title', 'abstract']
-                }),
-                ...(sort && { sort: isArray(sort) ? sort : [sort] }),
-                page,
-                page_size: pageSize
-            },
-            paramsSerializer
-        })
+                params: {
+                    ...params,
+                    ...(q && {
+                        search: q,
+                        search_fields: ['title', 'abstract']
+                    }),
+                    ...(sort && { sort: isArray(sort) ? sort : [sort] }),
+                    page,
+                    page_size: pageSize
+                },
+                paramsSerializer
+            })
         .then(({ data }) => {
             return {
                 totalCount: data.total,
@@ -239,19 +239,19 @@ export const getDocumentsByDocType = (docType = 'image', {
     return axios
         .get(
             parseDevHostname(endpoints[DOCUMENTS]), {
-            params: {
-                ...params,
-                ...(q && {
-                    search: q,
-                    search_fields: ['title', 'abstract']
-                }),
-                ...(sort && { sort: isArray(sort) ? sort : [sort] }),
-                'filter{subtype}': [docType],
-                page,
-                page_size: pageSize
-            },
-            paramsSerializer
-        })
+                params: {
+                    ...params,
+                    ...(q && {
+                        search: q,
+                        search_fields: ['title', 'abstract']
+                    }),
+                    ...(sort && { sort: isArray(sort) ? sort : [sort] }),
+                    'filter{subtype}': [docType],
+                    page,
+                    page_size: pageSize
+                },
+                paramsSerializer
+            })
         .then(({ data }) => {
             return {
                 totalCount: data.total,
@@ -882,13 +882,13 @@ export const deleteExecutionRequest = (executionId) => {
 
 export const getResourceByTypeAndByPk = (type, pk) => {
     switch (type) {
-        case "document":
-            return getDocumentByPk(pk);
-        case "dataset":
-            return getDatasetByPk(pk);
+    case "document":
+        return getDocumentByPk(pk);
+    case "dataset":
+        return getDatasetByPk(pk);
         // Add type condition based on requirement
-        default:
-            return getResourceByPk(pk);
+    default:
+        return getResourceByPk(pk);
     }
 };
 

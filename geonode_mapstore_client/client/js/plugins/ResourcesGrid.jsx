@@ -268,7 +268,7 @@ function ResourcesGrid({
                     value: 'layer',
                     type: 'link',
                     href: '/catalogue/#/upload/dataset',
-                    "disableIf": "{!state('user').is_staff}",
+                    "disableIf": "{!state('user').is_staff}"
                 },
                 {
                     labelId: 'gnhome.uploadDocument',
@@ -281,7 +281,7 @@ function ResourcesGrid({
                     value: 'layer',
                     type: 'link',
                     href: '/createlayer/',
-                    "disableIf": "{!state('settings').createLayer || !state('user').is_staff}",
+                    "disableIf": "{!state('settings').createLayer || !state('user').is_staff}"
                 },
                 {
                     labelId: 'gnhome.createMap',
@@ -306,7 +306,7 @@ function ResourcesGrid({
                     value: 'remote',
                     type: 'link',
                     href: '/services/?limit=5',
-                    "disableIf": "{!state('user').is_staff}",
+                    "disableIf": "{!state('user').is_staff}"
                 }
             ]
         },

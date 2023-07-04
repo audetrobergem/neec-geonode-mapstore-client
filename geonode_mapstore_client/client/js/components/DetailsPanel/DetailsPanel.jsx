@@ -74,8 +74,6 @@ const DetailsPanelTools = ({
     resource,
     enableFavorite,
     favorite,
-    downloadUrl,
-    onAction,
     onFavorite,
     detailUrl,
     editThumbnail,
