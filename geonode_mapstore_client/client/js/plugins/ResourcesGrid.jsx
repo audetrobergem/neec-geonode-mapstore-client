@@ -250,10 +250,25 @@ function ResourcesGrid({
             responsive: true,
             items: [
                 {
+                    "labelId": "gnhome.emergencyMapping",
+                    "value": "map",
+                    "type": "link",
+                    "href": "/emergency-mapping/create-resources-at-risk-map/",
+                    "disableIf": "{!state('user').info.groups.includes('neec')}",
+                    "authenticated": true,
+                    "perms": [
+                        {
+                            "type": "user",
+                            "value": "add_resource"
+                        }
+                    ]
+                },
+                {
                     labelId: 'gnhome.uploadDataset',
                     value: 'layer',
                     type: 'link',
-                    href: '/catalogue/#/upload/dataset'
+                    href: '/catalogue/#/upload/dataset',
+                    "disableIf": "{!state('user').is_staff}",
                 },
                 {
                     labelId: 'gnhome.uploadDocument',
@@ -266,7 +281,7 @@ function ResourcesGrid({
                     value: 'layer',
                     type: 'link',
                     href: '/createlayer/',
-                    disableIf: "{(state('settings') && state('settings').createLayer) ? false : true}"
+                    "disableIf": "{!state('settings').createLayer || !state('user').is_staff}",
                 },
                 {
                     labelId: 'gnhome.createMap',
@@ -290,7 +305,8 @@ function ResourcesGrid({
                     labelId: 'gnhome.remoteServices',
                     value: 'remote',
                     type: 'link',
-                    href: '/services/?limit=5'
+                    href: '/services/?limit=5',
+                    "disableIf": "{!state('user').is_staff}",
                 }
             ]
         },

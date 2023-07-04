@@ -120,11 +120,6 @@ const DetailsPanelTools = ({
                 onClick={debounce(() => handleFavorite(favorite), 500)}>
                 <FaIcon name={favorite ? 'star' : 'star-o'} />
             </Button>}
-            {downloadUrl &&
-            <Button variant="default"
-                onClick={() => onAction(resource)} >
-                <FaIcon name="download" />
-            </Button>}
 
             <CopyToClipboard
                 tooltipPosition="top"

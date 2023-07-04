@@ -129,8 +129,8 @@ const resourceTypes = {
             )
                 .switchMap((response) => {
                     const [mapConfig, gnLayer, newLayer] = response;
-                    const {minx, miny, maxx, maxy } = newLayer?.bbox?.bounds || {};
-                    const extent = newLayer?.bbox?.bounds && [minx, miny, maxx, maxy ];
+                    const { minx, miny, maxx, maxy } = newLayer?.bbox?.bounds || {};
+                    const extent = newLayer?.bbox?.bounds && [minx, miny, maxx, maxy];
                     return Observable.of(
                         configureMap({
                             ...mapConfig,
@@ -149,7 +149,7 @@ const resourceTypes = {
                             }
                         }),
                         ...((extent && !currentMap)
-                            ? [ setControlProperty('fitBounds', 'geometry', extent) ]
+                            ? [setControlProperty('fitBounds', 'geometry', extent)]
                             : []),
                         setControlProperty('toolbar', 'expanded', false),
                         setControlProperty('rightOverlay', 'enabled', 'DetailViewer'),
@@ -178,14 +178,30 @@ const resourceTypes = {
     },
     [ResourceTypes.MAP]: {
         resourceObservable: (pk, options) =>
-            Observable.defer(() =>  axios.all([
+            Observable.defer(() => axios.all([
                 getNewMapConfiguration(),
-                getMapByPk(pk)
+                getMapByPk(pk),
+                ...options?.query?.['center'] ? [options.query['center']] : [],
+                ...options?.query?.['incident'] ? [options.query['incident']] : []
             ]))
-                .switchMap(([baseConfig, resource]) => {
+                .switchMap(([baseConfig, resource, center, incident]) => {
                     const mapConfig = options.data
                         ? options.data
                         : toMapStoreMapConfig(resource, baseConfig);
+                    // finds the incident layer in the map if it exists.
+                    let incidentLayerId = null
+                    for (let i = 0; i < mapConfig.map.layers.length; i++) {
+                        if (mapConfig.map.layers[i].name === "neec_geodb:neeoc_incidents") {
+                            incidentLayerId = i
+                        }
+                    }
+                    if (incidentLayerId != null && typeof (incident) !== "undefined") {
+                        mapConfig.map.layers[incidentLayerId].layerFilter.filterFields[0].value = incident
+                    }
+                    mapConfig.map.zoom = center ? 14 : mapConfig.map.zoom
+                    mapConfig.map.center = center
+                        ? { "crs": "EPSG:4326", "x": center.split(',')[1], "y": center.split(',')[0] }
+                        : mapConfig.map.center
                     return Observable.of(
                         configureMap(mapConfig),
                         setControlProperty('toolbar', 'expanded', false),
@@ -197,14 +213,14 @@ const resourceTypes = {
             Observable.defer(() => axios.all([
                 getNewMapConfiguration(),
                 ...(options?.query?.['gn-dataset']
-                    ? [ getDatasetByPk(options.query['gn-dataset']) ]
+                    ? [getDatasetByPk(options.query['gn-dataset'])]
                     : [])
             ]))
-                .switchMap(([ response, gnLayer ]) => {
+                .switchMap(([response, gnLayer]) => {
                     const mapConfig = options.data || response;
                     const newLayer = gnLayer ? resourceToLayerConfig(gnLayer) : null;
                     const { minx, miny, maxx, maxy } = newLayer?.bbox?.bounds || {};
-                    const extent = newLayer?.bbox?.bounds && [ minx, miny, maxx, maxy ];
+                    const extent = newLayer?.bbox?.bounds && [minx, miny, maxx, maxy];
                     return Observable.of(
                         configureMap(newLayer
                             ? {
@@ -219,7 +235,7 @@ const resourceTypes = {
                             }
                             : mapConfig),
                         ...(extent
-                            ? [ setControlProperty('fitBounds', 'geometry', extent) ]
+                            ? [setControlProperty('fitBounds', 'geometry', extent)]
                             : []),
                         setControlProperty('toolbar', 'expanded', false)
                     );
@@ -242,8 +258,12 @@ const resourceTypes = {
             Observable.defer(() => getNewGeoStoryConfig())
                 .switchMap((gnGeoStory) => {
                     return Observable.of(
-                        setCurrentStory(options.data || {...gnGeoStory, sections: [{...gnGeoStory.sections[0], id: uuid(),
-                            contents: [{...gnGeoStory.sections[0].contents[0], id: uuid()}]}]}),
+                        setCurrentStory(options.data || {
+                            ...gnGeoStory, sections: [{
+                                ...gnGeoStory.sections[0], id: uuid(),
+                                contents: [{ ...gnGeoStory.sections[0].contents[0], id: uuid() }]
+                            }]
+                        }),
                         setEditing(true),
                         setGeoStoryResource({
                             canEdit: true
@@ -265,7 +285,7 @@ const resourceTypes = {
     [ResourceTypes.DASHBOARD]: {
         resourceObservable: (pk, options) =>
             Observable.defer(() => getGeoAppByPk(pk))
-                .switchMap(( resource ) => {
+                .switchMap((resource) => {
                     const { readOnly } = options || {};
                     const canEdit = !readOnly && resource?.perms?.includes('change_resourcebase') ? true : false;
                     const canDelete = !readOnly && resource?.perms?.includes('delete_resourcebase') ? true : false;
@@ -307,7 +327,7 @@ const resourceTypes = {
 // collect all the reset action needed before changing a viewer
 const getResetActions = (isSameResource) => [
     resetControls(),
-    ...(!isSameResource ? [ resetResourceState() ] : []),
+    ...(!isSameResource ? [resetResourceState()] : []),
     setControlProperty('rightOverlay', 'enabled', false),
     setControlProperty('fitBounds', 'geometry', null)
 ];
@@ -373,7 +393,7 @@ export const gnViewerRequestResourceConfig = (action$, store) =>
                 : {};
 
             const { resourceObservable } = resourceTypes[action.resourceType] || {};
-
+            const { query = {} } = url.parse(state?.router?.location?.search, true) || {};
             if (!resourceObservable) {
                 return Observable.of(
                     ...getResetActions(),
@@ -417,7 +437,8 @@ export const gnViewerRequestResourceConfig = (action$, store) =>
                     isSamePreviousResource,
                     resourceData,
                     selectedLayer: isSamePreviousResource && getSelectedLayer(state),
-                    map: isSamePreviousResource && mapSelector(state)
+                    map: isSamePreviousResource && mapSelector(state),
+                    query
                 }),
                 Observable.of(
                     ...(pendingChanges?.resource ? [updateResourceProperties(pendingChanges.resource)] : []),
