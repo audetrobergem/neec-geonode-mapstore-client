@@ -250,16 +250,16 @@ function ResourcesGrid({
             responsive: true,
             items: [
                 {
-                    "labelId": "gnhome.emergencyMapping",
-                    "value": "map",
-                    "type": "link",
-                    "href": "/emergency-mapping/create-resources-at-risk-map/",
-                    "disableIf": "{!state('user').info.groups.includes('neec')}",
-                    "authenticated": true,
-                    "perms": [
+                    labelId: "gnhome.emergencyMapping",
+                    value: "map",
+                    type: "link",
+                    href: "/emergency-mapping/create-resources-at-risk-map/",
+                    disableIf: "{!state('user').info.groups.includes('neec')}",
+                    authenticated: true,
+                    perms: [
                         {
-                            "type": "user",
-                            "value": "add_resource"
+                            type: "user",
+                            value: "add_resource"
                         }
                     ]
                 },
@@ -268,20 +268,21 @@ function ResourcesGrid({
                     value: 'layer',
                     type: 'link',
                     href: '/catalogue/#/upload/dataset',
-                    "disableIf": "{!state('user').is_staff}"
+                    disableIf: "{!state('user').is_staff}"
                 },
                 {
                     labelId: 'gnhome.uploadDocument',
                     value: 'document',
                     type: 'link',
-                    href: '/catalogue/#/upload/document'
+                    href: '/catalogue/#/upload/document',
+                    disableIf: "{!state('user').info.groups.includes('neec')}"
                 },
                 {
                     labelId: 'gnhome.createDataset',
                     value: 'layer',
                     type: 'link',
                     href: '/createlayer/',
-                    "disableIf": "{!state('settings').createLayer || !state('user').is_staff}"
+                    disableIf: "{!state('settings').createLayer || !state('user').is_staff}"
                 },
                 {
                     labelId: 'gnhome.createMap',
@@ -293,13 +294,15 @@ function ResourcesGrid({
                     labelId: 'gnhome.createGeostory',
                     value: 'geostory',
                     type: 'link',
-                    href: '/catalogue/#/geostory/new'
+                    href: '/catalogue/#/geostory/new',
+                    disableIf: "{!state('user').info.groups.includes('neec')}"
                 },
                 {
                     labelId: 'gnhome.createDashboard',
                     value: 'dashboard',
                     type: 'link',
-                    href: '/catalogue/#/dashboard/new'
+                    href: '/catalogue/#/dashboard/new',
+                    disableIf: "{!state('user').info.groups.includes('neec')}"
                 },
                 {
                     labelId: 'gnhome.remoteServices',
