@@ -559,7 +559,7 @@
                                     "type": "link",
                                     "href": "{'../data-management/datasets/' + (state('gnResourceData') || {}).store + ':' + (state('gnResourceData') || {}).alternate + '/edit_fields'}",
                                     "labelId": "gnviewer.editFields",
-                                    "disableIf": "{context.resourceHasPermission(state('gnResourceData'), 'change_dataset_data')}"
+                                    "disableIf": "{!context.resourceHasPermission(state('gnResourceData'), 'change_dataset_data')}"
                                 },
                                 {
                                     "type": "link",
@@ -1443,6 +1443,27 @@
                 "name": "MapThumbnail"
             },
             {
+                "name": "SearchByBookmark"
+            },
+            {
+                "name": "Undo"
+            },
+            {
+                "name": "Redo"
+            },
+            {
+                "name": "FeatureReport",
+                "cfg": {
+                    "containerPosition": "rightOverlay"
+                }
+            },
+            {
+                "name": "GlobeViewSwitcher"
+            },
+            {
+                "name": "LayerInfo"
+            },
+            {
                 "name": "ActionNavbar",
                 "cfg": {
                     "containerPosition": "header",
@@ -1681,7 +1702,7 @@
             {
                 "name": "TOC",
                 "cfg": {
-                    "activateMetedataTool": false
+                    "activateMetedataTool": true
                 }
             },
             {
