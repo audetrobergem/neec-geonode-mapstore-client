@@ -6,7 +6,7 @@
  * LICENSE file in the root directory of this source tree.
  */
 
-import React, { forwardRef, useState } from 'react';
+import React, { forwardRef, useState, useRef } from 'react';
 import Message from '@mapstore/framework/components/I18N/Message';
 import FaIcon from '@js/components/FaIcon';
 import Button from '@js/components/Button';
@@ -37,6 +37,7 @@ const ResourceCard = forwardRef(({
         pathname: `/detail/${res.resource_type}/${res.pk}`
     })
 }, ref) => {
+    const abstractRef = useRef();
     const res = data;
     const types = getTypesInfo();
     const { icon } = types[res.subtype] || types[res.resource_type] || {};
@@ -55,7 +56,14 @@ const ResourceCard = forwardRef(({
     function handleClick() {
         onClick(data);
     }
-    const imgClassName = layoutCardsStyle === 'list' ? 'card-img-left' : 'card-img-top';
+    const isCardLayoutList = layoutCardsStyle === 'list';
+    const imgClassName = isCardLayoutList ? 'card-img-left' : 'card-img-top';
+
+    const renderEllipsis = () => {
+        const isOverflowing = isCardLayoutList && abstractRef?.current?.clientHeight < abstractRef?.current?.scrollHeight;
+        return isOverflowing ? <span className="ellipsis">...</span> : null;
+    };
+
     return (
         <div
             ref={ref}
@@ -63,7 +71,7 @@ const ResourceCard = forwardRef(({
             className={`gn-resource-card${active ? ' active' : ''}${
                 readOnly ? ' read-only' : ''
             } gn-card-type-${layoutCardsStyle} ${
-                layoutCardsStyle === 'list' ? 'rounded-0' : ''
+                isCardLayoutList ? 'rounded-0' : ''
             }${className ? ` ${className}` : ''}`}
         >
             {!readOnly && (
@@ -75,7 +83,7 @@ const ResourceCard = forwardRef(({
             {!readOnly &&
                 options &&
                 options.length > 0 &&
-                layoutCardsStyle === 'grid' && (
+                !isCardLayoutList && (
                 <ActionButtons
                     buildHrefByTemplate={buildHrefByTemplate}
                     resource={res}
@@ -134,13 +142,14 @@ const ResourceCard = forwardRef(({
                         <p className="card-text gn-card-creation-date">
                             {(res?.date_type && res?.last_updated) && <>{' '}{' '}{moment(res.last_updated).format('YYYY-MM-DD HH:mm')}</>}
                         </p>
-                        <p className="card-text gn-card-description">
+                        <p ref={abstractRef} className={`card-text gn-card-description ${layoutCardsStyle}`}>
                             {res.raw_abstract ? res.raw_abstract : '...'}
                         </p>
+                        {renderEllipsis()}
                         {!readOnly &&
                             options &&
                             options.length > 0 &&
-                            layoutCardsStyle === 'list' && (
+                            isCardLayoutList && (
                             <ActionButtons
                                 buildHrefByTemplate={buildHrefByTemplate}
                                 resource={res}
