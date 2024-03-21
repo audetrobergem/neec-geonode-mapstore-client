@@ -137,7 +137,8 @@
             "noPreview": "A preview is not available for this resource",
             "na": "N/A",
             "emptyFilterItems": "No items to display",
-            "loadingItems": "Loading items..."
+            "loadingItems": "Loading items...",
+            "emergencyMapping": "Create a resources at risk map"
         },
         "viewer": {
             "document": {
@@ -359,7 +360,6 @@
             "centerLat": "Lat",
             "centerLon": "Lon",
             "mapExtentHelpText": "<b>You can edit the extent and position of this resource</b>. Shift-click and drag to draw a new extent, click on the marker and then click and drag to set its position",
-            "emergencyMapping": "Create a resources at risk map",
             "editFields": "Edit Fields"
         }
     }

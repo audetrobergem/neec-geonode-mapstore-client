@@ -137,7 +137,8 @@
             "noPreview": "Un aperçu n'est pas disponible pour cette ressource",
             "na": "N/A",
             "emptyFilterItems": "Aucun élément à afficher",
-            "loadingItems": "Chargement des éléments..."
+            "loadingItems": "Chargement des éléments...",
+            "emergencyMapping": "Créer une carte des ressources à risque"
         },
         "viewer": {
             "document": {
@@ -359,7 +360,6 @@
             "centerLat": "Lat",
             "centerLon": "Lon",
             "mapExtentHelpText": "<b>Vous pouvez modifier l'étendue et la position de cette ressource</b>. Shift-clic et faites glisser pour dessiner une nouvelle étendue, cliquez sur le marqueur puis cliquez et faites glisser pour définir sa position",
-            "emergencyMapping": "Créer une carte des ressources à risque",
             "editFields": "Éditer les champs"
         }
     }

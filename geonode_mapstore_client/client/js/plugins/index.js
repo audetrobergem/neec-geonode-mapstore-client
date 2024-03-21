@@ -415,6 +415,18 @@ export const plugins = {
     FeaturedResourcesGridPlugin: toModulePlugin(
         'FeaturedResourcesGrid',
         () => import(/* webpackChunkName: 'plugins/featured-resources-grid' */ '@js/plugins/FeaturedResourcesGrid')
+    ),
+    UndoPlugin: toModulePlugin(
+        'Undo',
+        () => import(/* webpackChunkName: 'plugins/undo' */ '@js/plugins/Undo')
+    ),
+    RedoPlugin: toModulePlugin(
+        'Redo',
+        () => import(/* webpackChunkName: 'plugins/redo' */ '@js/plugins/Redo')
+    ),
+    SearchByBookmarkPlugin: toModulePlugin(
+        'SearchByBookmark',
+        () => import(/* webpackChunkName: 'plugins/search-by-bookmark' */ '@mapstore/framework/plugins/SearchByBookmark')
     )
 };
 
