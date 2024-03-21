@@ -560,6 +560,12 @@
                                 },
                                 {
                                     "type": "link",
+                                    "href": "{'../data-management/datasets/' + (state('gnResourceData') || {}).store + ':' + (state('gnResourceData') || {}).alternate + '/edit_fields'}",
+                                    "labelId": "gnviewer.editFields",
+                                    "disableIf": "{!state('user').info.groups.includes('geomatics-and-technology') && !context.resourceHasPermission(state('gnResourceData'), 'change_dataset_data')}"
+                                },
+                                {
+                                    "type": "link",
                                     "href": "{'#/dataset/' + (state('gnResourceData') || {}).pk + '/edit/style'}",
                                     "labelId": "gnviewer.editStyle",
                                     "disableIf": "{!context.resourceHasPermission(state('gnResourceData'), 'change_dataset_style')}"
@@ -601,7 +607,8 @@
                             "items": [
                                 {
                                     "type": "plugin",
-                                    "name": "LayerDownload"
+                                    "name": "LayerDownload",
+                                    "disableIf": "{!state('user').info.groups.includes('geomatics-and-technology')}"
                                 },
                                 {
                                     "type": "plugin",
@@ -1170,9 +1177,6 @@
             },
             {
                 "name": "Notifications"
-            },
-            {
-                "name": "Locate"
             },
             {
                 "name": "FitBounds"
@@ -1841,112 +1845,6 @@
                 "name": "Playback"
             },
             {
-                "name": "LayerDownload",
-                "cfg": {
-                    "disablePluginIf": "{!state('selectedLayerPermissions').includes('download_resourcebase')}",
-                    "hideServiceSelector": true,
-                    "defaultSelectedService": "wps",
-                    "formats": [
-                        {
-                            "name": "application/json",
-                            "label": "GeoJSON",
-                            "type": "vector",
-                            "validServices": [
-                                "wps"
-                            ]
-                        },
-                        {
-                            "name": "application/arcgrid",
-                            "label": "ArcGrid",
-                            "type": "raster",
-                            "validServices": [
-                                "wps"
-                            ]
-                        },
-                        {
-                            "name": "image/tiff",
-                            "label": "TIFF",
-                            "type": "raster",
-                            "validServices": [
-                                "wps"
-                            ]
-                        },
-                        {
-                            "name": "image/png",
-                            "label": "PNG",
-                            "type": "raster",
-                            "validServices": [
-                                "wps"
-                            ]
-                        },
-                        {
-                            "name": "image/jpeg",
-                            "label": "JPEG",
-                            "type": "raster",
-                            "validServices": [
-                                "wps"
-                            ]
-                        },
-                        {
-                            "name": "application/wfs-collection-1.0",
-                            "label": "GML (FeatureCollection)",
-                            "type": "vector",
-                            "validServices": [
-                                "wps"
-                            ]
-                        },
-                        {
-                            "name": "application/wfs-collection-1.1",
-                            "label": "GML (WFS 1.1.0 FeatureCollection)",
-                            "type": "vector",
-                            "validServices": [
-                                "wps"
-                            ]
-                        },
-                        {
-                            "name": "application/zip",
-                            "label": "Shapefile",
-                            "type": "vector",
-                            "validServices": [
-                                "wps"
-                            ]
-                        },
-                        {
-                            "name": "text/csv",
-                            "label": "CSV",
-                            "type": "vector",
-                            "validServices": [
-                                "wps"
-                            ]
-                        },
-                        {
-                            "name": "application/geopackage+sqlite3",
-                            "label": "GeoPackage",
-                            "type": "vector",
-                            "validServices": [
-                                "wps"
-                            ]
-                        },
-                        {
-                            "name": "application/geopackage+sqlite3",
-                            "label": "GeoPackage",
-                            "type": "raster",
-                            "validServices": [
-                                "wps"
-                            ]
-                        },
-                        {
-                            "name": "application/vnd.google-earth.kml+xml",
-                            "label": "KML",
-                            "type": "vector",
-                            "validServices": [
-                                "wps"
-                            ]
-                        }
-                    ]
-                }
-            },
-            {
                 "name": "AddLayer"
             },
             {
@@ -2059,9 +1957,6 @@
             },
             {
                 "name": "Swipe"
-            },
-            {
-                "name": "Locate"
             },
             {
                 "name": "WidgetsBuilder",
@@ -3059,9 +2954,6 @@
                 "name": "FitBounds"
             },
             {
-                "name": "Locate"
-            },
-            {
                 "name": "BackgroundSelector",
                 "cfg": {
                     "bottom": 25,
@@ -3172,9 +3064,6 @@
             },
             {
                 "name": "FitBounds"
-            },
-            {
-                "name": "Locate"
             },
             {
                 "name": "BackgroundSelector",
@@ -3447,9 +3336,6 @@
                 "cfg": {
                     "redirectTo": false
                 }
-            },
-            {
-                "name": "DownloadResource"
             },
             {
                 "name": "Notifications"

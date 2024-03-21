@@ -16,6 +16,7 @@ import ResourceStatus from '@js/components/ResourceStatus';
 import ALink from '@js/components/ALink';
 import AuthorInfo from '@js/components/AuthorInfo/AuthorInfo';
 import ActionButtons from '@js/components/ActionButtons';
+import moment from 'moment';
 
 
 const ResourceCard = forwardRef(({
@@ -138,6 +139,9 @@ const ResourceCard = forwardRef(({
                                 <ResourceStatus resource={res} />
                             </div>
                         </div>
+                        <p className="card-text gn-card-creation-date">
+                            {(res?.date_type && res?.last_updated) && <>{' '}{' '}{moment(res.last_updated).format('YYYY-MM-DD HH:mm')}</>}
+                        </p>
                         <p ref={abstractRef} className={`card-text gn-card-description ${layoutCardsStyle}`}>
                             {res.raw_abstract ? res.raw_abstract : '...'}
                         </p>
