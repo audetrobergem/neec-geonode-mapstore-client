@@ -85,7 +85,7 @@ export function setLayerResource(data, pending) {
 * @param {object} data resource data object
 */
 export function updateResource(resource) {
-    //console.log("update resource", resource)
+    // console.log("update resource", resource)
     return {
         type: UPDATE_SINGLE_RESOURCE,
         data: resource
