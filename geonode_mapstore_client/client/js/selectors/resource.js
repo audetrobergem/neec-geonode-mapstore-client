@@ -88,6 +88,10 @@ export const getResourceData = (state) => {
     return state?.gnresource?.data;
 };
 
+export const getLayerResourceData = (state) => {
+    return state?.gnresource?.layerDataset;
+};
+
 export const getCompactPermissions = (state) => {
     const compactPermissions = state?.gnresource?.compactPermissions || {};
     return compactPermissions;
@@ -134,18 +138,18 @@ export const getResourceExtent = (state) => {
 export const getDataPayload = (state, resourceType) => {
     const type = resourceType || state?.gnresource?.type;
     switch (type) {
-    case ResourceTypes.MAP: {
-        const isMapAvailable = !!mapSelector(state);
-        return isMapAvailable ? mapSaveSelector(state) : null;
-    }
-    case ResourceTypes.GEOSTORY: {
-        return currentStorySelector(state);
-    }
-    case ResourceTypes.DASHBOARD: {
-        return widgetsConfig(state);
-    }
-    default:
-        return null;
+        case ResourceTypes.MAP: {
+            const isMapAvailable = !!mapSelector(state);
+            return isMapAvailable ? mapSaveSelector(state) : null;
+        }
+        case ResourceTypes.GEOSTORY: {
+            return currentStorySelector(state);
+        }
+        case ResourceTypes.DASHBOARD: {
+            return widgetsConfig(state);
+        }
+        default:
+            return null;
     }
 };
 
@@ -182,63 +186,63 @@ function isResourceDataEqual(state, initialData = {}, currentData = {}) {
         return true;
     }
     switch (resourceType) {
-    case ResourceTypes.MAP: {
-        return compareMapChanges(
-            removeProperty(initialData, ['extraParams', 'getFeatureInfo', 'store', 'capability', 'extendedParams', 'availableStyles', 'center', 'zoom', 'bbox']),
-            removeProperty(currentData, ['extraParams', 'getFeatureInfo', 'store', 'capability', 'extendedParams', 'availableStyles', 'center', 'zoom', 'bbox'])
-        );
-    }
-    case ResourceTypes.GEOSTORY: {
-        return isEqual(
-            removeProperty(initialData, ['fontFamilies']),
-            removeProperty(currentData, ['fontFamilies'])
-        );
-    }
-    case ResourceTypes.DASHBOARD: {
-        const initialWidgets = (initialData?.widgets || []);
+        case ResourceTypes.MAP: {
+            return compareMapChanges(
+                removeProperty(initialData, ['extraParams', 'getFeatureInfo', 'store', 'capability', 'extendedParams', 'availableStyles', 'center', 'zoom', 'bbox']),
+                removeProperty(currentData, ['extraParams', 'getFeatureInfo', 'store', 'capability', 'extendedParams', 'availableStyles', 'center', 'zoom', 'bbox'])
+            );
+        }
+        case ResourceTypes.GEOSTORY: {
+            return isEqual(
+                removeProperty(initialData, ['fontFamilies']),
+                removeProperty(currentData, ['fontFamilies'])
+            );
+        }
+        case ResourceTypes.DASHBOARD: {
+            const initialWidgets = (initialData?.widgets || []);
 
-        // check if the current dashboard was built after mapstore update
-        // the mapstore submodule update introduces breaking changes which must be catered for
-        // If the dashboard was created with the new features from mapstore, it supports multiple map widgets
-        const supportsMultipleWidgets = initialWidgets.every((widget) => {
-            if (widget.widgetType === 'map') {
-                return !!widget.maps;
-            }
-            return true;
-        });
-        const isWidgetMapCenterChanged = !!(currentData?.widgets || [])
-            .find((widget) => {
+            // check if the current dashboard was built after mapstore update
+            // the mapstore submodule update introduces breaking changes which must be catered for
+            // If the dashboard was created with the new features from mapstore, it supports multiple map widgets
+            const supportsMultipleWidgets = initialWidgets.every((widget) => {
                 if (widget.widgetType === 'map') {
-                    const initialWidget = initialWidgets.find(({ id }) => id === widget.id);
-                    const currentWidgets = [...widget.maps];
-                    const allCentresEqual = supportsMultipleWidgets ? currentWidgets.every((mapWidget) => {
-                        const relatedWidget = initialWidget?.maps?.find(w => w.mapId === mapWidget.mapId) || {};
-                        return isMapCenterEqual(relatedWidget?.center, mapWidget?.center);
-                    }) : isMapCenterEqual(initialWidget?.map?.center, currentWidgets[0].center);
-                    return initialWidget ? !allCentresEqual : true;
+                    return !!widget.maps;
                 }
-                return false;
+                return true;
             });
-        const newCurrentData = supportsMultipleWidgets ? currentData : {
-            ...currentData,
-            widgets: currentData.widgets.map(widget => {
-                if (!!widget.maps) {
-                    const mapList = widget.maps;
-                    delete widget.maps;
-                    widget.map = mapList[0];
-                }
-                return widget;
-            })
-        };
-        const initialListItemsToRemove = ['bbox', 'size', 'center', 'layouts'];
-        const currentListItemsToRemove = !supportsMultipleWidgets ? ['bbox', 'size', 'center', 'layouts', 'mapId', 'dependenciesMap', 'selectedMapId'] : initialListItemsToRemove;
-        return isEqual(
-            removeProperty(initialData, initialListItemsToRemove),
-            removeProperty(newCurrentData, currentListItemsToRemove)
-        ) && !isWidgetMapCenterChanged;
-    }
-    default:
-        return true;
+            const isWidgetMapCenterChanged = !!(currentData?.widgets || [])
+                .find((widget) => {
+                    if (widget.widgetType === 'map') {
+                        const initialWidget = initialWidgets.find(({ id }) => id === widget.id);
+                        const currentWidgets = [...widget.maps];
+                        const allCentresEqual = supportsMultipleWidgets ? currentWidgets.every((mapWidget) => {
+                            const relatedWidget = initialWidget?.maps?.find(w => w.mapId === mapWidget.mapId) || {};
+                            return isMapCenterEqual(relatedWidget?.center, mapWidget?.center);
+                        }) : isMapCenterEqual(initialWidget?.map?.center, currentWidgets[0].center);
+                        return initialWidget ? !allCentresEqual : true;
+                    }
+                    return false;
+                });
+            const newCurrentData = supportsMultipleWidgets ? currentData : {
+                ...currentData,
+                widgets: currentData.widgets.map(widget => {
+                    if (!!widget.maps) {
+                        const mapList = widget.maps;
+                        delete widget.maps;
+                        widget.map = mapList[0];
+                    }
+                    return widget;
+                })
+            };
+            const initialListItemsToRemove = ['bbox', 'size', 'center', 'layouts'];
+            const currentListItemsToRemove = !supportsMultipleWidgets ? ['bbox', 'size', 'center', 'layouts', 'mapId', 'dependenciesMap', 'selectedMapId'] : initialListItemsToRemove;
+            return isEqual(
+                removeProperty(initialData, initialListItemsToRemove),
+                removeProperty(newCurrentData, currentListItemsToRemove)
+            ) && !isWidgetMapCenterChanged;
+        }
+        default:
+            return true;
     }
 }
 
@@ -306,7 +310,7 @@ export const getGeoNodeResourceFromDashboard = (state) => get(originalDataSelect
         if (widget.widgetType === 'map' && widget.map?.extraParams?.pk) {
             return {
                 ...acc,
-                maps: [ ...acc.maps, widget.map?.extraParams?.pk ]
+                maps: [...acc.maps, widget.map?.extraParams?.pk]
             };
         }
         return acc;

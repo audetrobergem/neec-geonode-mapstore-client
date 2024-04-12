@@ -8,8 +8,10 @@
 
 export const RESOURCE_LOADING = 'GEONODE:RESOURCE_LOADING';
 export const SET_RESOURCE = 'GEONODE:SET_RESOURCE';
+export const SET_LAYER_RESOURCE = 'GEONODE:SET_LAYER_RESOURCE';
 export const RESOURCE_ERROR = 'GEONODE:RESOURCE_ERROR';
 export const UPDATE_RESOURCE_PROPERTIES = 'GEONODE:UPDATE_RESOURCE_PROPERTIES';
+export const UPDATE_LAYER_RESOURCE_PROPERTIES = 'GEONODE:UPDATE_LAYER_RESOURCE_PROPERTIES';
 export const SET_RESOURCE_TYPE = 'GEONODE:SET_RESOURCE_TYPE';
 export const SET_NEW_RESOURCE = 'GEONODE:SET_NEW_RESOURCE';
 export const SET_RESOURCE_ID = 'GEONODE:SET_RESOURCE_ID';
@@ -66,10 +68,24 @@ export function setResource(data, pending) {
 }
 
 /**
+* Restores resource from the state
+* @param {object} data resource data object
+* @param {object} pending declare if the request is still pending
+*/
+export function setLayerResource(data, pending) {
+    return {
+        type: SET_LAYER_RESOURCE,
+        data,
+        pending
+    };
+}
+
+/**
 * Set the resource in the state
 * @param {object} data resource data object
 */
 export function updateResource(resource) {
+    //console.log("update resource", resource)
     return {
         type: UPDATE_SINGLE_RESOURCE,
         data: resource
@@ -150,6 +166,17 @@ export function resourceError(error) {
 export function updateResourceProperties(properties) {
     return {
         type: UPDATE_RESOURCE_PROPERTIES,
+        properties
+    };
+}
+
+/**
+* Update resource properties
+* @param {object} properties resource properties to override
+*/
+export function updateLayerResourceProperties(properties) {
+    return {
+        type: UPDATE_LAYER_RESOURCE_PROPERTIES,
         properties
     };
 }
