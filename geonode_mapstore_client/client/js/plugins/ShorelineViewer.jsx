@@ -207,11 +207,11 @@ function ShorelineViewer({
                     valueField="id"
                 />
                 <div className="shoreline-viewer-body">
-                    {selectedRegion !== null &&
+                    {selectedRegion != null &&
                     <ConnectedShorelineTypeButton />
                     }
                 </div>
-                {selectedFeature !== null && selectedFeature.id.includes("shoreline_classification") &&
+                {selectedFeature != null && selectedFeature.id.includes("shoreline_classification") &&
                 <div className="shoreline-viewer-info-table">
                     <div className="shoreline-viewer-info-fields">
                         {selectedFeature.properties.upper_intertidal_scat_class &&
@@ -278,7 +278,7 @@ function ShorelineViewer({
                 </div>
                 }
 
-                {selectedFeature !== null && selectedFeature.id.includes("shoreline_photos") &&
+                {selectedFeature != null && selectedFeature.id.includes("shoreline_photos") &&
                 <div className="shoreline-viewer-body">
                     <a href={"javascript:window.open('" + selectedFeature.properties.photo + "', 'popup', 'width=800,height=600'); void(0)"}>
                         <img className="img-responsive" src={selectedFeature.properties.photo} />

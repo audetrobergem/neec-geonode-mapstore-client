@@ -1544,7 +1544,7 @@
                         {
                             "type": "plugin",
                             "name": "ShorelineViewer",
-                            "disableIf": "{!state('user').info.groups.includes('neec') && !context.resourceHasPermission(state('gnResourceData'), 'change_resourcebase')}"
+                            "disableIf": "{!context.resourceHasPermission(state('gnResourceData'), 'change_resourcebase') && !state('isNewResource')}"
                         },
                         {
                             "type": "plugin",
