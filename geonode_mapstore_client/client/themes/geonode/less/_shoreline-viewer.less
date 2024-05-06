@@ -1,0 +1,115 @@
+
+// **************
+// Theme
+// **************
+
+#shoreline-viewer-theme(@theme-vars) {
+    .shoreline-viewer {
+        .color-var(@theme-vars[main-color]);
+        .background-color-var(@theme-vars[main-bg]);
+        .shoreline-viewer-info-fields {
+            .shoreline-viewer-info-row {
+                .border-bottom-color-var(@theme-vars[main-border-color]);
+            }
+        }
+    }
+}
+
+// **************
+// Layout
+// **************
+
+.shoreline-viewer {
+    position: absolute;
+    top: 0;
+    right: 0;
+    z-index: 500;
+    width: 550px;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    .shadow-soft();
+    .shoreline-viewer-head {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        .shoreline-viewer-title {
+            padding: 0 0.5rem;
+            font-size: @font-size-lg;
+        }
+    }
+    .shoreline-viewer-body {
+        position: relative;
+        overflow: auto;
+        flex: 1;
+        padding: 0.5rem;
+    }
+    .shoreline-viewer-buttons {
+        &:extend(.btn-primary, .btn-primary.active);
+        margin-left: 0.2rem !important;
+        margin-right: 0.2rem !important;
+    }
+    .shoreline-viewer-media-button {
+        height: 40px;
+        width: 40px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        margin-left: 0.2rem !important;
+        margin-right: 0.2rem !important;
+    }
+    .shoreline-viewer-media-navigation-button {
+        height: 30px;
+        width: 30px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        outline: 0;
+        padding: 0;
+        
+    }
+    .shoreline-viewer-media-navigation-button:focus {
+        outline: 0;
+        box-shadow: none;
+    }
+    .shoreline-viewer-dropdown {
+        align-items: center;
+        position: relative;
+    }
+    .shoreline-viewer-alert {
+        width: 100%;
+        padding: 0.25rem;
+        padding-top: 1rem;
+        text-align: center;
+        font-style: italic;
+        position: relative;
+    }
+    .shoreline-viewer-info-fields {
+        padding: 0.5rem 0;
+        font-size: @font-size-small;
+        position: relative;
+        * {
+            position: relative;
+        }
+        .shoreline-viewer-info-row {
+            display: flex;
+            border-bottom: 1px solid transparent;
+            word-break: break-word;
+            .shoreline-viewer-info-label {
+                width: 250px; // similar to thumbnail
+                padding: 0.25rem;
+                font-weight: lighter;
+            }
+            .shoreline-viewer-info-value {
+                padding: 0.25rem;
+                flex: 1;
+                padding-left: 1rem;
+                max-width: calc(100% - 250px);
+            }
+        }
+        
+    }
+    .shoreline-viewer-list {
+        padding-left: 0.7rem;
+    }
+}
