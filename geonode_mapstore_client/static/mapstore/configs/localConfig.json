@@ -1544,7 +1544,7 @@
                         {
                             "type": "plugin",
                             "name": "ShorelineViewer",
-                            "disableIf": "{!['neec', 'emergencies-science-and-technology-branch'].some(state('user').info.groups)}"
+                            "disableIf": "{!['neec', 'emergencies-science-and-technology-branch'].some(group => state('user').info.groups.includes(group))}"
                         },
                         {
                             "type": "plugin",
