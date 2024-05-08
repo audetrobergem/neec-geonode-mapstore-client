@@ -306,7 +306,7 @@ export const loadSelectedMediaDatasetFeaturesEpic = (action$, store) => action$.
         const accessToken = state.security?.user?.info?.access_token;
         const shorelineMediaLayer = store.getState().additionallayers.filter((layer) => layer.id === "shoreline-media-layer")[0];
         const geoserverUrl = state.gnsettings?.geoserverUrl;
-        const requestUrl = `${geoserverUrl}wfs`
+        const requestUrl = `${geoserverUrl}wfs`;
         const params = {
             service: "WFS",
             version: "1.1.0",
@@ -364,7 +364,7 @@ export const shorelineStartLoadingEpic = (action$, store) => action$.ofType(LAYE
     .switchMap(() => {
         return Rx.Observable.of(
             setShorelineLoading(true)
-        )
+        );
     });
 
 export const shorelineStopLoadingEpic = (action$, store) => action$.ofType(LAYER_LOAD)
@@ -373,7 +373,7 @@ export const shorelineStopLoadingEpic = (action$, store) => action$.ofType(LAYER
     .switchMap(() => {
         return Rx.Observable.of(
             setShorelineLoading(false)
-        )
+        );
     });
 
 export default {

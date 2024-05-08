@@ -191,7 +191,7 @@ function ShorelineViewer({
     const localizedRegions = regions.map((region) => {
         region.labelId = getMessageById(messages, region.labelId);
         return region;
-    })
+    });
 
     return (
         <div
