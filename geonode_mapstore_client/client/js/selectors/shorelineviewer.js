@@ -22,3 +22,4 @@ export const shorelineClickPointSelector = state => state && state.mapInfo && st
 export const shorelineClickLayerSelector = state => state && state.mapInfo && state.shorelineViewer.clickLayers;
 export const shorelineSelectedFeature = state => state?.shorelineViewer?.selectedFeature;
 export const selectedMediaDatasetFeatures = state => state?.shorelineViewer?.selectedMediaDatasetFeatures;
+export const shorelineLoading = state => state?.shorelineViewer?.loading;

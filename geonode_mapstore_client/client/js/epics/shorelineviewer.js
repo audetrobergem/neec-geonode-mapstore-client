@@ -18,6 +18,7 @@ import {
     shorelineFeatureInfoClick,
     shorelineSelectedFeature,
     loadSelectedMediaDatasetFeatures,
+    setShorelineLoading,
     SET_SHORELINE_REGION,
     UPDATE_SHORELINE_SELECTED_MEDIA_TYPE,
     SHORELINE_FEATURE_INFO_CLICK,
@@ -28,7 +29,8 @@ import {
     SELECT_LAST_MEDIA_FEATURE
 } from "@js/actions/shorelineviewer";
 import { registerEventListener, unRegisterEventListener, zoomToExtent, CLICK_ON_MAP } from '@mapstore/framework/actions/map';
-import { removeAdditionalLayer, updateAdditionalLayer, UPDATE_ADDITIONAL_LAYER } from '@mapstore/framework/actions/additionallayers';
+import { addLayer, LAYER_LOAD, LAYER_LOADING } from '@mapstore/framework/actions/layers';
+import { addAdditionalLayers, removeAdditionalLayer, updateAdditionalLayer, UPDATE_ADDITIONAL_LAYER } from '@mapstore/framework/actions/additionallayers';
 import { updatePointWithGeometricFilter } from "@mapstore/framework/utils/IdentifyUtils";
 import { projectionSelector } from '@mapstore/framework/selectors/map';
 import { hideMapinfoMarker, purgeMapInfoResults, toggleMapInfoState } from '@mapstore/framework/actions/mapInfo';
@@ -64,6 +66,7 @@ export const gnUpdateShorelineViewerMapLayoutEpic = (action$, store) => action$.
     });
 
 export const openShorelineViewerEpic = (action$, store) => action$.ofType(SET_CONTROL_PROPERTY)
+    .filter((action) => action.control === "shorelineViewer")
     .filter(() => store.getState()?.controls?.shorelineViewer?.enabled)
     .switchMap(() => {
         const state = store.getState();
@@ -95,10 +98,11 @@ export const openShorelineViewerEpic = (action$, store) => action$.ofType(SET_CO
                             ]]
                         },
                         style: {
-                            opacity: 1,
-                            fillOpacity: 0.1,
-                            color: "rgba(0, 0, 255, 1)",
-                            fillColor: "rgba(0, 0, 255, 0.1)"
+                            weight: 3,
+                            color: '#007d4d',
+                            opacity: 0.8,
+                            fillColor: '#007d4d',
+                            fillOpacity: 0
                         }
                     }))
                 }
@@ -126,7 +130,8 @@ export const zoomToSelectedShorelineRegionEpic = (action$, store) => action$.ofT
     .switchMap(
         (action) => {
             const state = store.getState();
-            const accessToken = state.security.user.info.access_token;
+            const accessToken = state.security?.user?.info?.access_token;
+            const geoserverUrl = state.gnsettings?.geoserverUrl;
             return Rx.Observable.of(
                 shorelineSelectedFeature(null),
                 updateShorelineSelectedMediaType(null),
@@ -138,8 +143,8 @@ export const zoomToSelectedShorelineRegionEpic = (action$, store) => action$.ofT
                     "overlay",
                     {
                         type: "wms",
-                        url: "https://dev.geoportal.ueee.ca/geoserver/wms",
-                        name: `neec_geodb:${action.selectedRegion.shorelineClassificationDataset}`,
+                        url: `${geoserverUrl}wms`,
+                        name: action.selectedRegion.shorelineClassificationDataset,
                         format: "image/png8",
                         params: {
                             access_token: accessToken
@@ -175,7 +180,7 @@ export const getShorelineFeatureInfoClickEpic = (action$, store) => action$.ofTy
     .filter((action) => action.layers && action.layers.length > 0)
     .switchMap(({ point, layers }) => {
         const state = store.getState();
-        const accessToken = state.security.user.info.access_token;
+        const accessToken = state.security?.user?.info?.access_token;
         const mapExtent = state.map.present.bbox;
         const mapSize = state.map.present.size;
         const mapProjection = state.map.present.projection;
@@ -268,7 +273,8 @@ export const displayShorelineMediaLayerEpic = (action$, store) => action$.ofType
         (action) => {
             const state = store.getState();
             const layerName = (action.selectedMediaType.name === "Photos") ? state.shorelineViewer.selectedRegion.photoDataset : state.shorelineViewer.selectedRegion.videoLayerName;
-            const accessToken = state.security.user.info.access_token;
+            const accessToken = state.security?.user?.info?.access_token;
+            const geoserverUrl = state.gnsettings?.geoserverUrl;
             return Rx.Observable.of(
                 removeAdditionalLayer({ id: "shoreline-viewer-selected-feature" }),
                 shorelineSelectedFeature(null),
@@ -277,9 +283,10 @@ export const displayShorelineMediaLayerEpic = (action$, store) => action$.ofType
                     "ShorelineViewer",
                     "overlay",
                     {
+                        layerId: "shoreline-viewer-selected-feature",
                         type: "wms",
-                        url: "https://dev.geoportal.ueee.ca/geoserver/wms",
-                        name: `neec_geodb:${layerName}`,
+                        url: `${geoserverUrl}wms`,
+                        name: layerName,
                         format: "image/png8",
                         params: {
                             access_token: accessToken
@@ -296,9 +303,10 @@ export const loadSelectedMediaDatasetFeaturesEpic = (action$, store) => action$.
     .filter(() => store.getState().shorelineViewer?.selectedMediaType.name === "Photos")
     .switchMap(() => {
         const state = store.getState();
-        const accessToken = state.security.user.info.access_token;
+        const accessToken = state.security?.user?.info?.access_token;
         const shorelineMediaLayer = store.getState().additionallayers.filter((layer) => layer.id === "shoreline-media-layer")[0];
-        const url = "https://dev.geoportal.ueee.ca/geoserver/wfs";
+        const geoserverUrl = state.gnsettings?.geoserverUrl;
+        const requestUrl = `${geoserverUrl}wfs`
         const params = {
             service: "WFS",
             version: "1.1.0",
@@ -307,7 +315,7 @@ export const loadSelectedMediaDatasetFeaturesEpic = (action$, store) => action$.
             sortBy: "name",
             access_token: accessToken
         };
-        return Rx.Observable.fromPromise(getFeature(url, shorelineMediaLayer.options.name, params))
+        return Rx.Observable.fromPromise(getFeature(requestUrl, shorelineMediaLayer.options.name, params))
             .map((response) => loadSelectedMediaDatasetFeatures(response.data));
     });
 
@@ -350,6 +358,24 @@ export const selectLastMediaFeatureEpic = (action$, store) => action$.ofType(SEL
         );
     });
 
+export const shorelineStartLoadingEpic = (action$, store) => action$.ofType(LAYER_LOADING)
+    .filter(() => store.getState().controls?.shorelineViewer?.enabled)
+    .filter((action) => !action.layerId)
+    .switchMap(() => {
+        return Rx.Observable.of(
+            setShorelineLoading(true)
+        )
+    });
+
+export const shorelineStopLoadingEpic = (action$, store) => action$.ofType(LAYER_LOAD)
+    .filter(() => store.getState().controls?.shorelineViewer?.enabled)
+    .filter((action) => !action.layerId)
+    .switchMap(() => {
+        return Rx.Observable.of(
+            setShorelineLoading(false)
+        )
+    });
+
 export default {
     gnUpdateShorelineViewerMapLayoutEpic,
     openShorelineViewerEpic,
@@ -363,5 +389,7 @@ export default {
     selectFirstMediaFeatureEpic,
     selectPreviousMediaFeatureEpic,
     selectNextMediaFeatureEpic,
-    selectLastMediaFeatureEpic
+    selectLastMediaFeatureEpic,
+    shorelineStartLoadingEpic,
+    shorelineStopLoadingEpic
 };

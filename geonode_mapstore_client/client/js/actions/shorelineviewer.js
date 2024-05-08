@@ -7,6 +7,7 @@ export const SELECT_FIRST_MEDIA_FEATURE = "SHORELINE:SELECT_FIRST_MEDIA_FEATURE"
 export const SELECT_PREVIOUS_MEDIA_FEATURE = "SHORELINE:SELECT_PREVIOUS_MEDIA_FEATURE";
 export const SELECT_NEXT_MEDIA_FEATURE = "SHORELINE:SELECT_NEXT_MEDIA_FEATURE";
 export const SELECT_LAST_MEDIA_FEATURE = "SHORELINE:SELECT_LAST_MEDIA_FEATURE";
+export const SET_SHORELINE_LOADING = "SHORELINE:SET_SHORELINE_LOADING";
 
 
 /**
@@ -88,4 +89,12 @@ export const selectPreviousMediaFeature = (selectedFeature) => ({
 export const selectNextMediaFeature = (selectedFeature) => ({
     type: SELECT_NEXT_MEDIA_FEATURE,
     selectedFeature
+});
+
+/**
+* Change the loading status
+*/
+export const setShorelineLoading = (loading) => ({
+    type: SET_SHORELINE_LOADING,
+    loading
 });
