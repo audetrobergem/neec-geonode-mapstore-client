@@ -29,8 +29,8 @@ import {
     SELECT_LAST_MEDIA_FEATURE
 } from "@js/actions/shorelineviewer";
 import { registerEventListener, unRegisterEventListener, zoomToExtent, CLICK_ON_MAP } from '@mapstore/framework/actions/map';
-import { addLayer, LAYER_LOAD, LAYER_LOADING } from '@mapstore/framework/actions/layers';
-import { addAdditionalLayers, removeAdditionalLayer, updateAdditionalLayer, UPDATE_ADDITIONAL_LAYER } from '@mapstore/framework/actions/additionallayers';
+import { LAYER_LOAD, LAYER_LOADING } from '@mapstore/framework/actions/layers';
+import { removeAdditionalLayer, updateAdditionalLayer, UPDATE_ADDITIONAL_LAYER } from '@mapstore/framework/actions/additionallayers';
 import { updatePointWithGeometricFilter } from "@mapstore/framework/utils/IdentifyUtils";
 import { projectionSelector } from '@mapstore/framework/selectors/map';
 import { hideMapinfoMarker, purgeMapInfoResults, toggleMapInfoState } from '@mapstore/framework/actions/mapInfo';
