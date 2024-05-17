@@ -360,7 +360,8 @@
             "centerLat": "Lat",
             "centerLon": "Lon",
             "mapExtentHelpText": "<b>Vous pouvez modifier l'étendue et la position de cette ressource</b>. Shift-clic et faites glisser pour dessiner une nouvelle étendue, cliquez sur le marqueur puis cliquez et faites glisser pour définir sa position",
-            "editFields": "Éditer les champs"
+            "editFields": "Éditer les champs",
+            "group": "Groupe"
         },
         "shorelineviewer": {
             "shorelineViewer": "Visualisation du rivage",

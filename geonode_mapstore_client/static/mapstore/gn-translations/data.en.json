@@ -360,7 +360,8 @@
             "centerLat": "Lat",
             "centerLon": "Lon",
             "mapExtentHelpText": "<b>You can edit the extent and position of this resource</b>. Shift-click and drag to draw a new extent, click on the marker and then click and drag to set its position",
-            "editFields": "Edit Fields"
+            "editFields": "Edit Fields",
+            "group": "Group"
         },
         "shorelineviewer": {
             "shorelineViewer": "Shoreline Viewer",
