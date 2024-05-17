@@ -432,10 +432,6 @@ export const plugins = {
         'SearchByBookmark',
         () => import(/* webpackChunkName: 'plugins/search-by-bookmark' */ '@mapstore/framework/plugins/SearchByBookmark')
     ),
-    // GeoTourPlugin: toModulePlugin(
-    //    'GeoTour',
-    //    () => import(/* webpackChunkName: 'plugins/geotour-plugin' */ '@js/plugins/GeoTour')
-    // ),
     ShorelineViewerPlugin: toModulePlugin(
         'ShorelineViewer',
         () => import(/* webpackChunkName: 'plugins/shoreline-viewer' */ '@js/plugins/ShorelineViewer')
