@@ -735,6 +735,15 @@
                                     }
                                 },
                                 {
+                                    "type": "query",
+                                    "labelId": "gnviewer.group",
+                                    "value": "{context.get(state('gnResourceData'), 'group.name')}",
+                                    "pathname": "/",
+                                    "query": {
+                                        "filter{group.pk.in}": "{context.get(state('gnResourceData'), 'group.pk')}"
+                                    }
+                                },
+                                {
                                     "type": "link",
                                     "labelId": "gnviewer.pointOfContact",
                                     "value": "{context.getUserResourceNames(context.get(state('gnResourceData'), 'poc'))}",
@@ -1543,6 +1552,11 @@
                         },
                         {
                             "type": "plugin",
+                            "name": "ShorelineViewer",
+                            "disableIf": "{!['neec', 'emergencies-science-and-technology-branch'].some(group => state('user').info.groups.includes(group))}"
+                        },
+                        {
+                            "type": "plugin",
                             "name": "DeleteResource",
                             "disableIf": "{!context.resourceHasPermission(state('gnResourceData'), 'delete_resourcebase')}"
                         }
@@ -1620,6 +1634,15 @@
                                     "pathname": "/",
                                     "query": {
                                         "filter{category.identifier}": "{context.get(state('gnResourceData'), 'category.identifier')}"
+                                    }
+                                },
+                                {
+                                    "type": "query",
+                                    "labelId": "gnviewer.group",
+                                    "value": "{context.get(state('gnResourceData'), 'group.name')}",
+                                    "pathname": "/",
+                                    "query": {
+                                        "filter{group.pk.in}": "{context.get(state('gnResourceData'), 'group.pk')}"
                                     }
                                 },
                                 {
@@ -2086,6 +2109,15 @@
                                     }
                                 },
                                 {
+                                    "type": "query",
+                                    "labelId": "gnviewer.group",
+                                    "value": "{context.get(state('gnLayerResourceData'), 'group.name')}",
+                                    "pathname": "/",
+                                    "query": {
+                                        "filter{group.pk.in}": "{context.get(state('gnLayerResourceData'), 'group.pk')}"
+                                    }
+                                },
+                                {
                                     "type": "link",
                                     "labelId": "gnviewer.pointOfContact",
                                     "href": "{'/people/profile/' + context.get(state('gnLayerResourceData'), 'poc.username')}",
@@ -2157,6 +2189,54 @@
                             "id": "related",
                             "labelId": "gnviewer.linkedResources",
                             "items": "{context.get(state('gnLayerResourceData'), 'linkedResources')}"
+                        }
+                    ]
+                }
+            },
+            {
+                "name": "ShorelineViewer",
+                "cfg": {
+                    "regions": [
+                        {
+                            "id": "bayOfFundy",
+                            "labelId": "shorelineviewer.bayOfFundy",
+                            "photoDataset": "neec_geodb:shoreline_photos_bay_of_fundy",
+                            "shorelineClassificationDataset": "neec_geodb:shoreline_classification_bay_of_fundy",
+                            "extent": [-67.159553527832, 44.2517204284668, -64.3863296508789, 45.6351776123047]
+                        },
+                        {
+                            "id": "bcNorthCoast",
+                            "labelId": "shorelineviewer.bcNorthCoast",
+                            "photoDataset": "neec_geodb:shoreline_photos_northern_bc",
+                            "shorelineClassificationDataset": "neec_geodb:shoreline_classification_bc_eccc",
+                            "extent": [-133.226501464844, 51.8906669616699, -128.588836669922, 54.4982299804688]
+                        },
+                        {
+                            "id": "beaufortSea",
+                            "labelId": "shorelineviewer.beaufortSea",
+                            "photoDataset": "neec_geodb:shoreline_photos_beaufort",
+                            "shorelineClassificationDataset": "neec_geodb:shoreline_classification_arctic",
+                            "extent": [-138.266952514648, 68.3479385375977, -128.848434448242, 69.9564514160156]
+                        },
+                        {
+                            "id": "chedabuctoBay",
+                            "labelId": "shorelineviewer.chedabuctoBay",
+                            "photoDataset": "neec_geodb:shoreline_photos_chedabucto_bay",
+                            "shorelineClassificationDataset": "neec_geodb:shoreline_classification_chedabucto_bay_ns",
+                            "extent": [-61.5226364135742, 45.2031860351562, -60.6877937316895, 45.660327911377]
+                        },
+                        {
+                            "id": "nunavik",
+                            "labelId": "shorelineviewer.nunavik",
+                            "photoDataset": "neec_geodb:shoreline_photos_nunavik",
+                            "extent": [-75.9960021972656, 57.9367904663086, -65.7783050537109, 62.5143775939941]
+                        },
+                        {
+                            "id": "stClairRiver",
+                            "labelId": "shorelineviewer.stClairRiver",
+                            "photoDataset": "neec_geodb:shoreline_photos_st_clair_river",
+                            "shorelineClassificationDataset": "neec_geodb:shoreline_classification_on",
+                            "extent": [-82.6831817626953, 42.4727363586426, -82.3044509887695, 43.0080299377441]
                         }
                     ]
                 }
@@ -2302,6 +2382,15 @@
                                     "pathname": "/",
                                     "query": {
                                         "filter{category.identifier}": "{context.get(state('gnResourceData'), 'category.identifier')}"
+                                    }
+                                },
+                                {
+                                    "type": "query",
+                                    "labelId": "gnviewer.group",
+                                    "value": "{context.get(state('gnResourceData'), 'group.name')}",
+                                    "pathname": "/",
+                                    "query": {
+                                        "filter{group.pk.in}": "{context.get(state('gnResourceData'), 'group.pk')}"
                                     }
                                 },
                                 {
@@ -2626,6 +2715,15 @@
                                     }
                                 },
                                 {
+                                    "type": "query",
+                                    "labelId": "gnviewer.group",
+                                    "value": "{context.get(state('gnResourceData'), 'group.name')}",
+                                    "pathname": "/",
+                                    "query": {
+                                        "filter{group.pk.in}": "{context.get(state('gnResourceData'), 'group.pk')}"
+                                    }
+                                },
+                                {
                                     "type": "link",
                                     "labelId": "gnviewer.pointOfContact",
                                     "value": "{context.getUserResourceNames(context.get(state('gnResourceData'), 'poc'))}",
@@ -2862,6 +2960,15 @@
                                     "pathname": "/",
                                     "query": {
                                         "filter{category.identifier}": "{context.get(state('gnResourceData'), 'category.identifier')}"
+                                    }
+                                },
+                                {
+                                    "type": "query",
+                                    "labelId": "gnviewer.group",
+                                    "value": "{context.get(state('gnResourceData'), 'group.name')}",
+                                    "pathname": "/",
+                                    "query": {
+                                        "filter{group.pk.in}": "{context.get(state('gnResourceData'), 'group.pk')}"
                                     }
                                 },
                                 {

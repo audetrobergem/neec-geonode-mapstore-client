@@ -431,6 +431,10 @@ export const plugins = {
     SearchByBookmarkPlugin: toModulePlugin(
         'SearchByBookmark',
         () => import(/* webpackChunkName: 'plugins/search-by-bookmark' */ '@mapstore/framework/plugins/SearchByBookmark')
+    ),
+    ShorelineViewerPlugin: toModulePlugin(
+        'ShorelineViewer',
+        () => import(/* webpackChunkName: 'plugins/shoreline-viewer' */ '@js/plugins/ShorelineViewer')
     )
 };
 
