@@ -237,7 +237,7 @@ function ResourcesGrid({
                     labelId: "gnhome.emergencyMapping",
                     value: "map",
                     type: "link",
-                    href: "/emergency-mapping/create-resources-at-risk-map/",
+                    href: "/emergency-mapping/create-sensitivity-map/",
                     disableIf: "{!state('user').info.groups.includes('neec')}",
                     authenticated: true,
                     perms: [

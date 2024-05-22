@@ -138,7 +138,7 @@
             "na": "N/A",
             "emptyFilterItems": "Aucun élément à afficher",
             "loadingItems": "Chargement des éléments...",
-            "emergencyMapping": "Créer une carte des ressources à risque"
+            "emergencyMapping": "Créer une carte des sensibilités"
         },
         "viewer": {
             "document": {

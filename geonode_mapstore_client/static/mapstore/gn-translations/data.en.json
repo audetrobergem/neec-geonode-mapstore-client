@@ -138,7 +138,7 @@
             "na": "N/A",
             "emptyFilterItems": "No items to display",
             "loadingItems": "Loading items...",
-            "emergencyMapping": "Create a resources at risk map"
+            "emergencyMapping": "Create a sensitivity map"
         },
         "viewer": {
             "document": {

@@ -21,7 +21,7 @@
   "_resolved": "https://registry.npmjs.org/web-ifc/-/web-ifc-0.0.39.tgz",
   "_shasum": "c3c7e9b16aad79f8ad78e346671cb5b854480737",
   "_spec": "web-ifc@^0.0.39",
-  "_where": "C:\\temp\\Dev\\shoreline-viewer\\neec-geonode-mapstore-client\\geonode_mapstore_client\\client\\node_modules\\web-ifc-three",
+  "_where": "C:\\temp\\Dev\\neec-geonode-mapstore-client\\geonode_mapstore_client\\client\\node_modules\\web-ifc-three",
   "author": {
     "name": "tomvandig"
   },
