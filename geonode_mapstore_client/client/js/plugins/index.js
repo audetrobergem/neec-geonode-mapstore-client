@@ -435,6 +435,10 @@ export const plugins = {
     ShorelineViewerPlugin: toModulePlugin(
         'ShorelineViewer',
         () => import(/* webpackChunkName: 'plugins/shoreline-viewer' */ '@js/plugins/ShorelineViewer')
+    ),
+    MaritimeNetworkPlugin: toModulePlugin(
+        'MaritimeNetwork',
+        () => import(/* webpackChunkName: 'plugins/maritime-network' */ '@js/plugins/MaritimeNetwork')
     )
 };
 

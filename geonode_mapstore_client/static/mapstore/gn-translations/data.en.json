@@ -379,6 +379,9 @@
             "chedabuctoBay": "Chedabucto Bay",
             "nunavik": "Nunavik",
             "stClairRiver": "St. Clair River"
+        },
+        "maritimeNetwork": {
+            "maritimeNetworkTitle": "Maritime Network"
         }
     }
 }

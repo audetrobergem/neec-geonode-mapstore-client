@@ -1475,6 +1475,11 @@
                 "name": "Redo"
             },
             {
+                "type": "plugin",
+                "name": "MaritimeNetwork",
+                "disableIf": "{!['neec', 'emergencies-science-and-technology-branch'].some(group => state('user').info.groups.includes(group))}"
+            },
+            {
                 "name": "ActionNavbar",
                 "cfg": {
                     "containerPosition": "header",
