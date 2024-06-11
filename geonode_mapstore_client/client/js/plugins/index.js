@@ -440,6 +440,18 @@ export const plugins = {
         'Settings',
         () => import(/* webpackChunkName: 'plugins/settings' */ '@mapstore/framework/plugins/Settings')
     ),
+    UndoPlugin: toModulePlugin(
+        'Undo',
+        () => import(/* webpackChunkName: 'plugins/undo' */ '@js/plugins/Undo')
+    ),
+    RedoPlugin: toModulePlugin(
+        'Redo',
+        () => import(/* webpackChunkName: 'plugins/redo' */ '@js/plugins/Redo')
+    ),
+    SearchByBookmarkPlugin: toModulePlugin(
+        'SearchByBookmark',
+        () => import(/* webpackChunkName: 'plugins/search-by-bookmark' */ '@mapstore/framework/plugins/SearchByBookmark')
+    ),
     ShorelineViewerPlugin: toModulePlugin(
         'ShorelineViewer',
         () => import(/* webpackChunkName: 'plugins/shoreline-viewer' */ '@js/plugins/ShorelineViewer')

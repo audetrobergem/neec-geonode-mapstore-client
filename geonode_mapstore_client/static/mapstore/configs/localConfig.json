@@ -1478,6 +1478,15 @@
                 "name": "MapThumbnail"
             },
             {
+                "name": "SearchByBookmark"
+            },
+            {
+                "name": "Undo"
+            },
+            {
+                "name": "Redo"
+            },
+            {
                 "mandatory": true,
                 "name": "ActionNavbar",
                 "cfg": {
