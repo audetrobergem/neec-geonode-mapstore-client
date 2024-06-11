@@ -443,7 +443,11 @@ export const plugins = {
     ShorelineViewerPlugin: toModulePlugin(
         'ShorelineViewer',
         () => import(/* webpackChunkName: 'plugins/shoreline-viewer' */ '@js/plugins/ShorelineViewer')
-    )
+    ),
+    LayerDetailViewerPlugin: toModulePlugin(
+        'LayerDetailViewer',
+        () => import(/* webpackChunkName: 'plugins/detail-viewer-plugin' */ '@js/plugins/LayerDetailViewer')
+    ),
 };
 
 const pluginsDefinition = {
