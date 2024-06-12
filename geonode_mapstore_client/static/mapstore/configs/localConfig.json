@@ -765,6 +765,15 @@
                                     }
                                 },
                                 {
+                                    "type": "query",
+                                    "labelId": "gnviewer.group",
+                                    "value": "{context.get(state('gnResourceData'), 'group.name')}",
+                                    "pathname": "/",
+                                    "query": {
+                                        "filter{group.pk.in}": "{context.get(state('gnResourceData'), 'group.pk')}"
+                                    }
+                                },
+                                {
                                     "type": "link",
                                     "labelId": "gnviewer.pointOfContact",
                                     "value": "{context.getUserResourceNames(context.get(state('gnResourceData'), 'poc'))}",
@@ -1675,6 +1684,15 @@
                                     }
                                 },
                                 {
+                                    "type": "query",
+                                    "labelId": "gnviewer.group",
+                                    "value": "{context.get(state('gnResourceData'), 'group.name')}",
+                                    "pathname": "/",
+                                    "query": {
+                                        "filter{group.pk.in}": "{context.get(state('gnResourceData'), 'group.pk')}"
+                                    }
+                                },
+                                {
                                     "type": "link",
                                     "labelId": "gnviewer.pointOfContact",
                                     "value": "{context.getUserResourceNames(context.get(state('gnResourceData'), 'poc'))}",
@@ -2213,6 +2231,15 @@
                                       }
                                   },
                                   {
+                                    "type": "query",
+                                    "labelId": "gnviewer.group",
+                                    "value": "{context.get(state('gnResourceData'), 'group.name')}",
+                                    "pathname": "/",
+                                    "query": {
+                                        "filter{group.pk.in}": "{context.get(state('gnResourceData'), 'group.pk')}"
+                                    }
+                                },
+                                  {
                                       "type": "link",
                                       "labelId": "gnviewer.pointOfContact",
                                       "href": "{'/people/profile/' + context.get(state('gnLayerResourceData'), 'poc.username')}",
@@ -2438,6 +2465,15 @@
                                     "pathname": "/",
                                     "query": {
                                         "filter{category.identifier}": "{context.get(state('gnResourceData'), 'category.identifier')}"
+                                    }
+                                },
+                                {
+                                    "type": "query",
+                                    "labelId": "gnviewer.group",
+                                    "value": "{context.get(state('gnResourceData'), 'group.name')}",
+                                    "pathname": "/",
+                                    "query": {
+                                        "filter{group.pk.in}": "{context.get(state('gnResourceData'), 'group.pk')}"
                                     }
                                 },
                                 {
@@ -2770,6 +2806,15 @@
                                     }
                                 },
                                 {
+                                    "type": "query",
+                                    "labelId": "gnviewer.group",
+                                    "value": "{context.get(state('gnResourceData'), 'group.name')}",
+                                    "pathname": "/",
+                                    "query": {
+                                        "filter{group.pk.in}": "{context.get(state('gnResourceData'), 'group.pk')}"
+                                    }
+                                },
+                                {
                                     "type": "link",
                                     "labelId": "gnviewer.pointOfContact",
                                     "value": "{context.getUserResourceNames(context.get(state('gnResourceData'), 'poc'))}",
@@ -3025,6 +3070,15 @@
                                     "pathname": "/",
                                     "query": {
                                         "filter{category.identifier}": "{context.get(state('gnResourceData'), 'category.identifier')}"
+                                    }
+                                },
+                                {
+                                    "type": "query",
+                                    "labelId": "gnviewer.group",
+                                    "value": "{context.get(state('gnResourceData'), 'group.name')}",
+                                    "pathname": "/",
+                                    "query": {
+                                        "filter{group.pk.in}": "{context.get(state('gnResourceData'), 'group.pk')}"
                                     }
                                 },
                                 {
@@ -3552,6 +3606,15 @@
                                     "pathname": "/",
                                     "query": {
                                         "filter{category.identifier}": "{context.get(state('gnResourceData'), 'category.identifier')}"
+                                    }
+                                },
+                                {
+                                    "type": "query",
+                                    "labelId": "gnviewer.group",
+                                    "value": "{context.get(state('gnResourceData'), 'group.name')}",
+                                    "pathname": "/",
+                                    "query": {
+                                        "filter{group.pk.in}": "{context.get(state('gnResourceData'), 'group.pk')}"
                                     }
                                 },
                                 {
@@ -4318,6 +4381,15 @@
                                     "pathname": "/",
                                     "query": {
                                         "filter{category.identifier}": "{context.get(state('gnResourceData'), 'category.identifier')}"
+                                    }
+                                },
+                                {
+                                    "type": "query",
+                                    "labelId": "gnviewer.group",
+                                    "value": "{context.get(state('gnResourceData'), 'group.name')}",
+                                    "pathname": "/",
+                                    "query": {
+                                        "filter{group.pk.in}": "{context.get(state('gnResourceData'), 'group.pk')}"
                                     }
                                 },
                                 {

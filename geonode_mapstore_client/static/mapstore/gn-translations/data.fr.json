@@ -406,7 +406,8 @@
                     }
                 }
             },
-            "editFields": "Éditer les champs"
+            "editFields": "Éditer les champs",
+            "group": "Groupe"
         },
         "shorelineviewer": {
             "shorelineViewer": "Visualisation du rivage",
