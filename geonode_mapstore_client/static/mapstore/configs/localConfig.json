@@ -2309,7 +2309,7 @@
                           {
                               "type": "linked-resources",
                               "id": "related",
-                              "labelId": "gnviewer.linkedResources",
+                              "labelId": "gnviewer.linkedResources.label",
                               "items": "{context.get(state('gnLayerResourceData'), 'linkedResources')}"
                           }
                       ]
