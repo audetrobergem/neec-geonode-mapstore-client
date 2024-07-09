@@ -10,7 +10,8 @@ import uniq from 'lodash/uniq';
 import {
     LayerDownloadActionButton,
     FullScreenActionButton,
-    AddWidgetActionButton
+    AddWidgetActionButton,
+    FilterLayerActionButton
 } from '@js/plugins/actionnavbar/buttons';
 import { getPluginsContext } from '@js/utils/PluginsContextUtils';
 import { toModulePlugin as msToModulePlugin } from '@mapstore/framework/utils/ModulePluginsUtils';
@@ -118,7 +119,17 @@ export const plugins = {
     ),
     FilterLayerPlugin: toModulePlugin(
         'FilterLayer',
-        () => import(/* webpackChunkName: 'plugins/filter-layer-plugin' */ '@mapstore/framework/plugins/FilterLayer')
+        () => import(/* webpackChunkName: 'plugins/filter-layer-plugin' */ '@mapstore/framework/plugins/FilterLayer'),
+        {
+            overrides: {
+                containers: {
+                    ActionNavbar: {
+                        name: 'FilterLayer',
+                        Component: FilterLayerActionButton
+                    }
+                }
+            }
+        }
     ),
     MeasurePlugin: toModulePlugin(
         'Measure',
@@ -448,10 +459,6 @@ export const plugins = {
         'Redo',
         () => import(/* webpackChunkName: 'plugins/redo' */ '@js/plugins/Redo')
     ),
-    SearchByBookmarkPlugin: toModulePlugin(
-        'SearchByBookmark',
-        () => import(/* webpackChunkName: 'plugins/search-by-bookmark' */ '@mapstore/framework/plugins/SearchByBookmark')
-    ),
     ShorelineViewerPlugin: toModulePlugin(
         'ShorelineViewer',
         () => import(/* webpackChunkName: 'plugins/shoreline-viewer' */ '@js/plugins/ShorelineViewer')
@@ -459,7 +466,7 @@ export const plugins = {
     LayerDetailViewerPlugin: toModulePlugin(
         'LayerDetailViewer',
         () => import(/* webpackChunkName: 'plugins/detail-viewer-plugin' */ '@js/plugins/LayerDetailViewer')
-    ),
+    )
 };
 
 const pluginsDefinition = {
