@@ -466,6 +466,10 @@ export const plugins = {
     LayerDetailViewerPlugin: toModulePlugin(
         'LayerDetailViewer',
         () => import(/* webpackChunkName: 'plugins/detail-viewer-plugin' */ '@js/plugins/LayerDetailViewer')
+    ),
+    ZoneIdentifyPlugin: toModulePlugin(
+        'ZoneIdentify',
+        () => import(/* webpackChunkName: 'plugins/zone-identify' */ '@js/plugins/ZoneIdentify')
     )
 };
 

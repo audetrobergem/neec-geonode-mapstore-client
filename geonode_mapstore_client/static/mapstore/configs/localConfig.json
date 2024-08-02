@@ -1496,6 +1496,9 @@
                 "name": "Redo"
             },
             {
+                "name": "ZoneIdentify"
+            },
+            {
                 "mandatory": true,
                 "name": "ActionNavbar",
                 "cfg": {
