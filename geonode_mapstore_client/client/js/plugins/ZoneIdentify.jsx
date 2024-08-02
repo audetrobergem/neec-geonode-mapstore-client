@@ -183,7 +183,13 @@ function ZoneIdentify({
         };
     }, []);
 
-    const layerList = layers.filter((layer) => layer.visibility === true && layer.type === "wms" && layer.group !== "background");
+    const layerList = layers.filter((layer) => 
+        layer.visibility === true && 
+        layer.type === "wms" && 
+        layer.group !== "background" &&
+        layer.name.includes("neec_geodb") &&
+        layer.loadingError !== "Error"
+    );
     const dropdownItems = [
         {
             layerName: "visible_layers",

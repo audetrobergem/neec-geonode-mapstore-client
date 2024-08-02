@@ -118,7 +118,13 @@ export const getFeaturesInfoClickEpic = (action$, store) => action$.ofType(CHANG
         const state = store.getState();
         let layerNames;
         if (state.zoneIdentify.selectedLayer === "visible_layers") {
-            const layerList = state.layers.flat.filter((layer) => layer.visibility === true && layer.type === "wms" && layer.group !== "background");
+            const layerList = state.layers.flat.filter((layer) => 
+                layer.visibility === true && 
+                layer.type === "wms" && 
+                layer.group !== "background" &&
+                layer.name.includes("neec_geodb") &&
+                layer.loadingError !== "Error"
+            );
             layerNames = layerList.map((layer) => layer.name);
         } else {
             layerNames = state.zoneIdentify.selectedLayer;
