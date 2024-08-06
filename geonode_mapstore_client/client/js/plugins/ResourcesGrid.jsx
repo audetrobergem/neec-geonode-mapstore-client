@@ -268,23 +268,39 @@ function ResourcesGrid({
             noCaret: true,
             items: [
                 {
+                    labelId: "gnhome.emergencyMapping",
+                    value: "map",
+                    type: "link",
+                    href: "/emergency-mapping/create-sensitivity-map/",
+                    disableIf: "{!state('user').info.groups.includes('neec')}",
+                    authenticated: true,
+                    perms: [
+                        {
+                            type: "user",
+                            value: "add_resource"
+                        }
+                    ]
+                },
+                {
                     labelId: 'gnhome.uploadDataset',
                     value: 'layer',
                     type: 'link',
-                    href: '{context.getCataloguePath("/catalogue/#/upload/dataset")}'
+                    href: '{context.getCataloguePath("/catalogue/#/upload/dataset")}',
+                    disableIf: "{!state('user').is_staff}"
                 },
                 {
                     labelId: 'gnhome.uploadDocument',
                     value: 'document',
                     type: 'link',
-                    href: '{context.getCataloguePath("/catalogue/#/upload/document")}'
+                    href: '{context.getCataloguePath("/catalogue/#/upload/document")}',
+                    disableIf: "{!state('user').info.groups.includes('neec')}"
                 },
                 {
                     labelId: 'gnhome.createDataset',
                     value: 'layer',
                     type: 'link',
                     href: '/createlayer/',
-                    disableIf: "{(state('settings') && state('settings').createLayer) ? false : true}"
+                    disableIf: "{!state('settings').createLayer || !state('user').is_staff}"
                 },
                 {
                     labelId: 'gnhome.createMap',
@@ -296,19 +312,22 @@ function ResourcesGrid({
                     labelId: 'gnhome.createGeostory',
                     value: 'geostory',
                     type: 'link',
-                    href: '{context.getCataloguePath("/catalogue/#/geostory/new")}'
+                    href: '{context.getCataloguePath("/catalogue/#/geostory/new")}',
+                    disableIf: "{!state('user').info.groups.includes('neec')}"
                 },
                 {
                     labelId: 'gnhome.createDashboard',
                     value: 'dashboard',
                     type: 'link',
-                    href: '{context.getCataloguePath("/catalogue/#/dashboard/new")}'
+                    href: '{context.getCataloguePath("/catalogue/#/dashboard/new")}',
+                    disableIf: "{!state('user').info.groups.includes('neec')}"
                 },
                 {
                     labelId: 'gnhome.remoteServices',
                     value: 'remote',
                     type: 'link',
-                    href: '/services/?limit=5'
+                    href: '/services/?limit=5',
+                    disableIf: "{!state('user').is_staff}"
                 }
             ]
         },
