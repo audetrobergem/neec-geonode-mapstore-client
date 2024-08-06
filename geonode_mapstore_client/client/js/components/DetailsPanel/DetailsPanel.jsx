@@ -81,8 +81,7 @@ const DetailsPanelTools = ({
     resourceCanPreviewed,
     canView,
     metadataDetailUrl,
-    name,
-    toolbarItems = []
+    name
 }) => {
 
     const isMounted = useRef();
@@ -121,9 +120,6 @@ const DetailsPanelTools = ({
                 onClick={debounce(() => handleFavorite(favorite), 500)}>
                 <FaIcon name={favorite ? 'star' : 'star-o'} />
             </Button>}
-            {toolbarItems.map(({ Component, name: toolbarItemName }, index) => {
-                return (<Component key={toolbarItemName || index} showIcon />);
-            })}
             <CopyToClipboard
                 tooltipPosition="top"
                 tooltipId={
@@ -190,7 +186,6 @@ function DetailsPanel({
     onClose,
     tabs,
     pathname,
-    toolbarItems,
     onSetExtent
 }) {
     const detailsContainerNode = useRef();
@@ -223,7 +218,6 @@ function DetailsPanel({
             resourceCanPreviewed={resourceCanPreviewed}
             canView={canView}
             metadataDetailUrl={metadataDetailUrl}
-            toolbarItems={toolbarItems}
         />
     );
     return (
