@@ -407,7 +407,8 @@
                 }
             },
             "allResources": "All resources",
-            "group": "Group"
+            "group": "Group",
+            "editFields": "Edit Fields"
         }
     }
 }

@@ -407,7 +407,8 @@
                 }
             },
             "allResources": "All resources",
-            "group": "Groupe"
+            "group": "Groupe",
+            "editFields": "Éditer les champs"
         }
     }
 }
