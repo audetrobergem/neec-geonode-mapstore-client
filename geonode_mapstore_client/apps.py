@@ -110,6 +110,8 @@ def run_setup_hooks(*args, **kwargs):
             "is_approved",
             "is_copyable",
             "is_published",
+            "date_type",
+            "last_updated",
             "owner",
             "perms",
             "pk",
@@ -144,7 +146,9 @@ def run_setup_hooks(*args, **kwargs):
             "ptype",
             "extent",
             "is_approved",
-            "is_published"
+            "is_published",
+            "date_type",
+            "last_updated"
         ],
     }
     settings.REST_API_PRESETS["map_list"] = {
@@ -156,6 +160,8 @@ def run_setup_hooks(*args, **kwargs):
             "is_approved",
             "is_copyable",
             "is_published",
+            "date_type",
+            "last_updated",
             "owner",
             "perms",
             "pk",
@@ -180,7 +186,9 @@ def run_setup_hooks(*args, **kwargs):
             "thumbnail_url",
             "alternate",
             "attribution",
-            "href"
+            "href",
+            "date_type",
+            "last_updated"
         ],
     }
     settings.REST_API_PRESETS["viewer_common"] = {
