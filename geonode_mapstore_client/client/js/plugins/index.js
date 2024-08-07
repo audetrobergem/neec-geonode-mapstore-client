@@ -437,7 +437,7 @@ export const plugins = {
     ),
     UndoPlugin: toModulePlugin(
         'Undo',
-            () => import(/* webpackChunkName: 'plugins/undo' */ '@js/plugins/Undo')
+        () => import(/* webpackChunkName: 'plugins/undo' */ '@js/plugins/Undo')
     ),
     RedoPlugin: toModulePlugin(
         'Redo',
@@ -450,7 +450,11 @@ export const plugins = {
     LayerDetailViewerPlugin: toModulePlugin(
         'LayerDetailViewer',
         () => import(/* webpackChunkName: 'plugins/detail-viewer-plugin' */ '@js/plugins/LayerDetailViewer')
-    )
+    ),
+    ShorelineViewerPlugin: toModulePlugin(
+        'ShorelineViewer',
+        () => import(/* webpackChunkName: 'plugins/shoreline-viewer' */ '@js/plugins/ShorelineViewer')
+    )    
 };
 
 const pluginsDefinition = {
