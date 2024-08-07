@@ -1459,6 +1459,9 @@
                 "name": "Redo"
             },
             {
+                "name": "SearchByBookmark"
+            },
+            {
                 "name": "MapThumbnail"
             },
             {

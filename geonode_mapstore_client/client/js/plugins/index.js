@@ -442,6 +442,10 @@ export const plugins = {
     RedoPlugin: toModulePlugin(
         'Redo',
         () => import(/* webpackChunkName: 'plugins/redo' */ '@js/plugins/Redo')
+    ),
+    SearchByBookmarkPlugin: toModulePlugin(
+        'SearchByBookmark',
+        () => import(/* webpackChunkName: 'plugins/search-by-bookmark' */ '@mapstore/framework/plugins/SearchByBookmark')
     )
 };
 
