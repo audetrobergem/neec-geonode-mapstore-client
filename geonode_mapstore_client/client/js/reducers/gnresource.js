@@ -13,8 +13,10 @@ import isNil from 'lodash/isNil';
 import {
     RESOURCE_LOADING,
     SET_RESOURCE,
+    SET_LAYER_RESOURCE,
     RESOURCE_ERROR,
     UPDATE_RESOURCE_PROPERTIES,
+    UPDATE_LAYER_RESOURCE_PROPERTIES,
     SET_RESOURCE_TYPE,
     SET_NEW_RESOURCE,
     SET_RESOURCE_ID,
@@ -89,6 +91,22 @@ function gnresource(state = defaultState, action) {
             isNew: false
         };
     }
+    case SET_LAYER_RESOURCE: {
+        const { data, ...resource } = action.data || {};
+        let updatedResource = { ...resource };
+        const linkedResources = state.layerDataset?.linkedResources;
+        if (!isEmpty(linkedResources) && updatedResource.pk === state.layerDataset?.pk) {
+            updatedResource.linkedResources = linkedResources;
+        }
+
+        return {
+            ...state,
+            error: null,
+            initialLayerResource: { ...action.data },
+            layerDataset: updatedResource,
+            loading: false
+        };
+    }
     case RESOURCE_ERROR: {
         return {
             ...state,
@@ -103,6 +121,15 @@ function gnresource(state = defaultState, action) {
             ...state,
             data: {
                 ...state.data,
+                ...action.properties
+            }
+        };
+    }
+    case UPDATE_LAYER_RESOURCE_PROPERTIES: {
+        return {
+            ...state,
+            layerDataset: {
+                ...state.layerDataset,
                 ...action.properties
             }
         };
