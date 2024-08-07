@@ -1532,6 +1532,9 @@
                 }
             },
             {
+                "name": "ZoneIdentify"
+            },
+            {
                 "mandatory": true,
                 "name": "ActionNavbar",
                 "cfg": {
