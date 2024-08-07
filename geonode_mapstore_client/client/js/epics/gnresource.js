@@ -215,13 +215,29 @@ const resourceTypes = {
                             ? axios.all([{...resource}, getGeoAppByPk(mapViewers?.pk, {api_preset: 'catalog_list', include: ['data', 'linked_resources']})])
                             : Promise.resolve([{...resource}]);
                     })
-                    .catch(() => null)
+                    .catch(() => null),
+                ...options?.query?.center ? [options.query.center] : [],
+                ...options?.query?.incident ? [options.query.incident] : []
             ]))
-                .switchMap(([baseConfig, resource]) => {
+                .switchMap(([baseConfig, resource, center, incident]) => {
                     const [mapResource, mapViewerResource] = resource ?? [];
                     const mapConfig = options.data
                         ? options.data
                         : toMapStoreMapConfig(mapResource, baseConfig);
+                    // finds the incident layer in the map if it exists.
+                    let incidentLayerId = null;
+                    for (let i = 0; i < mapConfig.map.layers.length; i++) {
+                        if (mapConfig.map.layers[i].name === "neec_geodb:neeoc_incidents") {
+                            incidentLayerId = i;
+                        }
+                    }
+                    if (incidentLayerId != null && typeof (incident) !== "undefined") {
+                        mapConfig.map.layers[incidentLayerId].layerFilter.filterFields[0].value = incident;
+                    }
+                    mapConfig.map.zoom = center ? 14 : mapConfig.map.zoom;
+                    mapConfig.map.center = center
+                        ? { "crs": "EPSG:4326", "x": center.split(',')[1], "y": center.split(',')[0] }
+                        : mapConfig.map.center;
                     return Observable.of(
                         configureMap(mapConfig),
                         setControlProperty('toolbar', 'expanded', false),
@@ -470,6 +486,7 @@ export const gnViewerRequestResourceConfig = (action$, store) =>
             const state = store.getState();
 
             const { resourceObservable } = resourceTypes[action.resourceType] || {};
+            const { query = {} } = url.parse(state?.router?.location?.search, true) || {};
 
             if (!resourceObservable) {
                 return Observable.of(
@@ -516,7 +533,8 @@ export const gnViewerRequestResourceConfig = (action$, store) =>
                     resourceData,
                     selectedLayer: isSamePreviousResource && getSelectedLayer(state),
                     map: isSamePreviousResource && mapSelector(state),
-                    params: action?.options?.params
+                    params: action?.options?.params,
+                    query
                 }),
                 Observable.of(
                     loadingResourceConfig(false)
