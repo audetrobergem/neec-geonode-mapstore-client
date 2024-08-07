@@ -16,7 +16,7 @@ import Message from '@mapstore/framework/components/I18N/Message';
 import GNButton from '@js/components/Button';
 import FaIcon from '@js/components/FaIcon';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faRoute } from '@fortawesome/free-solid-svg-icons'
+import { faRoute } from '@fortawesome/free-solid-svg-icons';
 import { DropdownList } from 'react-widgets';
 import Spinner from '@js/components/Spinner';
 import { setControlProperty } from '@mapstore/framework/actions/controls';

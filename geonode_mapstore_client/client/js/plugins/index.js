@@ -443,10 +443,6 @@ export const plugins = {
         'Redo',
         () => import(/* webpackChunkName: 'plugins/redo' */ '@js/plugins/Redo')
     ),
-    SearchByBookmarkPlugin: toModulePlugin(
-        'SearchByBookmark',
-        () => import(/* webpackChunkName: 'plugins/search-by-bookmark' */ '@mapstore/framework/plugins/SearchByBookmark')
-    ),
     LayerDetailViewerPlugin: toModulePlugin(
         'LayerDetailViewer',
         () => import(/* webpackChunkName: 'plugins/detail-viewer-plugin' */ '@js/plugins/LayerDetailViewer')
@@ -458,7 +454,7 @@ export const plugins = {
     ZoneIdentifyPlugin: toModulePlugin(
         'ZoneIdentify',
         () => import(/* webpackChunkName: 'plugins/zone-identify' */ '@js/plugins/ZoneIdentify')
-    )   
+    )
 };
 
 const pluginsDefinition = {
