@@ -1453,6 +1453,12 @@
                 }
             },
             {
+                "name": "Undo"
+            },
+            {
+                "name": "Redo"
+            },
+            {
                 "name": "MapThumbnail"
             },
             {

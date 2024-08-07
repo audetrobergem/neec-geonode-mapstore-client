@@ -434,6 +434,14 @@ export const plugins = {
     SettingsPlugin: toModulePlugin(
         'Settings',
         () => import(/* webpackChunkName: 'plugins/settings' */ '@mapstore/framework/plugins/Settings')
+    ),
+    UndoPlugin: toModulePlugin(
+        'Undo',
+            () => import(/* webpackChunkName: 'plugins/undo' */ '@js/plugins/Undo')
+    ),
+    RedoPlugin: toModulePlugin(
+        'Redo',
+        () => import(/* webpackChunkName: 'plugins/redo' */ '@js/plugins/Redo')
     )
 };
 
