@@ -633,6 +633,10 @@
                             ]
                         },
                         {
+                            "type": "plugin",
+                            "name": "FilterLayer"
+                        },
+                        {
                             "labelId": "gnviewer.download",
                             "disableIf": "{!state('selectedLayerPermissions').includes('download_resourcebase') || context.isDocumentExternalSource(state('gnResourceData'))}",
                             "type": "dropdown",
@@ -655,10 +659,6 @@
                         {
                             "type": "divider",
                             "disableIf": "{state('isNewResource')}"
-                        },
-                        {
-                            "type": "plugin",
-                            "name": "FilterLayer"
                         },
                         {
                             "type": "link",
