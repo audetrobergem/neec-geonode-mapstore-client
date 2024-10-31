@@ -147,7 +147,8 @@
             "na": "N/A",
             "emptyFilterItems": "No items to display",
             "loadingItems": "Loading items...",
-            "3dtiles": "3D Tiles"
+            "3dtiles": "3D Tiles",
+            "emergencyMapping": "Create a sensitivity map"
         },
         "viewer": {
             "document": {
