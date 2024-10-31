@@ -70,7 +70,7 @@ def run_setup_hooks(*args, **kwargs):
     )
 
     try:
-        settings.TEMPLATES[0]["OPTIONS"]["context_processors"] += [
+        settings.TEMPLATES[1]["OPTIONS"]["context_processors"] += [
             "geonode_mapstore_client.context_processors.resource_urls",
         ]
     except Exception:
