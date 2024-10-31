@@ -118,7 +118,9 @@ def run_setup_hooks(*args, **kwargs):
             "subtype",
             "title",
             "executions",
-            "thumbnail_url"
+            "thumbnail_url",
+            "date_type",
+            "last_updated"
         ],
     }
     settings.REST_API_PRESETS["dataset_list"] = {
@@ -144,7 +146,9 @@ def run_setup_hooks(*args, **kwargs):
             "ptype",
             "extent",
             "is_approved",
-            "is_published"
+            "is_published",
+            "date_type",
+            "last_updated"
         ],
     }
     settings.REST_API_PRESETS["map_list"] = {
@@ -164,7 +168,9 @@ def run_setup_hooks(*args, **kwargs):
             "subtype",
             "title",
             "executions",
-            "thumbnail_url"
+            "thumbnail_url",
+            "date_type",
+            "last_updated"
         ],
     }
     settings.REST_API_PRESETS["document_list"] = {
