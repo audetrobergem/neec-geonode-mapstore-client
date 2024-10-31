@@ -10,7 +10,8 @@ import uniq from 'lodash/uniq';
 import {
     LayerDownloadActionButton,
     FullScreenActionButton,
-    AddWidgetActionButton
+    AddWidgetActionButton,
+    FilterLayerActionButton
 } from '@js/plugins/actionnavbar/buttons';
 import { getPluginsContext } from '@js/utils/PluginsContextUtils';
 import { toModulePlugin as msToModulePlugin } from '@mapstore/framework/utils/ModulePluginsUtils';
@@ -122,7 +123,17 @@ export const plugins = {
     ),
     FilterLayerPlugin: toModulePlugin(
         'FilterLayer',
-        () => import(/* webpackChunkName: 'plugins/filter-layer-plugin' */ '@mapstore/framework/plugins/FilterLayer')
+        () => import(/* webpackChunkName: 'plugins/filter-layer-plugin' */ '@mapstore/framework/plugins/FilterLayer'),
+        {
+            overrides: {
+                containers: {
+                    ActionNavbar: {
+                        name: 'FilterLayer',
+                        Component: FilterLayerActionButton
+                    }
+                }
+            }
+        }
     ),
     MeasurePlugin: toModulePlugin(
         'Measure',
