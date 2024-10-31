@@ -1199,9 +1199,6 @@
                 "name": "Notifications"
             },
             {
-                "name": "Locate"
-            },
-            {
                 "name": "Legend"
             },
             {
@@ -2016,9 +2013,6 @@
             },
             {
                 "name": "Swipe"
-            },
-            {
-                "name": "Locate"
             },
             {
                 "name": "WidgetsBuilder",
@@ -3121,9 +3115,6 @@
                 }
             },
             {
-                "name": "Locate"
-            },
-            {
                 "name": "BackgroundSelector",
                 "cfg": {
                     "bottom": 25,
@@ -3231,9 +3222,6 @@
             },
             {
                 "name": "Legend"
-            },
-            {
-                "name": "Locate"
             },
             {
                 "name": "BackgroundSelector",
