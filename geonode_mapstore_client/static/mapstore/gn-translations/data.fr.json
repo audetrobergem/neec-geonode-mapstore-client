@@ -432,6 +432,17 @@
                 "chedabuctoBay": "Baie de Chedabucto",
                 "nunavik": "Nunavik",
                 "stClairRiver": "Rivière Sainte-Claire"
+            },
+
+            "zoneIdentify": {
+                "title": "Identification par zone",
+                "drawPolygon": "Dessiner un polygone de sélection",
+                "removePolygon": "Effacer un polygone de sélection",
+                "addLayer": "Ajouter le polygone de sélection à la carte",
+                "expandFeature": "Développer / Réduire",
+                "highlightFeature": "Mettre en surbillance l'entités",
+                "zoomToFeature": "Zoom sur l'entité",
+                "visibleLayers": "Couches visibles"
             }
         }
     }

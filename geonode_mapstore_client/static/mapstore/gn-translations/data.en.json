@@ -432,6 +432,17 @@
                 "chedabuctoBay": "Chedabucto Bay",
                 "nunavik": "Nunavik",
                 "stClairRiver": "St. Clair River"
+            },
+
+            "zoneIdentify": {
+                "title": "Zone identification",
+                "drawPolygon": "Draw selection polygon",
+                "removePolygon": "Delete selection polygon",
+                "addLayer": "Add selection polygon to the map",
+                "expandFeature": "Expand / Collapse",
+                "highlightFeature": "Highlight feature",
+                "zoomToFeature": "Zoom to feature",
+                "visibleLayers": "Visible Layers"
             }
         }
     }

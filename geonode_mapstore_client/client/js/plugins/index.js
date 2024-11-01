@@ -466,6 +466,10 @@ export const plugins = {
     ShorelineViewerPlugin: toModulePlugin(
         'ShorelineViewer',
         () => import(/* webpackChunkName: 'plugins/shoreline-viewer' */ '@js/plugins/ShorelineViewer')
+    ),
+    ZoneIdentifyPlugin: toModulePlugin(
+        'ZoneIdentify',
+        () => import(/* webpackChunkName: 'plugins/zone-identify' */ '@js/plugins/ZoneIdentify')
     )
 };
 

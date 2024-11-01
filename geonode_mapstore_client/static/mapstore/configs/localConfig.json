@@ -2110,6 +2110,9 @@
                 "name": "SearchByBookmark"
             },
             {
+                "name": "ZoneIdentify"
+            },
+            {
                 "name": "LayerDetailViewer",
                 "cfg": {
                     "containerPosition": "rightOverlay",
