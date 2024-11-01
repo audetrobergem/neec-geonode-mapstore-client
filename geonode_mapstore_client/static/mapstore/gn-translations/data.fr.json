@@ -413,7 +413,8 @@
                 }
             },
             "allResources": "All resources",
-            "assets": "Assets"
+            "assets": "Assets",
+            "group": "Groupe"
         }
     }
 }
