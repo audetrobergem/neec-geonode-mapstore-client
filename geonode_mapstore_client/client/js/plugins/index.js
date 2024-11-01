@@ -449,15 +449,11 @@ export const plugins = {
     ),
     UndoPlugin: toModulePlugin(
         'Undo',
-            () => import(/* webpackChunkName: 'plugins/undo' */ '@js/plugins/Undo')
+        () => import(/* webpackChunkName: 'plugins/undo' */ '@js/plugins/Undo')
     ),
     RedoPlugin: toModulePlugin(
         'Redo',
         () => import(/* webpackChunkName: 'plugins/redo' */ '@js/plugins/Redo')
-    ),
-    SearchByBookmarkPlugin: toModulePlugin(
-        'SearchByBookmark',
-        () => import(/* webpackChunkName: 'plugins/search-by-bookmark' */ '@mapstore/framework/plugins/SearchByBookmark')
     ),
     LayerDetailViewerPlugin: toModulePlugin(
         'LayerDetailViewer',

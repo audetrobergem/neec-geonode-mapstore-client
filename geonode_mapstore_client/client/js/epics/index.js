@@ -42,25 +42,25 @@ export const gnCheckSelectedDatasetPermissions = (action$, { getState } = {}) =>
             const canEditStyles = permissions.includes("change_dataset_style");
             const canEdit = permissions.includes("change_dataset_data");
             return layer
-            ? layerResourceId
-                ? Rx.Observable.defer(() =>
-                    getResourceByTypeAndByPk('dataset', layerResourceId)
-                        .then((layerDataset) => layerDataset)
-                        .catch(() => [])
-                ).switchMap((layerDataset) =>
-                    Rx.Observable.of(
-                        setLayerResource(layerDataset),
+                ? layerResourceId
+                    ? Rx.Observable.defer(() =>
+                        getResourceByTypeAndByPk('dataset', layerResourceId)
+                            .then((layerDataset) => layerDataset)
+                            .catch(() => [])
+                    ).switchMap((layerDataset) =>
+                        Rx.Observable.of(
+                            setLayerResource(layerDataset),
+                            setPermission({ canEdit }),
+                            setEditPermissionStyleEditor(canEditStyles),
+                            setSelectedDatasetPermissions(permissions)
+                        )
+                    )
+                    : Rx.Observable.of(
                         setPermission({ canEdit }),
                         setEditPermissionStyleEditor(canEditStyles),
-                        setSelectedDatasetPermissions(permissions)
+                        setSelectedDatasetPermissions(permissions),
+                        setSelectedLayer(layer)
                     )
-                )
-                : Rx.Observable.of(
-                    setPermission({ canEdit }),
-                    setEditPermissionStyleEditor(canEditStyles),
-                    setSelectedDatasetPermissions(permissions),
-                    setSelectedLayer(layer)
-                )
                 : Rx.Observable.of(
                     setPermission({canEdit: false}),
                     setEditPermissionStyleEditor(false),
