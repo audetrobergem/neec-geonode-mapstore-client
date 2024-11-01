@@ -458,6 +458,10 @@ export const plugins = {
     SearchByBookmarkPlugin: toModulePlugin(
         'SearchByBookmark',
         () => import(/* webpackChunkName: 'plugins/search-by-bookmark' */ '@mapstore/framework/plugins/SearchByBookmark')
+    ),
+    LayerDetailViewerPlugin: toModulePlugin(
+        'LayerDetailViewer',
+        () => import(/* webpackChunkName: 'plugins/detail-viewer-plugin' */ '@js/plugins/LayerDetailViewer')
     )
 };
 

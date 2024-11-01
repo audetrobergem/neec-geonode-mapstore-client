@@ -87,6 +87,10 @@
         {
             "name": "selectedLayer",
             "path": "gnresource.selectedLayer"
+        },
+        {
+            "name": "gnLayerResourceData",
+            "path": "gnresource.layerDataset"
         }
     ],
     "projectionDefs": [],
@@ -2086,6 +2090,155 @@
             },
             {
                 "name": "SearchByBookmark"
+            },
+            {
+                "name": "LayerDetailViewer",
+                "cfg": {
+                    "containerPosition": "rightOverlay",
+                    "tabs": [
+                        {
+                            "type": "tab",
+                            "id": "info",
+                            "labelId": "gnviewer.info",
+                            "items": [
+                                {
+                                    "type": "text",
+                                    "labelId": "gnviewer.title",
+                                    "value": "{context.get(state('gnLayerResourceData'), 'title')}"
+                                },
+                                {
+                                    "type": "link",
+                                    "labelId": "gnviewer.owner",
+                                    "href": "{'/people/profile/' + context.get(state('gnLayerResourceData'), 'owner.username')}",
+                                    "value": "{context.getUserResourceName(context.get(state('gnLayerResourceData'), 'owner'))}",
+                                    "disableIf": "{!context.get(state('gnLayerResourceData'), 'owner.username')}"
+                                },
+                                {
+                                    "type": "date",
+                                    "format": "YYYY-MM-DD HH:mm",
+                                    "labelId": "{'gnviewer.'+context.get(state('gnLayerResourceData'), 'date_type')}",
+                                    "value": "{context.get(state('gnLayerResourceData'), 'date')}"
+                                },
+                                {
+                                    "type": "date",
+                                    "format": "YYYY-MM-DD HH:mm",
+                                    "labelId": "gnviewer.created",
+                                    "value": "{context.get(state('gnLayerResourceData'), 'created')}"
+                                },
+                                {
+                                    "type": "date",
+                                    "format": "YYYY-MM-DD HH:mm",
+                                    "labelId": "gnviewer.lastModified",
+                                    "value": "{context.get(state('gnLayerResourceData'), 'last_updated')}"
+                                },
+                                {
+                                    "type": "query",
+                                    "labelId": "gnviewer.resourceType",
+                                    "value": "{context.get(state('gnLayerResourceData'), 'resource_type')}",
+                                    "pathname": "/",
+                                    "query": {
+                                        "f": "{context.get(state('gnLayerResourceData'), 'resource_type')}"
+                                    }
+                                },
+                                {
+                                    "type": "query",
+                                    "labelId": "gnviewer.category",
+                                    "value": "{context.get(state('gnLayerResourceData'), 'category.identifier')}",
+                                    "pathname": "/",
+                                    "query": {
+                                        "filter{category.identifier.in}": "{context.get(state('gnLayerResourceData'), 'category.identifier')}"
+                                    }
+                                },
+                                {
+                                    "type": "query",
+                                    "labelId": "gnviewer.group",
+                                    "value": "{context.get(state('gnLayerResourceData'), 'group.name')}",
+                                    "pathname": "/",
+                                    "query": {
+                                        "filter{group.pk.in}": "{context.get(state('gnLayerResourceData'), 'group.pk')}"
+                                    }
+                                },
+                                {
+                                    "type": "link",
+                                    "labelId": "gnviewer.pointOfContact",
+                                    "href": "{'/people/profile/' + context.get(state('gnLayerResourceData'), 'poc.username')}",
+                                    "value": "{context.getUserResourceName(context.get(state('gnLayerResourceData'), 'poc'))}",
+                                    "disableIf": "{!context.get(state('gnLayerResourceData'), 'poc.username')}"
+                                },
+                                {
+                                    "type": "query",
+                                    "labelId": "gnviewer.keywords",
+                                    "value": "{context.get(state('gnLayerResourceData'), 'keywords')}",
+                                    "valueKey": "name",
+                                    "pathname": "/",
+                                    "queryTemplate": {
+                                        "filter{keywords.slug.in}": "${slug}"
+                                    }
+                                },
+                                {
+                                    "type": "query",
+                                    "labelId": "gnviewer.regions",
+                                    "value": "{context.get(state('gnLayerResourceData'), 'regions')}",
+                                    "valueKey": "name",
+                                    "pathname": "/",
+                                    "queryTemplate": {
+                                        "filter{regions.name.in}": "${name}"
+                                    }
+                                },
+                                {
+                                    "type": "text",
+                                    "labelId": "gnviewer.attribution",
+                                    "value": "{context.get(state('gnLayerResourceData'), 'attribution')}"
+                                },
+                                {
+                                    "type": "text",
+                                    "labelId": "gnviewer.language",
+                                    "value": "{context.get(state('gnLayerResourceData'), 'language')}"
+                                },
+                                {
+                                    "type": "html",
+                                    "labelId": "gnviewer.supplementalInformation",
+                                    "value": "{context.get(state('gnLayerResourceData'), 'supplemental_information')}"
+                                },
+                                {
+                                    "type": "date",
+                                    "format": "YYYY-MM-DD HH:mm",
+                                    "labelId": "gnviewer.temporalExtent",
+                                    "value": {
+                                        "start": "{context.get(state('gnLayerResourceData'), 'temporal_extent_start')}",
+                                        "end": "{context.get(state('gnLayerResourceData'), 'temporal_extent_end')}"
+                                    }
+                                },
+                                {
+                                    "type": "link",
+                                    "style": "label",
+                                    "labelId": "gnviewer.viewFullMetadata",
+                                    "href": "{context.getMetadataDetailUrl(state('gnLayerResourceData'))}",
+                                    "disableIf": "{!context.getMetadataDetailUrl(state('gnLayerResourceData'))}"
+                                }
+                            ]
+                        },
+                        {
+                            "type": "attribute-table",
+                            "id": "attributes",
+                            "labelId": "gnviewer.attributes",
+                            "disableIf": "{context.get(state('gnLayerResourceData'), 'resource_type') !== 'dataset'}",
+                            "items": "{context.get(state('gnLayerResourceData'), 'attribute_set')}"
+                        },
+                        {
+                            "type": "locations",
+                            "id": "locations",
+                            "labelId": "gnviewer.locations",
+                            "items": "{({extent: context.get(state('gnLayerResourceData'), 'extent')})}"
+                        },
+                        {
+                            "type": "linked-resources",
+                            "id": "related",
+                            "labelId": "gnviewer.linkedResources.label",
+                            "items": "{context.get(state('gnLayerResourceData'), 'linkedResources')}"
+                        }
+                    ]
+                }
             }
         ],
         "geostory_viewer": [
