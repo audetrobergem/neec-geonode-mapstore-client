@@ -458,6 +458,10 @@ export const plugins = {
     LayerDetailViewerPlugin: toModulePlugin(
         'LayerDetailViewer',
         () => import(/* webpackChunkName: 'plugins/detail-viewer-plugin' */ '@js/plugins/LayerDetailViewer')
+    ),
+    ShorelineViewerPlugin: toModulePlugin(
+        'ShorelineViewer',
+        () => import(/* webpackChunkName: 'plugins/shoreline-viewer' */ '@js/plugins/ShorelineViewer')
     )
 };
 
