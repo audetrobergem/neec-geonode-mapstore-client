@@ -2077,6 +2077,12 @@
                 "cfg": {
                     "wrap": true
                 }
+            },
+            {
+                "name": "Undo"
+            },
+            {
+                "name": "Redo"
             }
         ],
         "geostory_viewer": [
