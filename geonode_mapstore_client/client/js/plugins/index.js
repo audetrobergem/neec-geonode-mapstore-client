@@ -454,6 +454,10 @@ export const plugins = {
     RedoPlugin: toModulePlugin(
         'Redo',
         () => import(/* webpackChunkName: 'plugins/redo' */ '@js/plugins/Redo')
+    ),
+    LayerDetailViewerPlugin: toModulePlugin(
+        'LayerDetailViewer',
+        () => import(/* webpackChunkName: 'plugins/detail-viewer-plugin' */ '@js/plugins/LayerDetailViewer')
     )
 };
 
