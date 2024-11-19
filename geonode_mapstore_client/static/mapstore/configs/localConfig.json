@@ -2083,6 +2083,9 @@
             },
             {
                 "name": "Redo"
+            },
+            {
+                "name": "SearchByBookmark"
             }
         ],
         "geostory_viewer": [
