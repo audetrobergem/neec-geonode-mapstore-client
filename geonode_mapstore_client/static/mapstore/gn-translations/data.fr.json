@@ -415,7 +415,8 @@
             "allResources": "All resources",
             "assets": "Assets",
             "includeFullscreen": "Inclure le plein écran",
-            "group": "Groupe"
+            "group": "Groupe",
+            "editFields": "Éditer les champs"
         }
     }
 }
