@@ -285,7 +285,7 @@ function ResourcesGrid({
                     value: 'layer',
                     type: 'link',
                     href: '{context.getCataloguePath("/catalogue/#/upload/dataset")}',
-                    disableIf: "{!state('user').is_staff}",
+                    disableIf: "{!state('user').is_staff}"
                 },
                 {
                     labelId: 'gnhome.uploadDocument',
@@ -326,7 +326,7 @@ function ResourcesGrid({
                     value: 'remote',
                     type: 'link',
                     href: '/services/?limit=5',
-                    disableIf: "{!state('user').is_staff}",
+                    disableIf: "{!state('user').is_staff}"
                 }
             ]
         },

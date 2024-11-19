@@ -449,7 +449,7 @@ export const plugins = {
     ),
     UndoPlugin: toModulePlugin(
         'Undo',
-            () => import(/* webpackChunkName: 'plugins/undo' */ '@js/plugins/Undo')
+        () => import(/* webpackChunkName: 'plugins/undo' */ '@js/plugins/Undo')
     ),
     RedoPlugin: toModulePlugin(
         'Redo',
