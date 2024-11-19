@@ -127,12 +127,6 @@ export default createPlugin('DownloadResource', {
             detailsToolbar: true,
             Component: DownloadResource,
             priority: 1
-        },
-        DetailViewer: {
-            name: 'DownloadResource',
-            target: 'toolbar',
-            Component: DownloadResource,
-            priority: 1
         }
     },
     epics: {},
