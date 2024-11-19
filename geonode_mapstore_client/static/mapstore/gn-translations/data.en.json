@@ -414,7 +414,8 @@
             },
             "allResources": "All resources",
             "assets": "Assets",
-            "includeFullscreen": "Include fullscreen"
+            "includeFullscreen": "Include fullscreen",
+            "group": "Group"
         }
     }
 }
