@@ -199,8 +199,8 @@ function ZoneIdentify({
     ];
     layerList.forEach((layer) => {
         let locale = (currentLocale.length > 2) ? currentLocale.slice(0, 2) : currentLocale;
-        let layerTitle = (typeof(layer.title) === "string") ? layer.title : layer.title[locale]; 
-        
+        let layerTitle = (typeof(layer.title) === "string") ? layer.title : layer.title[locale];
+
         dropdownItems.push({
             layerName: layer.name,
             layerTitle: layerTitle

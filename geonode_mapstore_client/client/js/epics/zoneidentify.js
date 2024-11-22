@@ -169,7 +169,7 @@ export const convertFeaturesForTreeEpic = (action$, store) => action$.ofType(SEL
             let j = 1;
             const layerName = layer.name.split(":")[1];
             let locale = (state.locale.current.length > 2) ? state.locale.current.slice(0, 2) : state.locale.current;
-            const layerTitle = (typeof(layer.title) === "string") ? layer.title : layer.title[locale]; 
+            const layerTitle = (typeof(layer.title) === "string") ? layer.title : layer.title[locale];
             const children = [];
             selectedFeatures.forEach((feature) => {
                 if (feature.id.includes(layerName)) {
