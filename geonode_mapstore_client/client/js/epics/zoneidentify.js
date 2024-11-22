@@ -168,12 +168,13 @@ export const convertFeaturesForTreeEpic = (action$, store) => action$.ofType(SEL
         layerList.forEach((layer) => {
             let j = 1;
             const layerName = layer.name.split(":")[1];
-            const layerTitle = layer.title;
+            let locale = (state.locale.current.length > 2) ? state.locale.current.slice(0, 2) : state.locale.current;
+            const layerTitle = (typeof(layer.title) === "string") ? layer.title : layer.title[locale];
             const children = [];
             selectedFeatures.forEach((feature) => {
                 if (feature.id.includes(layerName)) {
                     let featureTitle;
-                    if (state.locale.current === "en-US") {
+                    if (locale === "en") {
                         featureTitle = feature.properties.label_en && feature.properties.label_en !== null ? feature.properties.label_en : feature.properties.name_en;
                     } else {
                         featureTitle = feature.properties.label_fr && feature.properties.label_fr !== null ? feature.properties.label_fr : feature.properties.name_fr;
