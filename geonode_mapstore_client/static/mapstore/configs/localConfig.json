@@ -96,25 +96,16 @@
     "projectionDefs": [],
     "supportedLocales": {
         "en": {
-            "code": "en-US",
+            "code": "en",
             "description": "English"
         },
-        "it": {
-            "code": "it-IT",
-            "description": "Italiano"
-        },
         "fr": {
-            "code": "fr-FR",
+            "code": "fr",
             "description": "Français"
-        },
-        "de": {
-            "code": "de-DE",
-            "description": "Deutsch"
-        },
-        "es": {
-            "code": "es-ES",
-            "description": "Español"
         }
+    },
+    "localizedLayerStyles": {
+        "name": "mapstore_language"
     },
     "mapType": {
         "defaultVisualizationMode": "2D",

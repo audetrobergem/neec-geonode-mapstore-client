@@ -1,5 +1,5 @@
 {
-    "locale": "fr-FR",
+    "locale": "fr",
     "messages": {
         "Language": "Langue",
         "msgId0": "{name} a pris {numPhotos, plural, =0 {aucune photo} =1 {une photo} other {# photos}} le {takenDate, date, long}.",

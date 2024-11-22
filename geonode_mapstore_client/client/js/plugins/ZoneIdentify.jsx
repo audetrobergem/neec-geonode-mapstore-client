@@ -170,6 +170,7 @@ function ZoneIdentify({
     formattedFeatures,
     layers,
     loading,
+    currentLocale,
     messages,
     onClose,
     onSelectLayer
@@ -197,9 +198,12 @@ function ZoneIdentify({
         }
     ];
     layerList.forEach((layer) => {
+        let locale = (currentLocale.length > 2) ? currentLocale.slice(0, 2) : currentLocale;
+        let layerTitle = (typeof(layer.title) === "string") ? layer.title : layer.title[locale]; 
+        
         dropdownItems.push({
             layerName: layer.name,
-            layerTitle: layer.title
+            layerTitle: layerTitle
         });
     });
 
@@ -265,13 +269,15 @@ const ConnectedZoneIdentifyPlugin = connect(
         state => state?.zoneIdentify?.formattedFeatures,
         state => state?.layers?.flat,
         state => state?.zoneIdentify?.loading || false,
+        state => state?.locale?.current,
         state => state?.locale?.messages
-    ], (style, enabled, formattedFeatures, layers, loading, messages) => ({
+    ], (style, enabled, formattedFeatures, layers, loading, currentLocale, messages) => ({
         style,
         enabled,
         formattedFeatures,
         layers,
         loading,
+        currentLocale,
         messages
     })), {
         onClose: setControlProperty.bind(null, 'zoneIdentify', 'enabled', false),
