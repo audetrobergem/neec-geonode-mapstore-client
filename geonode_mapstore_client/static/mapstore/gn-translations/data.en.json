@@ -417,6 +417,40 @@
             "includeFullscreen": "Include fullscreen",
             "group": "Group",
             "editFields": "Edit Fields"
+        },
+        "sensitivitymapping": {
+            "sensitivityMapping": "Print",
+            "sensitivityMappingTitle": "Print",
+            "apps": {
+                "sensitivityMapping": "Sensitivity Mapping",
+                "ics232": "Resources at risk (ICS 232)"
+            },
+            "notifications": {
+                "success": "Success",
+                "warning": "Warning",
+                "error": "Error",
+                "close": "Close",
+                "printSuccess": "The map has been printed correctly, please click on the download button to download your map.",
+                "warningMessage": "The layer object or legend for the following layers could not be created for printing: \n{layers}",
+                "getPrintStatusError": "An error has occurred while processing the print request to the print server. Please contact the NEEC GeoPortal technical team with the following error message:{error}",
+                "loadPrintLayoutError": "The selected print template ({printLayoutName}) is not in the list of available templates. The printing tool may not have loaded completely when the map was opened. Please refresh the page and try again. Contact the NEEC GeoPortal technical team if the problem persists.",
+                "initSensitivityMappingPrintError": "The mapfish print application does not seem to be available at the moment. Please wait a few moments, then refresh the page. Please contact the NEEC GeoPortal technical team if the problem persists.\nMessage from the print server: {message}"
+            },
+            "mapTitle": "Map Title",
+            "mapLanguage": "Language",
+            "mapFormat": "Format",
+            "mapResolution": "Resolution (DPI)",
+            "mapCoordinatesSystem": "Coordinates System",
+            "mapScale": "Map Scale",
+            "mapOrientation": "Orientation",
+            "mapGridLayer": "Add grid layer with labels",
+            "mapLegend": "Include legend",
+            "mapLegend2Page": "Legend on a distinct page",
+            "mapFilterLegend": "Filter legend content with the map",
+            "mapReport": "Create a sensitivity report",
+            "print": "Print",
+            "getPrintStatus": "An error has occurred while processing the print request to the print server. Please contact the NEEC GeoPortal technical team with the following error message:<br>{error}",
+            "loadPrintLayout": "The selected print template (<strong>{error}</strong>) is not in the list of available templates. The printing tool may not have loaded completely when the map was opened. Please refresh the page and try again. Contact the NEEC GeoPortal technical team if the problem persists."
         }
     }
 }

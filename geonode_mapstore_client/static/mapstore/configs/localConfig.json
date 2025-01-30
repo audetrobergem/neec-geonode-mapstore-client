@@ -91,6 +91,10 @@
         {
             "name": "isSelectedLayerDataset",
             "path": "gnresource.selectedLayerIsDataset"
+        },
+        {
+            "name": "sensitivityMappingLoadingError",
+            "path": "sensitivityMapping.sensitivityMappingLoadingError"
         }
     ],
     "projectionDefs": [],
@@ -2011,81 +2015,6 @@
                 "name": "FullScreen"
             },
             {
-                "name": "Print",
-                "cfg": {
-                    "useFixedScales": true,
-                    "mapWidth": 256,
-                    "outputFormatOptions": {
-                        "allowedFormats": [
-                            {
-                                "value": "pdf",
-                                "name": "PDF"
-                            },
-                            {
-                                "value": "png",
-                                "name": "PNG"
-                            },
-                            {
-                                "value": "jpg",
-                                "name": "JPEG"
-                            }
-                        ]
-                    }
-                }
-            },
-            {
-                "name": "PrintScale",
-                "override": {
-                    "Print": {
-                        "position": 4
-                    }
-                }
-            },
-            {
-                "name": "PrintGraticule",
-                "override": {
-                    "Print": {
-                        "position": 5
-                    }
-                },
-                "cfg": {
-                    "frame": 0.07,
-                    "style": {
-                        "color": "#000000",
-                        "weight": 1,
-                        "lineDash": [
-                            0.5,
-                            4
-                        ],
-                        "opacity": 0.5
-                    },
-                    "frameStyle": {
-                        "color": "#000000",
-                        "weight": 1,
-                        "fillColor": "#FFFFFF"
-                    },
-                    "labelXStyle": {
-                        "color": "#000000",
-                        "font": "sans-serif",
-                        "fontWeight": "bold",
-                        "fontSize": "20",
-                        "labelOutlineColor": "#FFFFFF",
-                        "labelOutlineWidth": 2
-                    },
-                    "labelYStyle": {
-                        "color": "#000000",
-                        "font": "sans-serif",
-                        "fontWeight": "bold",
-                        "fontSize": "20",
-                        "labelOutlineColor": "#FFFFFF",
-                        "labelOutlineWidth": 2,
-                        "rotation": 90,
-                        "verticalAlign": "top",
-                        "textAlign": "center"
-                    }
-                }
-            },
-            {
                 "name": "ZoomAll",
                 "override": {
                     "Toolbar": {
@@ -2304,6 +2233,71 @@
                 "name": "MetadataExplorer",
                 "cfg": {
                     "wrap": true
+                }
+            },
+            {
+                "name": "SensitivityMapping",
+                "cfg": {
+                    "mapfishUrl": "print",
+                    "defaultApplication": "sensitivity-mapping",
+                    "applications": [
+                        {
+                            "name": "sensitivity-mapping",
+                            "labelId": "sensitivitymapping.apps.sensitivityMapping",
+                            "properties": [
+                                {
+                                    "name": "orientation",
+                                    "options": ["Landscape", "Portrait"],
+                                    "default": "Landscape"
+                                }, {
+                                    "name": "legend2Pages",
+                                    "default": false
+                                }, {
+                                    "name": "filterLegend",
+                                    "default": true
+                                }, {
+                                    "name": "gridLayer",
+                                    "default": false
+                                }
+                            ],
+                            "coordinatesSystems": [
+                                {"code": "3857", "name": "Pseudo-Mercator"},
+                                {"code": "3978", "name": "NAD83 / Canada Atlas Lambert"}
+                            ],
+                            "resolutions": ["150", "200", "250", "300"],
+                            "utmEnabled": true,
+                            "restrictions": ["neec"],
+                            "report": {
+                                "id": "sensitivity-mapping",
+                                "command": "create_sensitivity_map_email"
+                            }
+                        },
+                        {
+                            "name": "ics-232",
+                            "labelId": "sensitivitymapping.apps.ics232",
+                            "properties": [
+                                {
+                                    "name": "orientation",
+                                    "options": ["Landscape"],
+                                    "default": "Landscape"
+                                }, {
+                                    "name": "filterLegend",
+                                    "default": true
+                                }, {
+                                    "name": "gridLayer",
+                                    "default": false
+                                }
+                            ],
+                            "coordinatesSystems": [
+                                {"code": "3857", "name": "Pseudo-Mercator"},
+                                {"code": "3978", "name": "NAD83 / Canada Atlas Lambert"}
+                            ],
+                            "resolutions": ["150", "200", "250", "300"],
+                            "utmEnabled": true,
+                            "restrictions": ["neec"]
+                        }
+                    ],
+                    "disablePluginIf": "{state('sensitivityMappingLoadingError')}"
                 }
             }
         ],

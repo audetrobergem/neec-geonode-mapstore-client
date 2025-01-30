@@ -1,0 +1,884 @@
+/*
+ * Copyright 2024, National Environmental Emergencies Centre, ECCC
+ * All rights reserved.
+ *
+ * This source code is licensed under the BSD-style license found in the
+ * LICENSE file in the root directory of this source tree.
+ */
+
+import Rx from 'rxjs';
+import axios from 'axios';
+import { SET_CONTROL_PROPERTY } from '@mapstore/framework/actions/controls';
+import { updateMapLayout, UPDATE_MAP_LAYOUT } from '@mapstore/framework/actions/maplayout';
+import { mapLayoutSelector, boundingSidebarRectSelector } from '@mapstore/framework/selectors/maplayout';
+import { LayoutSections } from "@js/utils/LayoutUtils";
+import {
+    SET_PRINT_APPLICATION,
+    UPDATE_PRINT_PROPERTY,
+    SET_PRINT_CAPABILITIES,
+    SET_PRINT_PROPERTIES,
+    setPrintApplication,
+    setPrintCapabilities,
+    setPrintProperties,
+    setPrintExtent,
+    updatePrintProperty,
+    getCoordinatesSystems,
+    loadPrintLayout,
+    setInitialMapProperties,
+    sendPrintRequest,
+    downloadMap,
+    getPrintStatus,
+    SET_PRINT_EXTENT,
+    CREATE_PRINT_CONFIG,
+    SEND_PRINT_REQUEST,
+    GET_PRINT_STATUS,
+    loadSelectedStyles,
+    LOAD_SELECTED_STYLES,
+    loadFeatures,
+    LOAD_FEATURES,
+    DOWNLOAD_MAP,
+    initSensitivityMappingPrint,
+    INIT_SENSITIVITY_MAPPING_PRINT,
+    START_MANAGEMENT_COMMAND,
+    startManagementCommand,
+    PRINT_ERROR,
+    printError,
+    changePrintStatus
+} from "@js/actions/sensitivitymapping";
+import { DEFAULT_SCREEN_DPI } from '@mapstore/framework/utils/MapUtils';
+import { zoomToExtent, CHANGE_MAP_VIEW } from '@mapstore/framework/actions/map';
+import { reproject, formatPrintLayer, formatLegend, findUtmZoneFromLongitude, getLayerTitle } from '@js/utils/PrintUtils';
+import { removeAdditionalLayer, updateAdditionalLayer } from '@mapstore/framework/actions/additionallayers';
+import { UPDATE_NODE, CHANGE_LAYER_PROPERTIES } from '@mapstore/framework/actions/layers';
+import { REDUCERS_LOADED } from '@mapstore/framework/actions/storemanager';
+import { optionsToVendorParams } from '@mapstore/framework/utils/VendorParamsUtils';
+import { getFeature } from '@mapstore/framework/api/WFS';
+import { error, success, warning } from '@mapstore/framework/actions/notifications';
+
+/**
+* @module epics/sensitivityMapping
+*/
+
+/**
+ * Override the layout to get the correct right offset when the data catalog is open
+ */
+export const gnUpdateSensitivityMappingMapLayoutEpic = (action$, store) => action$.ofType(UPDATE_MAP_LAYOUT)
+    .filter(() => store.getState()?.controls?.sensitivityMapping?.enabled)
+    .filter(({ source }) => {
+        return source !== LayoutSections.PANEL;
+    })
+    .map(({ layout }) => {
+        const mapLayout = { left: { sm: 350, md: 500, lg: 600 }, right: { md: 425 }, bottom: { sm: 30 } };
+        const boundingSidebarRect = boundingSidebarRectSelector(store.getState());
+        const left = !!store.getState()?.controls?.drawer?.enabled ? mapLayout.left.sm : null;
+        const action = updateMapLayout({
+            ...mapLayoutSelector(store.getState()),
+            ...layout,
+            right: mapLayout.right.md,
+            ...(left && {left}),
+            boundingMapRect: {
+                ...(layout?.boundingMapRect || {}),
+                right: mapLayout.right.md,
+                ...(left && {left})
+            },
+            boundingSidebarRect: {
+                ...boundingSidebarRect,
+                ...layout.boundingSidebarRect
+            }
+        });
+        return { ...action, source: LayoutSections.PANEL }; // add an argument to avoid infinite loop.
+    });
+
+export const initSensitivityMappingPrintEpic = (action$, store) => action$.ofType(REDUCERS_LOADED)
+    .switchMap(() => {
+        const state = store.getState();
+        const geonodeUrl = state.gnsettings?.geonodeUrl;
+        const sensitivityMappingConfig = state.localConfig?.plugins.map_viewer.find((plugin) => plugin.name === "SensitivityMapping");
+        const mapfishUrl = sensitivityMappingConfig.cfg.mapfishUrl;
+        const appsUrl = `${geonodeUrl}${mapfishUrl}/print/apps.json`;
+        return Rx.Observable.fromPromise(
+            axios.get(appsUrl)
+                .then(response => {
+                    return initSensitivityMappingPrint(response.data);
+                })
+                .catch(err => {
+                    return initSensitivityMappingPrint(err.originalError.message);
+                })
+        );
+    });
+
+export const loadPrintApplicationsEpic = (action$, store) => action$.ofType(INIT_SENSITIVITY_MAPPING_PRINT)
+    .switchMap((action) => {
+        if (typeof action.mapfishPrintApps === "string") {
+            const state = store.getState();
+            state.sensitivityMapping.sensitivityMappingLoadingError = true;
+            return Rx.Observable.of(
+                error({
+                    uid: "initSensitivityMappingPrintError",
+                    title: "sensitivitymapping.notifications.error",
+                    message: "sensitivitymapping.notifications.initSensitivityMappingPrintError",
+                    action: {
+                        label: "sensitivitymapping.notifications.close"
+                    },
+                    position: "tr",
+                    values: {message: action.mapfishPrintApps},
+                    autoDismiss: 0
+                })
+            );
+        }
+        const state = store.getState();
+        const geonodeUrl = state.gnsettings?.geonodeUrl;
+        const sensitivityMappingConfig = state.localConfig?.plugins.map_viewer.find((plugin) => plugin.name === "SensitivityMapping");
+        const mapfishUrl = sensitivityMappingConfig.cfg.mapfishUrl;
+        const userGroups = state.security.user.info.groups;
+        state.sensitivityMapping.printApplications = [];
+        let mapfishLoadingError = false;
+        sensitivityMappingConfig.cfg.applications.forEach((application) => {
+            if (application.restrictions && application.restrictions.some(restriction => userGroups.includes(restriction))) {
+                const capabilitiesUrl = `${geonodeUrl}${mapfishUrl}/print/${application.name}/capabilities.json`;
+                return Rx.Observable.fromPromise(
+                    axios.get(capabilitiesUrl)
+                        .then(response => {
+                            state.sensitivityMapping.printApplications.push(response.data);
+                        })
+                        .catch(err => {
+                            mapfishLoadingError = true;
+                        })
+                );
+            }
+        });
+        if (mapfishLoadingError) {
+            return Rx.Observable.from(
+                error({
+                    uid: "initSensitivityMappingPrintError",
+                    title: "sensitivitymapping.notifications.error",
+                    message: "sensitivitymapping.notifications.initSensitivityMappingPrintError",
+                    action: {
+                        label: "sensitivitymapping.notifications.close"
+                    },
+                    position: "tr",
+                    autoDismiss: 0
+                })
+            );
+        }
+        return Rx.Observable.empty();
+    });
+
+export const openSensitivityMappingEpic = (action$, store) => action$.ofType(SET_CONTROL_PROPERTY)
+    .filter((action) => action.control === "sensitivityMapping")
+    .filter(() => store.getState()?.controls?.sensitivityMapping?.enabled)
+    .switchMap(() => {
+        const state = store.getState();
+        const sensitivityMappingConfig = state.localConfig?.plugins.map_viewer.find((plugin) => plugin.name === "SensitivityMapping");
+        const defaultApplicationName = sensitivityMappingConfig.cfg.defaultApplication;
+        const defaultApplication = sensitivityMappingConfig.cfg.applications.find((app) => app.name === defaultApplicationName);
+        let mapView = state.map.present;
+        return Rx.Observable.of(
+            setInitialMapProperties(mapView),
+            setPrintApplication(defaultApplication)
+        );
+    });
+
+export const closeSensitivityMappingEpic = (action$, store) => action$.ofType(SET_CONTROL_PROPERTY)
+    .filter((action) => action.control === "sensitivityMapping")
+    .filter((action) => action.property === "enabled" && action.value === false)
+    .switchMap(() => {
+        const state = store.getState();
+        const mapCenter = state.sensitivityMapping.initialMapProperties.center;
+        const mapExtent = [mapCenter.x, mapCenter.y, mapCenter.x, mapCenter.y];
+        const mapZoom = state.sensitivityMapping.initialMapProperties.zoom;
+        const printApplications = state.sensitivityMapping.printApplications;
+        state.sensitivityMapping = {};
+        state.sensitivityMapping.printApplications = printApplications;
+        return Rx.Observable.of(
+            removeAdditionalLayer({ id: "sensitivity-mapping-print-extent" }),
+            zoomToExtent(mapExtent, "EPSG:4326", mapZoom)
+        );
+    });
+
+export const loadSelectedStylesEpic = (action$, store) => action$.ofType(LOAD_SELECTED_STYLES)
+    .filter(() => store.getState()?.controls?.sensitivityMapping?.enabled)
+    .switchMap((action) => {
+        action.layers.slice().reverse().forEach(layer => {
+            if (layer.group !== "basemaps" && layer.extendedParams) {
+                const selectedStyle = layer.extendedParams.mapLayer.dataset.styles.find((style) => style.name === layer.style);
+                return Rx.Observable.fromPromise(
+                    axios.get(selectedStyle.sld_url)
+                        .then((response) => {
+                            layer.selectedStyle = response.data;
+                        })
+                );
+            }
+        });
+        return Rx.Observable.empty();
+    });
+
+export const loadFeaturesEpic = (action$, store) => action$.ofType(LOAD_FEATURES)
+    .filter(() => store.getState()?.controls?.sensitivityMapping?.enabled)
+    .switchMap((action) => {
+        const state = store.getState();
+        const printProjection = state.sensitivityMapping.printProperties.projection;
+        const projectionDefinition = state.sensitivityMapping.projections.find((projection) => projection.code === printProjection);
+        const bottomLeft = reproject([state.map.present.bbox.bounds.minx, state.map.present.bbox.bounds.miny], "EPSG:3857", projectionDefinition.definition ? projectionDefinition.definition : `EPSG:${state.sensitivityMapping.printProperties.projection}`);
+        const topRight = reproject([state.map.present.bbox.bounds.maxx, state.map.present.bbox.bounds.maxy], "EPSG:3857", projectionDefinition.definition ? projectionDefinition.definition : `EPSG:${state.sensitivityMapping.printProperties.projection}`);
+        action.layers.slice().reverse().forEach(layer => {
+            if (layer.type === "wfs") {
+                return  Rx.Observable.of(
+                    getFeature(layer.url, layer.name, {
+                        outputFormat: "application/json",
+                        srsName: `EPSG:${state.sensitivityMapping.printProperties.projection}`,
+                        bbox: `${bottomLeft.x},${bottomLeft.y},${topRight.x},${topRight.y},EPSG:${state.sensitivityMapping.printProperties.projection}`,
+                        ...(optionsToVendorParams(layer) || {})
+                    })
+                        .then(({data}) => (
+                            layer.geoJson = data
+                        ))
+                );
+            }
+        });
+        return Rx.Observable.empty();
+    });
+export const updateLayerEpic = (action$, store) => action$.ofType(UPDATE_NODE, CHANGE_LAYER_PROPERTIES)
+    .filter(() => store.getState()?.controls?.sensitivityMapping?.enabled)
+    .switchMap((action) => {
+        const state = store.getState();
+        if (action.type === "UPDATE_NODE") {
+            let sensitivityMappingLayer = state.sensitivityMapping.layers.find((layer) => layer.id === action.node);
+            sensitivityMappingLayer[Object.keys(action.options)[0]] = Object.values(action.options)[0];
+        } else if (action.type === "CHANGE_LAYER_PROPERTIES") {
+            let sensitivityMappingLayer = state.sensitivityMapping.layers.find((layer) => layer.id === action.layer);
+            sensitivityMappingLayer[Object.keys(action.newProperties)[0]] = Object.values(action.newProperties)[0];
+        }
+        return Rx.Observable.empty();
+    });
+
+export const changeMapViewEpic = (action$, store) => action$.ofType(CHANGE_MAP_VIEW)
+    .filter(() => store.getState()?.controls?.sensitivityMapping?.enabled)
+    .filter(() => store.getState()?.sensitivityMapping?.selectedPrintApplication)
+    .switchMap((action) => {
+        const state = store.getState();
+        const coordinatesSystems = state.sensitivityMapping?.selectedPrintApplication?.coordinatesSystems;
+        let updatedCoordinatesSystems = coordinatesSystems;
+        if (state.sensitivityMapping?.selectedPrintApplication?.utmEnabled && state.map.present.zoom > 11) {
+            const utmZone = findUtmZoneFromLongitude(state.map.present.center.x);
+            if (utmZone) {
+                updatedCoordinatesSystems = coordinatesSystems.concat(utmZone);
+            }
+        }
+
+        // The print options panel does not change the map size when displayed. This means that the map's
+        // center point does not change, which poses a problem in terms of centering the map when the
+        // user moves the print polygon. To avoid this problem, we calculate an approximate offset and
+        // apply it to the center point.
+        let center = action.center;
+        const mapScale = state.sensitivityMapping.printProperties.scale;
+        const mapResolution = mapScale / (DEFAULT_SCREEN_DPI * 39.37);
+        const offsetWidth = 425 * mapResolution;
+        const mapCenter = [action.center.x, action.center.y];
+        let mapCenter3857 = reproject(mapCenter, "EPSG:4326", "EPSG:3857");
+        mapCenter3857.x = mapCenter3857.x - offsetWidth;
+        const newCenter = reproject(mapCenter3857, "EPSG:3857", "EPSG:4326");
+        center.x = newCenter.x;
+
+        const presentMapCenter = [action.center.x, action.center.y];
+        const pastMap = state.map.past[state.map.past.length - 1];
+        const pastMapCenter = [pastMap.center.x, pastMap.center.y];
+
+        if (presentMapCenter !== pastMapCenter && state.map.past.length > 1) {
+            return Rx.Observable.of(
+                getCoordinatesSystems(updatedCoordinatesSystems),
+                updatePrintProperty({name: "mapCenter", value: center}),
+                loadFeatures(state.layers.flat)
+            );
+        }
+        return Rx.Observable.of(
+            getCoordinatesSystems(updatedCoordinatesSystems),
+            loadFeatures(state.layers.flat)
+        );
+
+    });
+
+export const updatePrintPropertyEpic = (action$, store) => action$.ofType(UPDATE_PRINT_PROPERTY)
+    .filter(() => store.getState()?.controls?.sensitivityMapping?.enabled)
+    .switchMap((action) => {
+        const state = store.getState();
+        state.sensitivityMapping.printProperties[`${action.printProperty.name}`] = action.printProperty.value;
+        if (["legend2Pages", "orientation", "language"].includes(action.printProperty.name)) {
+            // Changing certain printing options also modifies the printing template used. These include the
+            // orientation and display of the legend on two pages. When these options change, we modify the
+            // selected template before recalculating the map extent polygon.
+            return Rx.Observable.of(
+                setPrintProperties(state.sensitivityMapping.printProperties)
+            );
+        } else if (["mapCenter", "scale", "projection"].includes(action.printProperty.name)) {
+            // Changing other print properties only modifies the print range polygon.
+            return Rx.Observable.of(
+                setPrintExtent()
+            );
+        }
+        return Rx.Observable.empty();
+
+    });
+
+export const loadPrintLayoutEpic = (action$, store) => action$.ofType(SET_PRINT_PROPERTIES)
+    .filter(() => store.getState()?.controls?.sensitivityMapping?.enabled)
+    .switchMap((action) => {
+        const state = store.getState();
+        const selectedPrintCapabilities = state.sensitivityMapping?.selectedPrintCapabilities;
+        let printLayoutName = `${selectedPrintCapabilities.app}_${action.printProperties.orientation.toLowerCase()}`;
+        if (action.printProperties.legend2Pages) {
+            printLayoutName += "_2pages";
+        }
+        printLayoutName += `_${action.printProperties.language}`;
+        const printLayout = selectedPrintCapabilities.layouts.find((layout) => layout.name === printLayoutName);
+        if (!printLayout) {
+            return Rx.Observable.of(
+                error({
+                    uid: "loadPrintLayoutError",
+                    title: "sensitivitymapping.notifications.error",
+                    message: "sensitivitymapping.notifications.loadPrintLayoutError",
+                    action: {
+                        label: "sensitivitymapping.notifications.close"
+                    },
+                    values: {printLayoutName: printLayoutName},
+                    position: "tr",
+                    autoDismiss: 0
+                })
+            );
+        }
+        if (printLayout !== state.sensitivityMapping.printLayout) {
+            return Rx.Observable.of(
+                loadPrintLayout(printLayout),
+                setPrintExtent()
+            );
+        }
+        return Rx.Observable.empty();
+
+    });
+
+export const selectPrintApplicationEpic = (action$, store) => action$.ofType(SET_PRINT_APPLICATION)
+    .filter(() => store.getState()?.controls?.sensitivityMapping?.enabled)
+    .switchMap(
+        (action) => {
+            const state = store.getState();
+            // We reset error and warning messages when the selected application changes.
+            state.sensitivityMapping.downloadUrl = undefined;
+            state.sensitivityMapping.error = false;
+            const selectedPrintApplication = state.sensitivityMapping.printApplications.find((item) => item.app === action.selectedPrintApplication.name);
+            return Rx.Observable.of(
+                setPrintCapabilities(selectedPrintApplication)
+            );
+        });
+
+export const initiatePrintPropertiesEpic = (action$, store) => action$.ofType(SET_PRINT_CAPABILITIES)
+    .filter(() => store.getState()?.controls?.sensitivityMapping?.enabled)
+    .switchMap(
+        (action) => {
+            if (action.selectedPrintCapabilities) {
+                const state = store.getState();
+                const coordinatesSystems = state.sensitivityMapping?.selectedPrintApplication?.coordinatesSystems;
+                let updatedCoordinatesSystems = coordinatesSystems;
+                if (state.sensitivityMapping?.selectedPrintApplication?.utmEnabled && state.map.present.zoom > 11) {
+                    const utmZone = findUtmZoneFromLongitude(state.map.present.center.x);
+                    if (utmZone) {
+                        updatedCoordinatesSystems = coordinatesSystems.concat(utmZone);
+                    }
+                }
+                const sensitivityMappingConfig = state.localConfig?.plugins.map_viewer.find((plugin) => plugin.name === "SensitivityMapping");
+                const printAppProperties = sensitivityMappingConfig.cfg.applications.find((app) => app.name === action.selectedPrintCapabilities.app);
+                const printProperties = {
+                    title: state.sensitivityMapping.printProperties?.title ? state.sensitivityMapping.printProperties.title : "",
+                    scale: state.sensitivityMapping.printProperties?.scale ? state.sensitivityMapping.printProperties.scale : Math.floor(DEFAULT_SCREEN_DPI * 39.37 * state.map.present.resolution),
+                    language: state.sensitivityMapping.printProperties?.language ? state.sensitivityMapping.printProperties.language : state.locale?.current,
+                    projection: state.sensitivityMapping.printProperties?.projection ? state.sensitivityMapping.printProperties.projection : "3857",
+                    format: state.sensitivityMapping.printProperties?.format ? state.sensitivityMapping.printProperties.format : "pdf",
+                    mapCenter: state.sensitivityMapping.printProperties?.center ? state.sensitivityMapping.printProperties.center : state.sensitivityMapping.initialMapProperties.center,
+                    resolution: state.sensitivityMapping.printProperties?.resolution ? state.sensitivityMapping.printProperties?.resolution : "300"
+                };
+                printAppProperties.properties.map((property) => {
+                    printProperties[property.name] = property.default;
+                });
+                return Rx.Observable.of(
+                    getCoordinatesSystems(updatedCoordinatesSystems),
+                    setPrintProperties(printProperties),
+                    loadSelectedStyles(state.layers.flat),
+                    loadFeatures(state.layers.flat)
+                );
+            }
+            return Rx.Observable.empty();
+
+        }
+    );
+
+export const setPrintExtentEpic = (action$, store) => action$.ofType(SET_PRINT_EXTENT)
+    .filter(() => store.getState()?.controls?.sensitivityMapping?.enabled)
+    .switchMap(() => {
+        const state = store.getState();
+        const printProjection = state.sensitivityMapping.printProperties.projection;
+        const projectionDefinition = state.sensitivityMapping.projections.find((projection) => projection.code === printProjection);
+        const mapScale = state.sensitivityMapping.printProperties.scale;
+        // The conversion factor is the one used by JasperReports (1 inch = 72 * pixel).
+        const mapResolution = mapScale / (72 * 39.37);
+        const layoutMainMap = state.sensitivityMapping.printLayout.attributes.find((attribute) => attribute.name === "mainMap");
+        const layoutHeight = layoutMainMap.clientInfo.height * mapResolution;
+        const layoutWidth = layoutMainMap.clientInfo.width * mapResolution;
+        const mapCenter = [state.sensitivityMapping.printProperties.mapCenter.x, state.sensitivityMapping.printProperties.mapCenter.y];
+        const projectedMapCenter = reproject(mapCenter, "EPSG:4326", projectionDefinition.definition ? projectionDefinition.definition : `EPSG:${printProjection}`);
+
+        // Calculate the 4 points of the print extent
+        const halfHeight = layoutHeight / 2;
+        const halfWidth = layoutWidth / 2;
+        const bottomLeft = reproject([projectedMapCenter.x - halfWidth, projectedMapCenter.y - halfHeight], projectionDefinition.definition ? projectionDefinition.definition : `EPSG:${printProjection}`, "EPSG:4326");
+        const bottomRight = reproject([projectedMapCenter.x + halfWidth, projectedMapCenter.y - halfHeight], projectionDefinition.definition ? projectionDefinition.definition : `EPSG:${printProjection}`, "EPSG:4326");
+        const topRight = reproject([projectedMapCenter.x + halfWidth, projectedMapCenter.y + halfHeight], projectionDefinition.definition ? projectionDefinition.definition : `EPSG:${printProjection}`, "EPSG:4326");
+        const topLeft = reproject([projectedMapCenter.x - halfWidth, projectedMapCenter.y + halfHeight], projectionDefinition.definition ? projectionDefinition.definition : `EPSG:${printProjection}`, "EPSG:4326");
+
+        const printExtentPolygon = [
+            [bottomLeft.x, bottomLeft.y],
+            [bottomRight.x, bottomRight.y],
+            [topRight.x, topRight.y],
+            [topLeft.x, topLeft.y]
+        ];
+
+        const mapExtent = [bottomLeft.x, bottomLeft.y, topRight.x, topRight.y];
+        const projectedMapExtent = [
+            projectedMapCenter.x - halfWidth,
+            projectedMapCenter.y - halfHeight,
+            projectedMapCenter.x + halfWidth,
+            projectedMapCenter.y + halfHeight
+        ];
+        state.sensitivityMapping.printProperties.bbox = projectedMapExtent;
+        const extentLayer = {
+            id: "sensitivity-mapping-print-extent",
+            name: "sensitivity-mapping-print-extent",
+            type: "vector",
+            features: [
+                {
+                    type: "Feature",
+                    properties: {},
+                    "geometry": {
+                        "type": "Polygon",
+                        "coordinates": [
+                            [
+                                [-180, 90],
+                                [180, 90],
+                                [180, -90],
+                                [-180, -90],
+                                [-180, 90]
+                            ],
+                            printExtentPolygon
+                        ]
+                    },
+                    "style": {
+                        fillColor: '#808080',
+                        fillOpacity: 0.5,
+                        color: '#808080',
+                        opacity: 1,
+                        weight: 0
+                    }
+                }
+            ]
+        };
+        if (state.additionallayers.find((additionalLayer) => additionalLayer.id === "sensitivity-mapping-print-extent")) {
+            return Rx.Observable.of(
+                updateAdditionalLayer(
+                    "sensitivity-mapping-print-extent",
+                    "SensitivityMapping",
+                    'overlay',
+                    extentLayer
+                )
+            );
+        }
+        return Rx.Observable.of(
+            updateAdditionalLayer(
+                "sensitivity-mapping-print-extent",
+                "SensitivityMapping",
+                'overlay',
+                extentLayer
+            ),
+            zoomToExtent(mapExtent, "EPSG:4326")
+        );
+
+
+    });
+
+export const createPrintConfigEpic = (action$, store) => action$.ofType(CREATE_PRINT_CONFIG)
+    .filter(() => store.getState()?.controls?.sensitivityMapping?.enabled)
+    .switchMap(() => {
+        const state = store.getState();
+        state.sensitivityMapping.error = false;
+        const mapLanguage = state.sensitivityMapping.printProperties.language;
+        const printProperties = state.sensitivityMapping.printProperties;
+        const projectionDefinition = state.sensitivityMapping.projections.find((projection) => projection.code === printProperties.projection);
+        const projectedMapCenter = reproject(printProperties.mapCenter, "EPSG:4326", projectionDefinition.definition ? projectionDefinition.definition : `EPSG:${printProperties.projection}`);
+        // Calculation of the bounding box of the main map. This BBOX will be used to filter the legend if the user has
+        // selected the option, and will be used to create the extent layer that will be displayed in the location map.
+        let features = state.additionallayers.find((additionalLayer) => additionalLayer.id === "sensitivity-mapping-print-extent").options.features;
+        const bottomLeft = reproject(features[0].geometry.coordinates[1][0], "EPSG:4326", projectionDefinition.definition ? projectionDefinition.definition : `EPSG:${printProperties.projection}`);
+        const topRight = reproject(features[0].geometry.coordinates[1][2], "EPSG:4326", projectionDefinition.definition ? projectionDefinition.definition : `EPSG:${printProperties.projection}`);
+        const bbox = [bottomLeft.x, bottomLeft.y, topRight.x, topRight.y];
+
+        let printConfig = {
+            layout: state.sensitivityMapping.printLayout.name,
+            outputFormat: printProperties.format,
+            attributes: {
+                title: printProperties.title,
+                coordinateSystem: state.sensitivityMapping.projections.find((proj) => proj.code === printProperties.projection).name,
+                mainMap: {
+                    center: [
+                        projectedMapCenter.x,
+                        projectedMapCenter.y
+                    ],
+                    rotation: 0,
+                    longitudeFirst: true,
+                    layers: [
+
+                    ],
+                    scale: printProperties.scale,
+                    projection: `EPSG:${printProperties.projection}`,
+                    dpi: printProperties.resolution,
+                    dpiSensitiveStyle: true
+                },
+                locatorMap: {
+                    center: [
+                        projectedMapCenter.x,
+                        projectedMapCenter.y
+                    ],
+                    rotation: 0,
+                    longitudeFirst: true,
+                    layers: [
+
+                    ],
+                    scale: printProperties.scale * 25,
+                    projection: `EPSG:${printProperties.projection}`,
+                    dpi: printProperties.resolution
+                },
+                legend: {
+                    classes: []
+                }
+            }
+        };
+
+        // Layers visible in the map are formatted and added to the print configuration
+        let mainMapLayers = [];
+        let legendClasses = [];
+        let warningMessage = [];
+        state.sensitivityMapping.layers.slice().reverse().forEach(layer => {
+            if (layer.visibility) {
+                if (layer.group === "background") {
+                    const formattedLayer = formatPrintLayer(layer, state);
+                    mainMapLayers.push(formattedLayer);
+                } else {
+                    if (!layer.loadingError) {
+                        const formattedLayer = formatPrintLayer(layer, state);
+                        if (formattedLayer) {
+                            mainMapLayers.push(formattedLayer);
+                        } else {
+                            warningMessage.push(`${getLayerTitle(layer, mapLanguage)} (layer)`);
+                        }
+                    } else {
+                        warningMessage.push(`${getLayerTitle(layer, mapLanguage)} (layer)`);
+                    }
+                    if (!layer.loadingError) {
+                        const formattedLegend = formatLegend(layer, bbox, state);
+                        if (formattedLegend) {
+                            legendClasses.push(formattedLegend);
+                        } else {
+                            warningMessage.push(`${getLayerTitle(layer, mapLanguage)} (legend)`);
+                        }
+                    } else {
+                        warningMessage.push(`${getLayerTitle(layer, mapLanguage)} (legend)`);
+                    }
+                }
+            }
+        });
+
+        const locatorMapLayers = [
+            {
+                type: "geojson",
+                name: "Map BBox",
+                geoJson: {
+                    "type": "FeatureCollection",
+                    "features": [
+                        {
+                            "type": "Feature",
+                            "properties": {},
+                            "geometry": {
+                                "type": "Polygon",
+                                "coordinates": [
+                                    [bottomLeft.x, bottomLeft.y],
+                                    [bottomLeft.x, topRight.y],
+                                    [topRight.x, topRight.y],
+                                    [topRight.x, bottomLeft.y],
+                                    [bottomLeft.x, bottomLeft.y]
+                                ]
+                            }
+                        }
+                    ]
+                },
+                style: {
+                    version: "2",
+                    "*": {
+                        "symbolizers": [
+                            {
+                                "type": "polygon",
+                                "strokeDashstyle": "longdash",
+                                "strokeColor": "#900603",
+                                "strokeOpacity": 1,
+                                "fillColor": '#900603',
+                                "fillOpacity": 0.05
+                            }
+                        ]
+                    }
+                }
+            }, {
+                baseURL: "https://maps.geosolutionsgroup.com/geoserver/osm/wms",
+                imageFormat: "image/png",
+                layers: ["osm"],
+                opacity: 1,
+                type: "WMS"
+            }
+        ];
+        printConfig.attributes.mainMap.layers = mainMapLayers;
+        printConfig.attributes.locatorMap.layers = locatorMapLayers;
+        printConfig.attributes.legend.classes = legendClasses;
+
+        // Create grid layer if selected by user
+        if (printProperties.gridLayer) {
+            let gridSpacing = undefined;
+            if (printProperties.scale <= 50000) {
+                gridSpacing = 2500;
+            } else if (printProperties.scale > 50000 <= 100000) {
+                gridSpacing = 5000;
+            } else if (printProperties.scale > 100000 <= 500000) {
+                gridSpacing = 10000;
+            } else {
+                gridSpacing = 20000;
+            }
+
+            const gridLayer = {
+                "type": "grid",
+                "gridType": "lines",
+                "gridColor": "#000000",
+                "opacity": 0.7,
+                "horizontalYOffset": 15,
+                "verticalXOffset": 15,
+                "origin": [
+                    0,
+                    0
+                ],
+                "spacing": [
+                    gridSpacing,
+                    gridSpacing
+                ],
+                "labelColor": "#000000",
+                "font": {
+                    "name": [
+                        "Sans-serif"
+                    ],
+                    "size": 8
+                }
+            };
+            mainMapLayers.unshift(gridLayer);
+        }
+        // console.log(printConfig);
+        if (warningMessage.length > 0) {
+            return Rx.Observable.of(
+                sendPrintRequest(printConfig),
+                warning(
+                    {
+                        uid: "warningMessage",
+                        title: "sensitivitymapping.notifications.warning",
+                        message: "sensitivitymapping.notifications.warningMessage",
+                        action: {
+                            label: "sensitivitymapping.notifications.close"
+                        },
+                        values: {layers: warningMessage.join(", ")},
+                        position: "tr",
+                        autoDismiss: 0
+                    }
+                )
+            );
+        }
+        return Rx.Observable.from(
+            sendPrintRequest(printConfig)
+        );
+
+    });
+
+export const sendPrintRequestEpic = (action$, store) => action$.ofType(SEND_PRINT_REQUEST)
+    .filter(() => store.getState()?.controls?.sensitivityMapping?.enabled)
+    .switchMap((action) => {
+        const state = store.getState();
+        state.sensitivityMapping.downloadUrl = undefined;
+        state.sensitivityMapping.loading = true;
+        if (!state.sensitivityMapping.printProperties.report) {
+            const printApp = state.sensitivityMapping.selectedPrintApplication;
+            const geonodeUrl = state.gnsettings?.geonodeUrl;
+            const sensitivityMappingConfig = state.localConfig?.plugins.map_viewer.find((plugin) => plugin.name === "SensitivityMapping");
+            const mapfishUrl = sensitivityMappingConfig.cfg.mapfishUrl;
+            const printUrl = `${geonodeUrl}${mapfishUrl}/print/${printApp.name}/report.${action.printConfig.outputFormat}`;
+            return Rx.Observable.fromPromise(
+                axios.post(printUrl, action.printConfig)
+                    .then((response) => {
+                        const statusUrl = response.data.statusURL;
+                        return getPrintStatus("waiting", statusUrl);
+                    })
+            );
+        }
+        const managementCommandUrl = `${state.gnsettings.geonodeUrl}api/v2/management/commands/create_sensitivity_report/jobs/`;
+        const data = {
+            args: [],
+            kwargs: {
+                printConfig: action.printConfig,
+                printProperties: state.sensitivityMapping.printProperties,
+                mapLayers: state.sensitivityMapping.layers
+            },
+            autostart: false
+        };
+        return Rx.Observable.fromPromise(
+            axios.post(managementCommandUrl, data)
+                .then((response) => {
+                    return startManagementCommand("create_sensitivity_report", response.data.data.id);
+                })
+        );
+
+
+    });
+
+export const startManagementCommandEpic = (action$, store) => action$.ofType(START_MANAGEMENT_COMMAND)
+    .switchMap((action) => {
+        const state = store.getState();
+        const commandsUrl = `${state.gnsettings.geonodeUrl}api/v2/management/commands/`;
+        const commandUrl = `${commandsUrl}${action.command}/jobs/${action.jobId}/start/`;
+        return Rx.Observable.fromPromise(
+            axios.patch(commandUrl)
+                .then((response) => {
+                    return getPrintStatus(response.data.status, `${commandsUrl}${action.command}/jobs/${action.jobId}/status/`);
+                })
+                .catch(err => {
+                    return printError(
+                        "getPrintStatusError",
+                        "sensitivitymapping.notifications.error",
+                        "sensitivitymapping.notifications.getPrintStatusError",
+                        {error: `${err.statusText} - ${err.status}`}
+                    );
+                })
+        );
+    });
+
+
+export const getPrintStatusEpic = (action$, store) => action$.ofType(GET_PRINT_STATUS)
+    .filter(() => store.getState()?.controls?.sensitivityMapping?.enabled)
+    .switchMap((action) => {
+        const state = store.getState();
+        if (!state.sensitivityMapping.printProperties.report) {
+            return Rx.Observable.fromPromise(
+                axios.get(action.statusUrl).then((response) => {
+                    if (response.data.status === "waiting" || response.data.status === "running") {
+                        return getPrintStatus(response.data.status, action.statusUrl);
+                    } else if (response.data.status === "error") {
+                        if (!state.sensitivityMapping.error) {
+                            state.sensitivityMapping.error = true;
+                            state.sensitivityMapping.loading = false;
+                            return getPrintStatus(response.data.status, action.statusUrl);
+                        }
+                        return printError(
+                            "getPrintStatusError",
+                            "sensitivitymapping.notifications.error",
+                            "sensitivitymapping.notifications.getPrintStatusError",
+                            {error: response.data.error}
+                        );
+
+                    }
+                    state.sensitivityMapping.loading = false;
+                    return downloadMap(response.data.downloadURL);
+                })
+            );
+        }
+        return Rx.Observable.fromPromise(
+            axios.get(action.statusUrl)
+                .then((response) => {
+                    if (response.data.status !== "FINISHED") {
+                        return getPrintStatus(response.data.status, action.statusUrl);
+                    }
+                    const outputMessage = JSON.parse(response.data.output_message.replace("\n", ""));
+                    if (outputMessage.type === "success") {
+                        let downloadUrl = outputMessage.message;
+                        state.sensitivityMapping.loading = false;
+                        return downloadMap(downloadUrl);
+                    }
+                    return printError(
+                        "getPrintStatusError",
+                        "sensitivitymapping.notifications.error",
+                        "sensitivitymapping.notifications.getPrintStatusError",
+                        {error: outputMessage.message}
+                    );
+
+
+                })
+        );
+
+
+    });
+
+export const downloadMapEpic = (action$, store) => action$.ofType(DOWNLOAD_MAP)
+    .filter(() => store.getState()?.controls?.sensitivityMapping?.enabled)
+    .switchMap((action) => {
+        if (action.downloadUrl) {
+            return Rx.Observable.of(
+                success({
+                    uid: "printSuccess",
+                    title: "sensitivitymapping.notifications.success",
+                    message: "sensitivitymapping.notifications.printSuccess",
+                    action: {
+                        label: "sensitivitymapping.notifications.close"
+                    },
+                    position: "tr",
+                    autoDismiss: 20
+                })
+            );
+        }
+        return Rx.Observable.empty();
+    });
+
+export const printErrorEpic = (action$) => action$.ofType(PRINT_ERROR)
+    .switchMap((action) => {
+        return Rx.Observable.of(
+            changePrintStatus(false, true),
+            error({
+                uid: action.uid,
+                title: action.title,
+                message: action.message,
+                action: {
+                    label: "sensitivitymapping.notifications.close"
+                },
+                values: action.values,
+                position: "tr",
+                autoDismiss: 0
+            })
+        );
+    });
+
+export default {
+    gnUpdateSensitivityMappingMapLayoutEpic,
+    initSensitivityMappingPrintEpic,
+    loadPrintApplicationsEpic,
+    openSensitivityMappingEpic,
+    changeMapViewEpic,
+    updatePrintPropertyEpic,
+    closeSensitivityMappingEpic,
+    loadSelectedStylesEpic,
+    loadFeaturesEpic,
+    updateLayerEpic,
+    selectPrintApplicationEpic,
+    initiatePrintPropertiesEpic,
+    loadPrintLayoutEpic,
+    setPrintExtentEpic,
+    createPrintConfigEpic,
+    sendPrintRequestEpic,
+    startManagementCommandEpic,
+    getPrintStatusEpic,
+    downloadMapEpic,
+    printErrorEpic
+};

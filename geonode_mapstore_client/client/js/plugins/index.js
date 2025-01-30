@@ -466,6 +466,10 @@ export const plugins = {
     ZoneIdentifyPlugin: toModulePlugin(
         'ZoneIdentify',
         () => import(/* webpackChunkName: 'plugins/zone-identify' */ '@js/plugins/ZoneIdentify')
+    ),
+    SensitivityMappingPlugin: toModulePlugin(
+        'SensitivityMapping',
+        () => import(/* webpackChunkName: 'plugins/sensitivity-mapping' */ '@js/plugins/SensitivityMapping')
     )
 };
 
