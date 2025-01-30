@@ -700,7 +700,7 @@ export const createPrintConfigEpic = (action$, store) => action$.ofType(CREATE_P
                 )
             );
         }
-        return Rx.Observable.from(
+        return Rx.Observable.of(
             sendPrintRequest(printConfig)
         );
 
