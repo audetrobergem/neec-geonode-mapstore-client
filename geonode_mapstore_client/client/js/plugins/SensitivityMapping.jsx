@@ -63,8 +63,12 @@ function SensitivityMapping({
 
     const localizedPrintApplications = applications.map((application) => {
         application.labelId = getMessageById(messages, application.labelId);
-        if (application.restrictions && application.restrictions.some(restriction => userGroups.includes(restriction))) {
+        if (!application.restrictions) {
             return application;
+        } else {
+            if (application.restrictions.some(restriction => userGroups.includes(restriction))) {
+                return application;
+            }
         }
     });
 

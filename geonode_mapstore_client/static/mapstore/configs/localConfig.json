@@ -2239,8 +2239,34 @@
                 "name": "SensitivityMapping",
                 "cfg": {
                     "mapfishUrl": "print",
-                    "defaultApplication": "sensitivity-mapping",
+                    "defaultApplication": "neec-geoportal",
                     "applications": [
+                        {
+                            "name": "neec-geoportal",
+                            "labelId": "sensitivitymapping.apps.neecGeoportal",
+                            "properties": [
+                                {
+                                    "name": "orientation",
+                                    "options": ["Landscape", "Portrait"],
+                                    "default": "Landscape"
+                                }, {
+                                    "name": "legend2Pages",
+                                    "default": false
+                                }, {
+                                    "name": "filterLegend",
+                                    "default": true
+                                }, {
+                                    "name": "gridLayer",
+                                    "default": false
+                                }
+                            ],
+                            "coordinatesSystems": [
+                                {"code": "3857", "name": "Pseudo-Mercator"},
+                                {"code": "3978", "name": "NAD83 / Canada Atlas Lambert"}
+                            ],
+                            "resolutions": ["150", "200", "250", "300"],
+                            "utmEnabled": true
+                        },
                         {
                             "name": "sensitivity-mapping",
                             "labelId": "sensitivitymapping.apps.sensitivityMapping",

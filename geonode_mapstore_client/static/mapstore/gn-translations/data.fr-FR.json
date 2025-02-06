@@ -419,6 +419,7 @@
             "sensitivityMapping": "Imprimer",
             "sensitivityMappingTitle": "Imprimer",
             "apps": {
+                "neecGeoportal": "Modèle par défaut",
                 "sensitivityMapping": "Cartographie des sensibilités",
                 "ics232": "Ressources à risque (SCI 232)"
             },

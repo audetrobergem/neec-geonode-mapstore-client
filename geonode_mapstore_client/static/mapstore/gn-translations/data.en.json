@@ -422,6 +422,7 @@
             "sensitivityMapping": "Print",
             "sensitivityMappingTitle": "Print",
             "apps": {
+                "neecGeoportal": "Default Template",
                 "sensitivityMapping": "Sensitivity Mapping",
                 "ics232": "Resources at risk (ICS 232)"
             },
