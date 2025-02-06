@@ -47,20 +47,23 @@ import {
 } from "@js/actions/sensitivitymapping";
 import { DEFAULT_SCREEN_DPI } from '@mapstore/framework/utils/MapUtils';
 import { zoomToExtent, CHANGE_MAP_VIEW } from '@mapstore/framework/actions/map';
-import { reproject, formatPrintLayer, formatLegend, findUtmZoneFromLongitude, getLayerTitle } from '@js/utils/PrintUtils';
+import { reproject, formatPrintLayer, formatLegend, getProjections, getLayerTitle } from '@js/utils/PrintUtils';
 import { removeAdditionalLayer, updateAdditionalLayer } from '@mapstore/framework/actions/additionallayers';
 import { UPDATE_NODE, CHANGE_LAYER_PROPERTIES } from '@mapstore/framework/actions/layers';
 import { REDUCERS_LOADED } from '@mapstore/framework/actions/storemanager';
 import { optionsToVendorParams } from '@mapstore/framework/utils/VendorParamsUtils';
 import { getFeature } from '@mapstore/framework/api/WFS';
 import { error, success, warning } from '@mapstore/framework/actions/notifications';
+import { panTo } from '@mapstore/framework/actions/map';
+import { hideMapinfoMarker, purgeMapInfoResults, toggleMapInfoState } from '@mapstore/framework/actions/mapInfo';
+import { TOGGLE_CONTROL } from '@mapstore/framework/actions/controls';
 
 /**
 * @module epics/sensitivityMapping
 */
 
 /**
- * Override the layout to get the correct right offset when the data catalog is open
+ * Override the layout to get the correct right offset when the data print tool is open
  */
 export const gnUpdateSensitivityMappingMapLayoutEpic = (action$, store) => action$.ofType(UPDATE_MAP_LAYOUT)
     .filter(() => store.getState()?.controls?.sensitivityMapping?.enabled)
@@ -76,6 +79,7 @@ export const gnUpdateSensitivityMappingMapLayoutEpic = (action$, store) => actio
             ...layout,
             right: mapLayout.right.md,
             ...(left && {left}),
+            rightPanel: true,
             boundingMapRect: {
                 ...(layout?.boundingMapRect || {}),
                 right: mapLayout.right.md,
@@ -145,6 +149,17 @@ export const loadPrintApplicationsEpic = (action$, store) => action$.ofType(INIT
                             mapfishLoadingError = true;
                         })
                 );
+            } else {
+                const capabilitiesUrl = `${geonodeUrl}${mapfishUrl}/print/${application.name}/capabilities.json`;
+                return Rx.Observable.fromPromise(
+                    axios.get(capabilitiesUrl)
+                        .then(response => {
+                            state.sensitivityMapping.printApplications.push(response.data);
+                        })
+                        .catch(err => {
+                            mapfishLoadingError = true;
+                        })
+                );
             }
         });
         if (mapfishLoadingError) {
@@ -174,6 +189,9 @@ export const openSensitivityMappingEpic = (action$, store) => action$.ofType(SET
         const defaultApplication = sensitivityMappingConfig.cfg.applications.find((app) => app.name === defaultApplicationName);
         let mapView = state.map.present;
         return Rx.Observable.of(
+            purgeMapInfoResults(),
+            hideMapinfoMarker(),
+            toggleMapInfoState(),
             setInitialMapProperties(mapView),
             setPrintApplication(defaultApplication)
         );
@@ -191,8 +209,25 @@ export const closeSensitivityMappingEpic = (action$, store) => action$.ofType(SE
         state.sensitivityMapping = {};
         state.sensitivityMapping.printApplications = printApplications;
         return Rx.Observable.of(
+            toggleMapInfoState(),
             removeAdditionalLayer({ id: "sensitivity-mapping-print-extent" }),
             zoomToExtent(mapExtent, "EPSG:4326", mapZoom)
+        );
+    });
+
+/**
+ * The left panel display (layer tree) influences the zoom level of the map to display 
+ * the entire print polygon. The tool must zoom in on the polygon when the panel is 
+ * displayed or removed from the map.
+ */
+export const toggleDrawerControlEpic = (action$, store) => action$.ofType(TOGGLE_CONTROL)
+    .filter(() => store.getState()?.controls?.sensitivityMapping?.enabled)
+    .filter((action) => action.control === "drawer")
+    .switchMap(() => {
+        const state = store.getState();
+        const printExtent = state.sensitivityMapping.printProperties.bbox;
+        return Rx.Observable.of(
+            zoomToExtent(printExtent, "EPSG:3857")
         );
     });
 
@@ -210,7 +245,9 @@ export const loadSelectedStylesEpic = (action$, store) => action$.ofType(LOAD_SE
                 );
             }
         });
-        return Rx.Observable.empty();
+        return Rx.Observable.of(
+            loadFeatures(action.layers)
+        );
     });
 
 export const loadFeaturesEpic = (action$, store) => action$.ofType(LOAD_FEATURES)
@@ -238,6 +275,7 @@ export const loadFeaturesEpic = (action$, store) => action$.ofType(LOAD_FEATURES
         });
         return Rx.Observable.empty();
     });
+
 export const updateLayerEpic = (action$, store) => action$.ofType(UPDATE_NODE, CHANGE_LAYER_PROPERTIES)
     .filter(() => store.getState()?.controls?.sensitivityMapping?.enabled)
     .switchMap((action) => {
@@ -252,50 +290,80 @@ export const updateLayerEpic = (action$, store) => action$.ofType(UPDATE_NODE, C
         return Rx.Observable.empty();
     });
 
+/**
+ * This function allows you to capture CHANGE_MAP_VIEW actions when the print tool is activated, in order 
+ * to perform certain operations, mainly the extraction of the center point used to draw the print extent 
+ * polygon and to extract the corresponding UTM projection.
+ */
 export const changeMapViewEpic = (action$, store) => action$.ofType(CHANGE_MAP_VIEW)
     .filter(() => store.getState()?.controls?.sensitivityMapping?.enabled)
     .filter(() => store.getState()?.sensitivityMapping?.selectedPrintApplication)
     .switchMap((action) => {
         const state = store.getState();
-        const coordinatesSystems = state.sensitivityMapping?.selectedPrintApplication?.coordinatesSystems;
-        let updatedCoordinatesSystems = coordinatesSystems;
-        if (state.sensitivityMapping?.selectedPrintApplication?.utmEnabled && state.map.present.zoom > 11) {
-            const utmZone = findUtmZoneFromLongitude(state.map.present.center.x);
-            if (utmZone) {
-                updatedCoordinatesSystems = coordinatesSystems.concat(utmZone);
-            }
-        }
-
+        const updatedCoordinatesSystems = getProjections(
+            state.sensitivityMapping.selectedPrintApplication, 
+            state.sensitivityMapping.printProperties.scale, 
+            action.center.x
+        );
         // The print options panel does not change the map size when displayed. This means that the map's
         // center point does not change, which poses a problem in terms of centering the map when the
-        // user moves the print polygon. To avoid this problem, we calculate an approximate offset and
+        // user moves the print polygon. To avoid this problem, we calculate an the offset and
         // apply it to the center point.
-        let center = action.center;
-        const mapScale = state.sensitivityMapping.printProperties.scale;
-        const mapResolution = mapScale / (DEFAULT_SCREEN_DPI * 39.37);
-        const offsetWidth = 425 * mapResolution;
+        const mapResolution = action.resolution;
+        const mapWidth = state.map.present.size.width;
+        const rightPanelWidth = state.maplayout.layout.right;
+        const rightOffsetWith = (mapWidth / 2 - (mapWidth - rightPanelWidth) / 2) * mapResolution;
+        let offsetWidth = rightOffsetWith;
+        // The same applies to the panel containing the list of layers. We need to calculate an offset when 
+        // it is displayed.
+        if (state.maplayout.layout.leftPanel) {
+            const leftPanelWidth = state.maplayout.layout.left;
+            const leftOffsetWith = (mapWidth / 2 - (mapWidth - leftPanelWidth) / 2) * mapResolution;
+            offsetWidth -= leftOffsetWith;
+        }
+        // Calculating the map center point from the calculated offset 
         const mapCenter = [action.center.x, action.center.y];
         let mapCenter3857 = reproject(mapCenter, "EPSG:4326", "EPSG:3857");
         mapCenter3857.x = mapCenter3857.x - offsetWidth;
         const newCenter = reproject(mapCenter3857, "EPSG:3857", "EPSG:4326");
-        center.x = newCenter.x;
 
         const presentMapCenter = [action.center.x, action.center.y];
         const pastMap = state.map.past[state.map.past.length - 1];
         const pastMapCenter = [pastMap.center.x, pastMap.center.y];
 
-        if (presentMapCenter !== pastMapCenter && state.map.past.length > 1) {
+        // The map center point can be moved by the user without changing the zoom level. In 
+        // this case, the new center will be calculated to ignore the left and right panels, 
+        // and will be added to the print parameters to regenerate the bbox and reload the 
+        // WFS layer features present in the map.
+        if (presentMapCenter[0] !== pastMapCenter[0] || presentMapCenter[1] !== pastMapCenter[1]) {
             return Rx.Observable.of(
-                getCoordinatesSystems(updatedCoordinatesSystems),
-                updatePrintProperty({name: "mapCenter", value: center}),
-                loadFeatures(state.layers.flat)
+                updatePrintProperty({name: "mapCenter", value: newCenter}),
+                loadFeatures(state.sensitivityMapping.layers)
             );
         }
+        // The user can also change the extent of the map by clicking on the zoom in and zoom out 
+        // buttons. These buttons do not change the center point of the map to be printed. However, 
+        // there is an offset between the center of the printout and the center of the new map, as 
+        // the zoom is performed on the center point of the map, which is offset from the center 
+        // point of the printout (due to the right panel). We need to move the map center so that 
+        // it is centered with the previous view.
+        const deltaXDeg = Math.abs(newCenter.x - action.center.x)
+        let offsetCenter = {...action.center}
+        if (pastMap.zoom > action.zoom) {
+            offsetCenter.x = offsetCenter.x + deltaXDeg / 2;
+        } else {
+            // The map must be moved westwards when the zoom in button is clicked. There seems to 
+            // be a problem with the panTo function when the longitude is smaller than that of 
+            // the center of the map. To get around this, we add 180 degrees to the difference 
+            // and it works.
+            offsetCenter.x = 180 - Math.abs(offsetCenter.x - deltaXDeg) + 180;
+        }
         return Rx.Observable.of(
+            panTo(offsetCenter),
             getCoordinatesSystems(updatedCoordinatesSystems),
-            loadFeatures(state.layers.flat)
+            updatePrintProperty({name: "mapCenter", value: newCenter}),
+            loadFeatures(state.sensitivityMapping.layers)
         );
-
     });
 
 export const updatePrintPropertyEpic = (action$, store) => action$.ofType(UPDATE_PRINT_PROPERTY)
@@ -312,12 +380,13 @@ export const updatePrintPropertyEpic = (action$, store) => action$.ofType(UPDATE
             );
         } else if (["mapCenter", "scale", "projection"].includes(action.printProperty.name)) {
             // Changing other print properties only modifies the print range polygon.
+            const updatedCoordinatesSystems = getProjections(state.sensitivityMapping.selectedPrintApplication, state.sensitivityMapping.printProperties.scale, state.sensitivityMapping.printProperties.mapCenter.x);
             return Rx.Observable.of(
-                setPrintExtent()
+                setPrintExtent(),
+                getCoordinatesSystems(updatedCoordinatesSystems),
             );
         }
         return Rx.Observable.empty();
-
     });
 
 export const loadPrintLayoutEpic = (action$, store) => action$.ofType(SET_PRINT_PROPERTIES)
@@ -353,7 +422,6 @@ export const loadPrintLayoutEpic = (action$, store) => action$.ofType(SET_PRINT_
             );
         }
         return Rx.Observable.empty();
-
     });
 
 export const selectPrintApplicationEpic = (action$, store) => action$.ofType(SET_PRINT_APPLICATION)
@@ -376,14 +444,6 @@ export const initiatePrintPropertiesEpic = (action$, store) => action$.ofType(SE
         (action) => {
             if (action.selectedPrintCapabilities) {
                 const state = store.getState();
-                const coordinatesSystems = state.sensitivityMapping?.selectedPrintApplication?.coordinatesSystems;
-                let updatedCoordinatesSystems = coordinatesSystems;
-                if (state.sensitivityMapping?.selectedPrintApplication?.utmEnabled && state.map.present.zoom > 11) {
-                    const utmZone = findUtmZoneFromLongitude(state.map.present.center.x);
-                    if (utmZone) {
-                        updatedCoordinatesSystems = coordinatesSystems.concat(utmZone);
-                    }
-                }
                 const sensitivityMappingConfig = state.localConfig?.plugins.map_viewer.find((plugin) => plugin.name === "SensitivityMapping");
                 const printAppProperties = sensitivityMappingConfig.cfg.applications.find((app) => app.name === action.selectedPrintCapabilities.app);
                 const printProperties = {
@@ -398,15 +458,14 @@ export const initiatePrintPropertiesEpic = (action$, store) => action$.ofType(SE
                 printAppProperties.properties.map((property) => {
                     printProperties[property.name] = property.default;
                 });
+                const updatedCoordinatesSystems = getProjections(state.sensitivityMapping.selectedPrintApplication, printProperties.scale, printProperties.mapCenter.x)
                 return Rx.Observable.of(
                     getCoordinatesSystems(updatedCoordinatesSystems),
                     setPrintProperties(printProperties),
-                    loadSelectedStyles(state.layers.flat),
-                    loadFeatures(state.layers.flat)
+                    loadSelectedStyles(state.layers.flat)
                 );
             }
             return Rx.Observable.empty();
-
         }
     );
 
@@ -498,8 +557,6 @@ export const setPrintExtentEpic = (action$, store) => action$.ofType(SET_PRINT_E
             ),
             zoomToExtent(mapExtent, "EPSG:4326")
         );
-
-
     });
 
 export const createPrintConfigEpic = (action$, store) => action$.ofType(CREATE_PRINT_CONFIG)
@@ -703,7 +760,6 @@ export const createPrintConfigEpic = (action$, store) => action$.ofType(CREATE_P
         return Rx.Observable.of(
             sendPrintRequest(printConfig)
         );
-
     });
 
 export const sendPrintRequestEpic = (action$, store) => action$.ofType(SEND_PRINT_REQUEST)
@@ -742,8 +798,6 @@ export const sendPrintRequestEpic = (action$, store) => action$.ofType(SEND_PRIN
                     return startManagementCommand("create_sensitivity_report", response.data.data.id);
                 })
         );
-
-
     });
 
 export const startManagementCommandEpic = (action$, store) => action$.ofType(START_MANAGEMENT_COMMAND)
@@ -818,8 +872,6 @@ export const getPrintStatusEpic = (action$, store) => action$.ofType(GET_PRINT_S
 
                 })
         );
-
-
     });
 
 export const downloadMapEpic = (action$, store) => action$.ofType(DOWNLOAD_MAP)
@@ -868,6 +920,7 @@ export default {
     changeMapViewEpic,
     updatePrintPropertyEpic,
     closeSensitivityMappingEpic,
+    toggleDrawerControlEpic,
     loadSelectedStylesEpic,
     loadFeaturesEpic,
     updateLayerEpic,

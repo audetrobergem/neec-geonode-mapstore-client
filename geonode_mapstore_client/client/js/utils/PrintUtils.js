@@ -129,6 +129,28 @@ export const findUtmZoneFromLongitude = (longitude) => {
     return {};
 };
 
+export const getProjections = (selectedPrintApplication, scale, longitude) => {
+    const coordinatesSystems = selectedPrintApplication.coordinatesSystems;
+    let updatedCoordinatesSystems = [...coordinatesSystems];
+    if (selectedPrintApplication.utmEnabled && scale < 300000) {
+        const utmZone = findUtmZoneFromLongitude(longitude);
+        if (utmZone) {
+            updatedCoordinatesSystems = coordinatesSystems.concat(utmZone);
+        }
+    }
+    // The printout extent polygon is not displayed correctly at small scale when the Canada Atlas 
+    // Lambert coordinate system is selected by the user. We remove it from the selection list when 
+    // the map scale is smaller than 1: 10,000,000.
+    if (scale > 10000000) {
+        const atlasLambertProj = coordinatesSystems.findIndex(coordinateSystem => coordinateSystem.code === "3978");
+        if (atlasLambertProj !== -1) {
+            updatedCoordinatesSystems.splice(atlasLambertProj, 1);
+        }
+    }
+
+    return updatedCoordinatesSystems
+}
+
 const numberize = (point) => {
     let outpoint = point;
     if (!isNumber(point.x)) {
