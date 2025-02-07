@@ -454,12 +454,14 @@ export const initiatePrintPropertiesEpic = (action$, store) => action$.ofType(SE
         (action) => {
             if (action.selectedPrintCapabilities) {
                 const state = store.getState();
-                const sensitivityMappingConfig = state.localConfig?.plugins.map_viewer.find((plugin) => plugin.name === "SensitivityMapping");
+                const sensitivityMappingConfig = state.localConfig?.plugins.map_viewer
+                .find((plugin) => plugin.name === "SensitivityMapping");
                 // Some printing options are not available for all templates. One such option is orientation. 
                 // Print options are retained when the user changes the print template. Check that the 
                 // selected option exists in the new template. The default option will be selected if the 
                 // option is not allowed.
-                const printAppProperties = sensitivityMappingConfig.cfg.applications.find((app) => app.name === action.selectedPrintCapabilities.app);
+                const printAppProperties = sensitivityMappingConfig.cfg.applications
+                .find((app) => app.name === action.selectedPrintCapabilities.app);
                 const printProperties = {
                     title: state.sensitivityMapping.printProperties?.title ? state.sensitivityMapping.printProperties.title : "",
                     scale: state.sensitivityMapping.printProperties?.scale ? state.sensitivityMapping.printProperties.scale : Math.floor(DEFAULT_SCREEN_DPI * 39.37 * state.map.present.resolution),
@@ -473,6 +475,24 @@ export const initiatePrintPropertiesEpic = (action$, store) => action$.ofType(SE
                     filterLegend: state.sensitivityMapping.printProperties?.filterLegend ? state.sensitivityMapping.printProperties?.filterLegend : true,
                     gridLayer: state.sensitivityMapping.printProperties?.gridLayer ? state.sensitivityMapping.printProperties?.gridLayer : false
                 };
+                const updatedCoordinatesSystems = getProjections(
+                    state.sensitivityMapping.selectedPrintApplication, 
+                    printProperties.scale, 
+                    printProperties.mapCenter.x
+                )
+                // Sensitivity maps are printed using the UTM projection corresponding to the longitude, insofar 
+                // as the scale allows. We therefore change the selected projection when the user selects the 
+                // Sensitivity Mapping application template. The scale is also adjusted to cover approximately 
+                // the same area. 
+                if (action.selectedPrintCapabilities.app === "sensitivity-mapping") {
+                    if (printProperties.projection === "3857") {
+                        const utmProjection = updatedCoordinatesSystems.find(projection => projection.name.includes("UTM"));
+                        if (utmProjection) {
+                            printProperties.projection = utmProjection.code;
+                            printProperties.scale = Math.round(printProperties.scale * 0.65);
+                        }
+                    }
+                }
                 // Certain print properties influence the print template selected. Not all options are permitted 
                 // with all templates, so we check that the items in the following list are among the permitted 
                 // options. If not, we'll need to delete the property.
@@ -487,11 +507,12 @@ export const initiatePrintPropertiesEpic = (action$, store) => action$.ofType(SE
                             // template. For example, a user selects Portrait orientation and then selects a new 
                             // template that only allows Landscape orientation. In this case, we change the property 
                             // to the default.
-                            printProperties[printProperty] = printAppProperties.properties.find( property => property.name === printProperty ).default;
+                            printProperties[printProperty] = printAppProperties.properties
+                            .find( property => property.name === printProperty ).default;
                         }
                     }
                 })
-                const updatedCoordinatesSystems = getProjections(state.sensitivityMapping.selectedPrintApplication, printProperties.scale, printProperties.mapCenter.x)
+                
                 return Rx.Observable.of(
                     getCoordinatesSystems(updatedCoordinatesSystems),
                     setPrintProperties(printProperties),

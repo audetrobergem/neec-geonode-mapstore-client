@@ -114,7 +114,7 @@ function SensitivityMapping({
                                         className="form-control"
                                         type="text"
                                         name="title"
-                                        defaultValue={sensitivityMapping.printProperties.title}
+                                        value={sensitivityMapping.printProperties.title}
                                         onChange={(event) => {
                                             const { name, value } = event.target;
                                             onUpdatePrintProperty({ name, value });
@@ -127,7 +127,7 @@ function SensitivityMapping({
                                         <select
                                             className="form-control"
                                             name="language"
-                                            defaultValue={sensitivityMapping.printProperties.language}
+                                            value={sensitivityMapping.printProperties.language}
                                             onChange={(event) => {
                                                 const { name, value } = event.target;
                                                 onUpdatePrintProperty({ name, value });
@@ -144,7 +144,7 @@ function SensitivityMapping({
                                         <select
                                             className="form-control"
                                             name="format"
-                                            defaultValue={sensitivityMapping.printProperties.format}
+                                            value={sensitivityMapping.printProperties.format}
                                             onChange={(event) => {
                                                 const { name, value } = event.target;
                                                 onUpdatePrintProperty({ name, value });
@@ -160,7 +160,7 @@ function SensitivityMapping({
                                         <select
                                             className="form-control"
                                             name="resolution"
-                                            defaultValue={sensitivityMapping.printProperties.resolution}
+                                            value={sensitivityMapping.printProperties.resolution}
                                             onChange={(event) => {
                                                 const { name, value } = event.target;
                                                 onUpdatePrintProperty({ name, value });
@@ -176,7 +176,7 @@ function SensitivityMapping({
                                         <select
                                             className="form-control"
                                             name="projection"
-                                            defaultValue={sensitivityMapping.printProperties.projection}
+                                            value={sensitivityMapping.printProperties.projection}
                                             onChange={(event) => {
                                                 const { name, value } = event.target;
                                                 onUpdatePrintProperty({ name, value });
@@ -193,7 +193,7 @@ function SensitivityMapping({
                                             className="form-control"
                                             type="number"
                                             name="scale"
-                                            defaultValue={sensitivityMapping.printProperties.scale}
+                                            value={sensitivityMapping.printProperties.scale}
                                             step={Math.round(sensitivityMapping.printProperties.scale / 10000) * 100}
                                             onChange={(event) => {
                                                 const { name, value } = event.target;
@@ -209,7 +209,7 @@ function SensitivityMapping({
                                             <select
                                                 className="form-control"
                                                 name="orientation"
-                                                defaultValue="Landscape"
+                                                value="Landscape"
                                                 onChange={(event) => {
                                                     const { name, value } = event.target;
                                                     onUpdatePrintProperty({ name, value });
