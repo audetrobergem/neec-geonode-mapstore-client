@@ -438,6 +438,16 @@ export const selectPrintApplicationEpic = (action$, store) => action$.ofType(SET
             );
         });
 
+/**
+ * This function loads the initial print properties when the print tool is opened. It is also used when 
+ * changing print templates, to ensure that the chosen properties are available with the selected template. 
+ * 
+ * Once the print properties have been selected, the getCoordinatesSystems function will select the available 
+ * coordinate systems according to the selected template, longitude and print scale. Print properties are 
+ * saved in the application state using the setPrintProperties function. Finally, the loadSelectedStyles 
+ * function will be called to add the contents of the SLD style file to the properties of each layer in the 
+ * application state.
+ */
 export const initiatePrintPropertiesEpic = (action$, store) => action$.ofType(SET_PRINT_CAPABILITIES)
     .filter(() => store.getState()?.controls?.sensitivityMapping?.enabled)
     .switchMap(
@@ -445,6 +455,10 @@ export const initiatePrintPropertiesEpic = (action$, store) => action$.ofType(SE
             if (action.selectedPrintCapabilities) {
                 const state = store.getState();
                 const sensitivityMappingConfig = state.localConfig?.plugins.map_viewer.find((plugin) => plugin.name === "SensitivityMapping");
+                // Some printing options are not available for all templates. One such option is orientation. 
+                // Print options are retained when the user changes the print template. Check that the 
+                // selected option exists in the new template. The default option will be selected if the 
+                // option is not allowed.
                 const printAppProperties = sensitivityMappingConfig.cfg.applications.find((app) => app.name === action.selectedPrintCapabilities.app);
                 const printProperties = {
                     title: state.sensitivityMapping.printProperties?.title ? state.sensitivityMapping.printProperties.title : "",
@@ -452,12 +466,31 @@ export const initiatePrintPropertiesEpic = (action$, store) => action$.ofType(SE
                     language: state.sensitivityMapping.printProperties?.language ? state.sensitivityMapping.printProperties.language : state.locale?.current,
                     projection: state.sensitivityMapping.printProperties?.projection ? state.sensitivityMapping.printProperties.projection : "3857",
                     format: state.sensitivityMapping.printProperties?.format ? state.sensitivityMapping.printProperties.format : "pdf",
-                    mapCenter: state.sensitivityMapping.printProperties?.center ? state.sensitivityMapping.printProperties.center : state.sensitivityMapping.initialMapProperties.center,
-                    resolution: state.sensitivityMapping.printProperties?.resolution ? state.sensitivityMapping.printProperties?.resolution : "300"
+                    mapCenter: state.sensitivityMapping.printProperties?.mapCenter ? state.sensitivityMapping.printProperties.mapCenter : state.sensitivityMapping.initialMapProperties.center,
+                    resolution: state.sensitivityMapping.printProperties?.resolution ? state.sensitivityMapping.printProperties?.resolution : "300",
+                    legend2Pages: state.sensitivityMapping.printProperties?.legend2Pages ? state.sensitivityMapping.printProperties?.legend2Pages : false,
+                    orientation: state.sensitivityMapping.printProperties?.orientation ? state.sensitivityMapping.printProperties?.orientation : "Landscape",
+                    filterLegend: state.sensitivityMapping.printProperties?.filterLegend ? state.sensitivityMapping.printProperties?.filterLegend : true,
+                    gridLayer: state.sensitivityMapping.printProperties?.gridLayer ? state.sensitivityMapping.printProperties?.gridLayer : false
                 };
-                printAppProperties.properties.map((property) => {
-                    printProperties[property.name] = property.default;
-                });
+                // Certain print properties influence the print template selected. Not all options are permitted 
+                // with all templates, so we check that the items in the following list are among the permitted 
+                // options. If not, we'll need to delete the property.
+                const templateProperties = ["legend2Pages", "orientation", "gridLayer"]
+                templateProperties.map(printProperty => {
+                    let printPropertyPresence = printAppProperties.properties.find( property => property.name === printProperty );
+                    if (!printPropertyPresence) {
+                        delete printProperties[printProperty]
+                    } else {
+                        if (printPropertyPresence.options && !printPropertyPresence.options.includes(printProperty)) {
+                            // Some other property options, such as orientation, may not be available in the selected 
+                            // template. For example, a user selects Portrait orientation and then selects a new 
+                            // template that only allows Landscape orientation. In this case, we change the property 
+                            // to the default.
+                            printProperties[printProperty] = printAppProperties.properties.find( property => property.name === printProperty ).default;
+                        }
+                    }
+                })
                 const updatedCoordinatesSystems = getProjections(state.sensitivityMapping.selectedPrintApplication, printProperties.scale, printProperties.mapCenter.x)
                 return Rx.Observable.of(
                     getCoordinatesSystems(updatedCoordinatesSystems),
