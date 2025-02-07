@@ -8,7 +8,7 @@
 
 import Rx from 'rxjs';
 import axios from 'axios';
-import { SET_CONTROL_PROPERTY } from '@mapstore/framework/actions/controls';
+import { SET_CONTROL_PROPERTY, TOGGLE_CONTROL } from '@mapstore/framework/actions/controls';
 import { updateMapLayout, UPDATE_MAP_LAYOUT } from '@mapstore/framework/actions/maplayout';
 import { mapLayoutSelector, boundingSidebarRectSelector } from '@mapstore/framework/selectors/maplayout';
 import { LayoutSections } from "@js/utils/LayoutUtils";
@@ -46,7 +46,7 @@ import {
     changePrintStatus
 } from "@js/actions/sensitivitymapping";
 import { DEFAULT_SCREEN_DPI } from '@mapstore/framework/utils/MapUtils';
-import { zoomToExtent, CHANGE_MAP_VIEW } from '@mapstore/framework/actions/map';
+import { panTo, zoomToExtent, CHANGE_MAP_VIEW } from '@mapstore/framework/actions/map';
 import { reproject, formatPrintLayer, formatLegend, getProjections, getLayerTitle } from '@js/utils/PrintUtils';
 import { removeAdditionalLayer, updateAdditionalLayer } from '@mapstore/framework/actions/additionallayers';
 import { UPDATE_NODE, CHANGE_LAYER_PROPERTIES } from '@mapstore/framework/actions/layers';
@@ -54,9 +54,7 @@ import { REDUCERS_LOADED } from '@mapstore/framework/actions/storemanager';
 import { optionsToVendorParams } from '@mapstore/framework/utils/VendorParamsUtils';
 import { getFeature } from '@mapstore/framework/api/WFS';
 import { error, success, warning } from '@mapstore/framework/actions/notifications';
-import { panTo } from '@mapstore/framework/actions/map';
 import { hideMapinfoMarker, purgeMapInfoResults, toggleMapInfoState } from '@mapstore/framework/actions/mapInfo';
-import { TOGGLE_CONTROL } from '@mapstore/framework/actions/controls';
 
 /**
 * @module epics/sensitivityMapping
@@ -145,22 +143,22 @@ export const loadPrintApplicationsEpic = (action$, store) => action$.ofType(INIT
                         .then(response => {
                             state.sensitivityMapping.printApplications.push(response.data);
                         })
-                        .catch(err => {
-                            mapfishLoadingError = true;
-                        })
-                );
-            } else {
-                const capabilitiesUrl = `${geonodeUrl}${mapfishUrl}/print/${application.name}/capabilities.json`;
-                return Rx.Observable.fromPromise(
-                    axios.get(capabilitiesUrl)
-                        .then(response => {
-                            state.sensitivityMapping.printApplications.push(response.data);
-                        })
-                        .catch(err => {
+                        .catch(() => {
                             mapfishLoadingError = true;
                         })
                 );
             }
+            const capabilitiesUrl = `${geonodeUrl}${mapfishUrl}/print/${application.name}/capabilities.json`;
+            return Rx.Observable.fromPromise(
+                axios.get(capabilitiesUrl)
+                    .then(response => {
+                        state.sensitivityMapping.printApplications.push(response.data);
+                    })
+                    .catch(() => {
+                        mapfishLoadingError = true;
+                    })
+            );
+
         });
         if (mapfishLoadingError) {
             return Rx.Observable.from(
@@ -216,8 +214,8 @@ export const closeSensitivityMappingEpic = (action$, store) => action$.ofType(SE
     });
 
 /**
- * The left panel display (layer tree) influences the zoom level of the map to display 
- * the entire print polygon. The tool must zoom in on the polygon when the panel is 
+ * The left panel display (layer tree) influences the zoom level of the map to display
+ * the entire print polygon. The tool must zoom in on the polygon when the panel is
  * displayed or removed from the map.
  */
 export const toggleDrawerControlEpic = (action$, store) => action$.ofType(TOGGLE_CONTROL)
@@ -291,8 +289,8 @@ export const updateLayerEpic = (action$, store) => action$.ofType(UPDATE_NODE, C
     });
 
 /**
- * This function allows you to capture CHANGE_MAP_VIEW actions when the print tool is activated, in order 
- * to perform certain operations, mainly the extraction of the center point used to draw the print extent 
+ * This function allows you to capture CHANGE_MAP_VIEW actions when the print tool is activated, in order
+ * to perform certain operations, mainly the extraction of the center point used to draw the print extent
  * polygon and to extract the corresponding UTM projection.
  */
 export const changeMapViewEpic = (action$, store) => action$.ofType(CHANGE_MAP_VIEW)
@@ -301,8 +299,8 @@ export const changeMapViewEpic = (action$, store) => action$.ofType(CHANGE_MAP_V
     .switchMap((action) => {
         const state = store.getState();
         const updatedCoordinatesSystems = getProjections(
-            state.sensitivityMapping.selectedPrintApplication, 
-            state.sensitivityMapping.printProperties.scale, 
+            state.sensitivityMapping.selectedPrintApplication,
+            state.sensitivityMapping.printProperties.scale,
             action.center.x
         );
         // The print options panel does not change the map size when displayed. This means that the map's
@@ -314,14 +312,14 @@ export const changeMapViewEpic = (action$, store) => action$.ofType(CHANGE_MAP_V
         const rightPanelWidth = state.maplayout.layout.right;
         const rightOffsetWith = (mapWidth / 2 - (mapWidth - rightPanelWidth) / 2) * mapResolution;
         let offsetWidth = rightOffsetWith;
-        // The same applies to the panel containing the list of layers. We need to calculate an offset when 
+        // The same applies to the panel containing the list of layers. We need to calculate an offset when
         // it is displayed.
         if (state.maplayout.layout.leftPanel) {
             const leftPanelWidth = state.maplayout.layout.left;
             const leftOffsetWith = (mapWidth / 2 - (mapWidth - leftPanelWidth) / 2) * mapResolution;
             offsetWidth -= leftOffsetWith;
         }
-        // Calculating the map center point from the calculated offset 
+        // Calculating the map center point from the calculated offset
         const mapCenter = [action.center.x, action.center.y];
         let mapCenter3857 = reproject(mapCenter, "EPSG:4326", "EPSG:3857");
         mapCenter3857.x = mapCenter3857.x - offsetWidth;
@@ -331,9 +329,9 @@ export const changeMapViewEpic = (action$, store) => action$.ofType(CHANGE_MAP_V
         const pastMap = state.map.past[state.map.past.length - 1];
         const pastMapCenter = [pastMap.center.x, pastMap.center.y];
 
-        // The map center point can be moved by the user without changing the zoom level. In 
-        // this case, the new center will be calculated to ignore the left and right panels, 
-        // and will be added to the print parameters to regenerate the bbox and reload the 
+        // The map center point can be moved by the user without changing the zoom level. In
+        // this case, the new center will be calculated to ignore the left and right panels,
+        // and will be added to the print parameters to regenerate the bbox and reload the
         // WFS layer features present in the map.
         if (presentMapCenter[0] !== pastMapCenter[0] || presentMapCenter[1] !== pastMapCenter[1]) {
             return Rx.Observable.of(
@@ -341,20 +339,20 @@ export const changeMapViewEpic = (action$, store) => action$.ofType(CHANGE_MAP_V
                 loadFeatures(state.sensitivityMapping.layers)
             );
         }
-        // The user can also change the extent of the map by clicking on the zoom in and zoom out 
-        // buttons. These buttons do not change the center point of the map to be printed. However, 
-        // there is an offset between the center of the printout and the center of the new map, as 
-        // the zoom is performed on the center point of the map, which is offset from the center 
-        // point of the printout (due to the right panel). We need to move the map center so that 
+        // The user can also change the extent of the map by clicking on the zoom in and zoom out
+        // buttons. These buttons do not change the center point of the map to be printed. However,
+        // there is an offset between the center of the printout and the center of the new map, as
+        // the zoom is performed on the center point of the map, which is offset from the center
+        // point of the printout (due to the right panel). We need to move the map center so that
         // it is centered with the previous view.
-        const deltaXDeg = Math.abs(newCenter.x - action.center.x)
-        let offsetCenter = {...action.center}
+        const deltaXDeg = Math.abs(newCenter.x - action.center.x);
+        let offsetCenter = {...action.center};
         if (pastMap.zoom > action.zoom) {
             offsetCenter.x = offsetCenter.x + deltaXDeg / 2;
         } else {
-            // The map must be moved westwards when the zoom in button is clicked. There seems to 
-            // be a problem with the panTo function when the longitude is smaller than that of 
-            // the center of the map. To get around this, we add 180 degrees to the difference 
+            // The map must be moved westwards when the zoom in button is clicked. There seems to
+            // be a problem with the panTo function when the longitude is smaller than that of
+            // the center of the map. To get around this, we add 180 degrees to the difference
             // and it works.
             offsetCenter.x = 180 - Math.abs(offsetCenter.x - deltaXDeg) + 180;
         }
@@ -383,7 +381,7 @@ export const updatePrintPropertyEpic = (action$, store) => action$.ofType(UPDATE
             const updatedCoordinatesSystems = getProjections(state.sensitivityMapping.selectedPrintApplication, state.sensitivityMapping.printProperties.scale, state.sensitivityMapping.printProperties.mapCenter.x);
             return Rx.Observable.of(
                 setPrintExtent(),
-                getCoordinatesSystems(updatedCoordinatesSystems),
+                getCoordinatesSystems(updatedCoordinatesSystems)
             );
         }
         return Rx.Observable.empty();
@@ -439,13 +437,13 @@ export const selectPrintApplicationEpic = (action$, store) => action$.ofType(SET
         });
 
 /**
- * This function loads the initial print properties when the print tool is opened. It is also used when 
- * changing print templates, to ensure that the chosen properties are available with the selected template. 
- * 
- * Once the print properties have been selected, the getCoordinatesSystems function will select the available 
- * coordinate systems according to the selected template, longitude and print scale. Print properties are 
- * saved in the application state using the setPrintProperties function. Finally, the loadSelectedStyles 
- * function will be called to add the contents of the SLD style file to the properties of each layer in the 
+ * This function loads the initial print properties when the print tool is opened. It is also used when
+ * changing print templates, to ensure that the chosen properties are available with the selected template.
+ *
+ * Once the print properties have been selected, the getCoordinatesSystems function will select the available
+ * coordinate systems according to the selected template, longitude and print scale. Print properties are
+ * saved in the application state using the setPrintProperties function. Finally, the loadSelectedStyles
+ * function will be called to add the contents of the SLD style file to the properties of each layer in the
  * application state.
  */
 export const initiatePrintPropertiesEpic = (action$, store) => action$.ofType(SET_PRINT_CAPABILITIES)
@@ -455,13 +453,13 @@ export const initiatePrintPropertiesEpic = (action$, store) => action$.ofType(SE
             if (action.selectedPrintCapabilities) {
                 const state = store.getState();
                 const sensitivityMappingConfig = state.localConfig?.plugins.map_viewer
-                .find((plugin) => plugin.name === "SensitivityMapping");
-                // Some printing options are not available for all templates. One such option is orientation. 
-                // Print options are retained when the user changes the print template. Check that the 
-                // selected option exists in the new template. The default option will be selected if the 
+                    .find((plugin) => plugin.name === "SensitivityMapping");
+                // Some printing options are not available for all templates. One such option is orientation.
+                // Print options are retained when the user changes the print template. Check that the
+                // selected option exists in the new template. The default option will be selected if the
                 // option is not allowed.
                 const printAppProperties = sensitivityMappingConfig.cfg.applications
-                .find((app) => app.name === action.selectedPrintCapabilities.app);
+                    .find((app) => app.name === action.selectedPrintCapabilities.app);
                 const printProperties = {
                     title: state.sensitivityMapping.printProperties?.title ? state.sensitivityMapping.printProperties.title : "",
                     scale: state.sensitivityMapping.printProperties?.scale ? state.sensitivityMapping.printProperties.scale : Math.floor(DEFAULT_SCREEN_DPI * 39.37 * state.map.present.resolution),
@@ -476,14 +474,14 @@ export const initiatePrintPropertiesEpic = (action$, store) => action$.ofType(SE
                     gridLayer: state.sensitivityMapping.printProperties?.gridLayer ? state.sensitivityMapping.printProperties?.gridLayer : false
                 };
                 const updatedCoordinatesSystems = getProjections(
-                    state.sensitivityMapping.selectedPrintApplication, 
-                    printProperties.scale, 
+                    state.sensitivityMapping.selectedPrintApplication,
+                    printProperties.scale,
                     printProperties.mapCenter.x
-                )
-                // Sensitivity maps are printed using the UTM projection corresponding to the longitude, insofar 
-                // as the scale allows. We therefore change the selected projection when the user selects the 
-                // Sensitivity Mapping application template. The scale is also adjusted to cover approximately 
-                // the same area. 
+                );
+                // Sensitivity maps are printed using the UTM projection corresponding to the longitude, insofar
+                // as the scale allows. We therefore change the selected projection when the user selects the
+                // Sensitivity Mapping application template. The scale is also adjusted to cover approximately
+                // the same area.
                 if (action.selectedPrintCapabilities.app === "sensitivity-mapping") {
                     if (printProperties.projection === "3857") {
                         const utmProjection = updatedCoordinatesSystems.find(projection => projection.name.includes("UTM"));
@@ -493,26 +491,26 @@ export const initiatePrintPropertiesEpic = (action$, store) => action$.ofType(SE
                         }
                     }
                 }
-                // Certain print properties influence the print template selected. Not all options are permitted 
-                // with all templates, so we check that the items in the following list are among the permitted 
+                // Certain print properties influence the print template selected. Not all options are permitted
+                // with all templates, so we check that the items in the following list are among the permitted
                 // options. If not, we'll need to delete the property.
-                const templateProperties = ["legend2Pages", "orientation", "gridLayer"]
+                const templateProperties = ["legend2Pages", "orientation", "gridLayer"];
                 templateProperties.map(printProperty => {
                     let printPropertyPresence = printAppProperties.properties.find( property => property.name === printProperty );
                     if (!printPropertyPresence) {
-                        delete printProperties[printProperty]
+                        delete printProperties[printProperty];
                     } else {
                         if (printPropertyPresence.options && !printPropertyPresence.options.includes(printProperty)) {
-                            // Some other property options, such as orientation, may not be available in the selected 
-                            // template. For example, a user selects Portrait orientation and then selects a new 
-                            // template that only allows Landscape orientation. In this case, we change the property 
+                            // Some other property options, such as orientation, may not be available in the selected
+                            // template. For example, a user selects Portrait orientation and then selects a new
+                            // template that only allows Landscape orientation. In this case, we change the property
                             // to the default.
                             printProperties[printProperty] = printAppProperties.properties
-                            .find( property => property.name === printProperty ).default;
+                                .find( property => property.name === printProperty ).default;
                         }
                     }
-                })
-                
+                });
+
                 return Rx.Observable.of(
                     getCoordinatesSystems(updatedCoordinatesSystems),
                     setPrintProperties(printProperties),

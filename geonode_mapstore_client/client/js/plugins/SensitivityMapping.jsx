@@ -14,7 +14,6 @@ import { createSelector } from 'reselect';
 import SensitivityMappingEpics from '@js/epics/sensitivitymapping';
 import sensitivityMapping from '@js/reducers/sensitivitymapping';
 import Message from '@mapstore/framework/components/I18N/Message';
-import HTML from '@mapstore/framework/components/I18N/HTML';
 import GNButton from '@js/components/Button';
 import Spinner from '@js/components/Spinner';
 import { DropdownList } from 'react-widgets';
@@ -65,11 +64,11 @@ function SensitivityMapping({
         application.labelId = getMessageById(messages, application.labelId);
         if (!application.restrictions) {
             return application;
-        } else {
-            if (application.restrictions.some(restriction => userGroups.includes(restriction))) {
-                return application;
-            }
         }
+        if (application.restrictions.some(restriction => userGroups.includes(restriction))) {
+            return application;
+        }
+
     });
 
     return (

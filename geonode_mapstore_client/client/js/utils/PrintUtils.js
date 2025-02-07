@@ -138,8 +138,8 @@ export const getProjections = (selectedPrintApplication, scale, longitude) => {
             updatedCoordinatesSystems = coordinatesSystems.concat(utmZone);
         }
     }
-    // The printout extent polygon is not displayed correctly at small scale when the Canada Atlas 
-    // Lambert coordinate system is selected by the user. We remove it from the selection list when 
+    // The printout extent polygon is not displayed correctly at small scale when the Canada Atlas
+    // Lambert coordinate system is selected by the user. We remove it from the selection list when
     // the map scale is smaller than 1: 10,000,000.
     if (scale > 10000000) {
         const atlasLambertProj = coordinatesSystems.findIndex(coordinateSystem => coordinateSystem.code === "3978");
@@ -148,8 +148,8 @@ export const getProjections = (selectedPrintApplication, scale, longitude) => {
         }
     }
 
-    return updatedCoordinatesSystems
-}
+    return updatedCoordinatesSystems;
+};
 
 const numberize = (point) => {
     let outpoint = point;
