@@ -208,7 +208,7 @@ function SensitivityMapping({
                                             <select
                                                 className="form-control"
                                                 name="orientation"
-                                                value="Landscape"
+                                                defaultValue="Landscape"
                                                 onChange={(event) => {
                                                     const { name, value } = event.target;
                                                     onUpdatePrintProperty({ name, value });
