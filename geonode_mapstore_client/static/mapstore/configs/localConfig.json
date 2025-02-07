@@ -2264,7 +2264,7 @@
                                 {"code": "3857", "name": "Pseudo-Mercator"},
                                 {"code": "3978", "name": "NAD83 / Canada Atlas Lambert"}
                             ],
-                            "resolutions": ["150", "200", "250", "300"],
+                            "resolutions": ["150", "300"],
                             "utmEnabled": true
                         },
                         {
@@ -2290,7 +2290,7 @@
                                 {"code": "3857", "name": "Pseudo-Mercator"},
                                 {"code": "3978", "name": "NAD83 / Canada Atlas Lambert"}
                             ],
-                            "resolutions": ["150", "200", "250", "300"],
+                            "resolutions": ["150", "300"],
                             "utmEnabled": true,
                             "restrictions": ["neec"],
                             "report": {
@@ -2318,7 +2318,7 @@
                                 {"code": "3857", "name": "Pseudo-Mercator"},
                                 {"code": "3978", "name": "NAD83 / Canada Atlas Lambert"}
                             ],
-                            "resolutions": ["150", "200", "250", "300"],
+                            "resolutions": ["150", "300"],
                             "utmEnabled": true,
                             "restrictions": ["neec"]
                         }
