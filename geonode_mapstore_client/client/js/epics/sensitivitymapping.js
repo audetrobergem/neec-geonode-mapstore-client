@@ -10,40 +10,40 @@ import Rx from 'rxjs';
 import axios from 'axios';
 import { SET_CONTROL_PROPERTY, TOGGLE_CONTROL } from '@mapstore/framework/actions/controls';
 import { updateMapLayout, UPDATE_MAP_LAYOUT } from '@mapstore/framework/actions/maplayout';
-import { mapLayoutSelector, boundingSidebarRectSelector } from '@mapstore/framework/selectors/maplayout';
+import { boundingSidebarRectSelector, mapLayoutSelector } from '@mapstore/framework/selectors/maplayout';
 import { LayoutSections } from "@js/utils/LayoutUtils";
 import {
-    SET_PRINT_APPLICATION,
-    UPDATE_PRINT_PROPERTY,
-    SET_PRINT_CAPABILITIES,
-    SET_PRINT_PROPERTIES,
+    initSensitivityMappingPrint,
     setPrintApplication,
+    setInitialMapProperties,
     setPrintCapabilities,
     setPrintProperties,
-    setPrintExtent,
     updatePrintProperty,
     getCoordinatesSystems,
     loadPrintLayout,
-    setInitialMapProperties,
+    setPrintExtent,
     sendPrintRequest,
     downloadMap,
     getPrintStatus,
+    loadSelectedStyles,
+    loadFeatures,
+    startManagementCommand,
+    printError,
+    changePrintStatus,
+    INIT_SENSITIVITY_MAPPING_PRINT,
+    SET_PRINT_APPLICATION,
+    SET_PRINT_CAPABILITIES,
+    SET_PRINT_PROPERTIES,
+    UPDATE_PRINT_PROPERTY,
     SET_PRINT_EXTENT,
     CREATE_PRINT_CONFIG,
     SEND_PRINT_REQUEST,
-    GET_PRINT_STATUS,
-    loadSelectedStyles,
-    LOAD_SELECTED_STYLES,
-    loadFeatures,
-    LOAD_FEATURES,
     DOWNLOAD_MAP,
-    initSensitivityMappingPrint,
-    INIT_SENSITIVITY_MAPPING_PRINT,
+    GET_PRINT_STATUS,
+    LOAD_SELECTED_STYLES,
+    LOAD_FEATURES,
     START_MANAGEMENT_COMMAND,
-    startManagementCommand,
-    PRINT_ERROR,
-    printError,
-    changePrintStatus
+    PRINT_ERROR
 } from "@js/actions/sensitivitymapping";
 import { DEFAULT_SCREEN_DPI } from '@mapstore/framework/utils/MapUtils';
 import { panTo, zoomToExtent, CHANGE_MAP_VIEW } from '@mapstore/framework/actions/map';
@@ -214,18 +214,26 @@ export const closeSensitivityMappingEpic = (action$, store) => action$.ofType(SE
     });
 
 /**
- * The left panel display (layer tree) influences the zoom level of the map to display
- * the entire print polygon. The tool must zoom in on the polygon when the panel is
- * displayed or removed from the map.
+ * The left panel (layer tree) hides part of the map when displayed. It is therefore possible 
+ * that the print extent polygon is partially hidden by this panel. We therefore modify the 
+ * zoom level and the map center so that the print extent polygon is fully displayed when the 
+ * panel is displayed or removed from the map. 
+ * 
+ * We also use the coordinates of the additional layer rather than the bbox entered in the print 
+ * properties, as they are in degrees and not projected. This avoids a problem with UTM coordinates, 
+ * which don't seem to be supported by the version of the proj4 library used in MapStore.
+ * 
  */
 export const toggleDrawerControlEpic = (action$, store) => action$.ofType(TOGGLE_CONTROL)
     .filter(() => store.getState()?.controls?.sensitivityMapping?.enabled)
     .filter((action) => action.control === "drawer")
     .switchMap(() => {
         const state = store.getState();
-        const printExtent = state.sensitivityMapping.printProperties.bbox;
+        const features = state.additionallayers.find((additionalLayer) => 
+            additionalLayer.id === "sensitivity-mapping-print-extent").options.features[0].geometry.coordinates[1];
+        const printExtent = [features[0][0], features[0][1], features[2][0], features[2][1]]
         return Rx.Observable.of(
-            zoomToExtent(printExtent, "EPSG:3857")
+            zoomToExtent(printExtent, "EPSG:4326")
         );
     });
 
