@@ -67,6 +67,16 @@ const anchorToLabelAlign = (anchor) => {
     }
 };
 
+/**
+ * This function converts vector layer symbols from MapStore format to Mapfish Print format.
+ * Note: This is a modified version of MapStore's symbolizerToPrintMSStyle function:
+ * MapStore2/web/client/utils/styleparser/PrintStyleParser.js
+ * @param {object} symbolizer
+ * @param {object} feature
+ * @param {object} layer
+ * @param {object} originalSymbolizer
+ * @returns {object}
+ */
 const symbolizerToPrintMSStyle = (symbolizer, feature, layer, originalSymbolizer) => {
     const globalOpacity = layer.opacity === undefined ? 1 : layer.opacity;
     if (symbolizer.kind === 'Mark') {
@@ -180,6 +190,13 @@ const symbolizerToPrintMSStyle = (symbolizer, feature, layer, originalSymbolizer
     };
 };
 
+/**
+ * This function extracts the various symbol rules in a vector layer.
+ * Note: This is a modified version of MapStore's getPrintStyleFuncFromRules function:
+ * MapStore2/web/client/utils/styleparser/PrintStyleParser.js
+ * @param {object} geoStylerStyle
+ * @returns
+ */
 export const getPrintStyleFuncFromRules = (geoStylerStyle) => {
     return ({
         layer

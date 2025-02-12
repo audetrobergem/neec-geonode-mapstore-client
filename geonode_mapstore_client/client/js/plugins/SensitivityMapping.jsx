@@ -1,5 +1,5 @@
 /*
- * Copyright 2024, National Environmental Emergencies Centre, ECCC
+ * Copyright 2025, National Environmental Emergencies Centre, ECCC
  * All rights reserved.
  *
  * This source code is licensed under the BSD-style license found in the
@@ -31,19 +31,67 @@ const Button = tooltip(GNButton);
 */
 
 /**
- * Printing tool modified and adapted for printing NEEC sensitivity maps.
+ * NEEC GeoPortal printing tool.
+ *
+ * This plugin replaces the default MapStore print plugin. It uses the MapFish Print 3 printing module,
+ * which must be installed for the plugin to work. This plugin allows you to use multiple print templates
+ * to print maps with different purposes. Each template (application) can be configured, with printing
+ * options specific to each application and default values. The following properties can be configured:
+ *    - orientation: map orientation (choice list)
+ *    - legend2Pages: the legend on a separate page (checkbox)
+ *    - filterLegend: Filter legend by map extent (checkbox)
+ *    - gridLayer: Display a grid layer (checkbox)
+ *    - coordinatesSystems: Print coordinate system (choice list)
+ *    - resolution: Resolution (choice list)
+ *    - utmEnabled: Add the NAD83 UTM projection corresponding to the longitude to the list of coordinate systems.
+ *    - restrictions: Restrict the selection of this application to members of certain groups.
+ *    - report: Create a report to accompany the map. This report must correspond to a management command available via the GeoNode API.
+ *
  * @name SensitivityMapping
  * @prop {string} mapfishUrl url of the mapfish print 3 server
  * @prop {string} defaultApplication the default map application
- * @prop {array} applications list of templates available for printing. From MapFish Print 3 applications
+ * @prop {array} applications list of templates available for printing with properties
+ * @prop {boolean} disablePluginIf condition for deactivating the plugin
  * @example
+ * // Example of configuration for an application
+ * {
+ *     "name": "sensitivity-mapping",
+ *     "labelId": "sensitivitymapping.apps.sensitivityMapping",
+ *     "properties": [
+ *         {
+ *             "name": "orientation",
+ *             "options": ["Landscape", "Portrait"],
+ *             "default": "Landscape"
+ *         }, {
+ *             "name": "legend2Pages",
+ *             "default": false
+ *         }, {
+ *             "name": "filterLegend",
+ *             "default": true
+ *         }, {
+ *             "name": "gridLayer",
+ *             "default": false
+ *         }
+ *     ],
+ *     "coordinatesSystems": [
+ *         {"code": "3857", "name": "Pseudo-Mercator"},
+ *         {"code": "3978", "name": "NAD83 / Canada Atlas Lambert"}
+ *     ],
+ *     "resolutions": ["150", "300"],
+ *     "utmEnabled": true,
+ *     "restrictions": ["neec"],
+ *     "report": {
+ *         "id": "sensitivity-mapping",
+ *         "command": "create_sensitivity_map_email"
+ *     }
+ * }
  */
 
 function SensitivityMapping({
     style,
     userGroups,
     messages,
-    sensitivityMapping,
+    sensitivityMappingStore,
     applications,
     defaultApplication,
     onClose,
@@ -60,15 +108,10 @@ function SensitivityMapping({
         };
     }, []);
 
-    const localizedPrintApplications = applications.map((application) => {
+    const localizedPrintApplications = applications.filter((application) => {
         application.labelId = getMessageById(messages, application.labelId);
-        if (!application.restrictions) {
-            return application;
-        }
-        if (application.restrictions.some(restriction => userGroups.includes(restriction))) {
-            return application;
-        }
-
+        return !application.restrictions ||
+            application.restrictions.some(restriction => userGroups.includes(restriction));
     });
 
     return (
@@ -84,9 +127,9 @@ function SensitivityMapping({
                     <Glyphicon glyph="1-close" />
                 </Button>
             </div>
-            {sensitivityMapping.printApplications &&
+            {sensitivityMappingStore.printApplications &&
                 <div className="sensitivity-mapping-body">
-                    {sensitivityMapping.loading &&
+                    {sensitivityMappingStore.loading &&
                         <div
                             className="sensitivity-mapping-spinner-container">
                             <Spinner />
@@ -104,7 +147,7 @@ function SensitivityMapping({
                             valueField="name"
                         />
                     </div>
-                    {sensitivityMapping.selectedPrintCapabilities && sensitivityMapping.printProperties &&
+                    {sensitivityMappingStore.selectedPrintCapabilities && sensitivityMappingStore.printProperties &&
                         <div className="sensitivity-mapping-body-content">
                             <form>
                                 <div className="form-group">
@@ -113,7 +156,7 @@ function SensitivityMapping({
                                         className="form-control"
                                         type="text"
                                         name="title"
-                                        value={sensitivityMapping.printProperties.title}
+                                        value={sensitivityMappingStore.printProperties.title}
                                         onChange={(event) => {
                                             const { name, value } = event.target;
                                             onUpdatePrintProperty({ name, value });
@@ -126,7 +169,7 @@ function SensitivityMapping({
                                         <select
                                             className="form-control"
                                             name="language"
-                                            value={sensitivityMapping.printProperties.language}
+                                            value={sensitivityMappingStore.printProperties.language}
                                             onChange={(event) => {
                                                 const { name, value } = event.target;
                                                 onUpdatePrintProperty({ name, value });
@@ -143,13 +186,13 @@ function SensitivityMapping({
                                         <select
                                             className="form-control"
                                             name="format"
-                                            value={sensitivityMapping.printProperties.format}
+                                            value={sensitivityMappingStore.printProperties.format}
                                             onChange={(event) => {
                                                 const { name, value } = event.target;
                                                 onUpdatePrintProperty({ name, value });
                                             }}
                                         >
-                                            {sensitivityMapping.selectedPrintCapabilities.formats.map((format) => <option value={format}>{format}</option>)}
+                                            {sensitivityMappingStore.selectedPrintCapabilities.formats.map((format) => <option value={format}>{format}</option>)}
                                         </select>
                                     </div>
                                 </div>
@@ -159,13 +202,13 @@ function SensitivityMapping({
                                         <select
                                             className="form-control"
                                             name="resolution"
-                                            value={sensitivityMapping.printProperties.resolution}
+                                            value={sensitivityMappingStore.printProperties.resolution}
                                             onChange={(event) => {
                                                 const { name, value } = event.target;
                                                 onUpdatePrintProperty({ name, value });
                                             }}
                                         >
-                                            {sensitivityMapping.selectedPrintApplication.resolutions.map((resolution) => <option value={resolution}>{resolution}</option>)}
+                                            {sensitivityMappingStore.selectedPrintApplication.resolutions.map((resolution) => <option value={resolution}>{resolution}</option>)}
                                         </select>
                                     </div>
                                 </div>
@@ -175,13 +218,13 @@ function SensitivityMapping({
                                         <select
                                             className="form-control"
                                             name="projection"
-                                            value={sensitivityMapping.printProperties.projection}
+                                            value={sensitivityMappingStore.printProperties.projection}
                                             onChange={(event) => {
                                                 const { name, value } = event.target;
                                                 onUpdatePrintProperty({ name, value });
                                             }}
                                         >
-                                            {sensitivityMapping.projections.map((projection) => <option value={projection.code}>{projection.name}</option>)}
+                                            {sensitivityMappingStore.projections.map((projection) => <option value={projection.code}>{projection.name}</option>)}
                                         </select>
                                     </div>
                                 </div>
@@ -192,8 +235,8 @@ function SensitivityMapping({
                                             className="form-control"
                                             type="number"
                                             name="scale"
-                                            value={sensitivityMapping.printProperties.scale}
-                                            step={Math.round(sensitivityMapping.printProperties.scale / 10000) * 100}
+                                            value={sensitivityMappingStore.printProperties.scale}
+                                            step={Math.round(sensitivityMappingStore.printProperties.scale / 10000) * 100}
                                             onChange={(event) => {
                                                 const { name, value } = event.target;
                                                 onUpdatePrintProperty({ name, value });
@@ -201,7 +244,7 @@ function SensitivityMapping({
                                         />
                                     </div>
                                 </div>
-                                {sensitivityMapping.selectedPrintApplication.properties.find(property => property.name === "orientation") &&
+                                {sensitivityMappingStore.selectedPrintApplication.properties.find(property => property.name === "orientation") &&
                                     <div className="form-group row">
                                         <label htmlFor="orientation" className="col-sm-4 col-form-label"><Message msgId="sensitivitymapping.mapOrientation"/></label>
                                         <div className="col-sm-8">
@@ -214,18 +257,18 @@ function SensitivityMapping({
                                                     onUpdatePrintProperty({ name, value });
                                                 }}
                                             >
-                                                {sensitivityMapping.selectedPrintApplication.properties.find(property => property.name === "orientation").options.map((orientation) => <option value={orientation}>{orientation}</option>)}
+                                                {sensitivityMappingStore.selectedPrintApplication.properties.find(property => property.name === "orientation").options.map((orientation) => <option value={orientation}>{orientation}</option>)}
                                             </select>
                                         </div>
                                     </div>
                                 }
-                                {sensitivityMapping.selectedPrintApplication.properties.find(property => property.name === "gridLayer") &&
+                                {sensitivityMappingStore.selectedPrintApplication.properties.find(property => property.name === "gridLayer") &&
                                     <div className="checkbox">
                                         <label className="strong control-label" htmlFor="gridLayer">
                                             <input
                                                 type="checkbox"
                                                 name="gridLayer"
-                                                defaultChecked={sensitivityMapping.printProperties.gridLayer}
+                                                defaultChecked={sensitivityMappingStore.printProperties.gridLayer}
                                                 onChange={(event) => {
                                                     const { name, checked } = event.target;
                                                     onUpdatePrintProperty({ name, "value": checked });
@@ -235,13 +278,13 @@ function SensitivityMapping({
                                         </label>
                                     </div>
                                 }
-                                {sensitivityMapping.selectedPrintApplication.properties.find(property => property.name === "legend") &&
+                                {sensitivityMappingStore.selectedPrintApplication.properties.find(property => property.name === "legend") &&
                                     <div className="checkbox">
                                         <label className="strong control-label" htmlFor="legendCheckbox">
                                             <input
                                                 type="checkbox"
                                                 name="legend"
-                                                defaultChecked={sensitivityMapping.printProperties.legend}
+                                                defaultChecked={sensitivityMappingStore.printProperties.legend}
                                                 onChange={(event) => {
                                                     const { name, checked } = event.target;
                                                     onUpdatePrintProperty({ name, "value": checked });
@@ -251,13 +294,13 @@ function SensitivityMapping({
                                         </label>
                                     </div>
                                 }
-                                {sensitivityMapping.selectedPrintApplication.properties.find(property => property.name === "legend2Pages") &&
+                                {sensitivityMappingStore.selectedPrintApplication.properties.find(property => property.name === "legend2Pages") &&
                                     <div className="checkbox">
                                         <label className="strong control-label" htmlFor="legend2PagesCheckbox">
                                             <input
                                                 type="checkbox"
                                                 name="legend2Pages"
-                                                defaultChecked={sensitivityMapping.printProperties.legend2Pages}
+                                                defaultChecked={sensitivityMappingStore.printProperties.legend2Pages}
                                                 onChange={(event) => {
                                                     const { name, checked } = event.target;
                                                     onUpdatePrintProperty({ name, "value": checked });
@@ -267,13 +310,13 @@ function SensitivityMapping({
                                         </label>
                                     </div>
                                 }
-                                {sensitivityMapping.selectedPrintApplication.properties.find(property => property.name === "filterLegend") &&
+                                {sensitivityMappingStore.selectedPrintApplication.properties.find(property => property.name === "filterLegend") &&
                                     <div className="checkbox">
                                         <label className="strong control-label" htmlFor="filterLegendCheckbox">
                                             <input
                                                 type="checkbox"
                                                 name="filterLegend"
-                                                defaultChecked={sensitivityMapping.printProperties.filterLegend}
+                                                defaultChecked={sensitivityMappingStore.printProperties.filterLegend}
                                                 onChange={(event) => {
                                                     const { name, checked } = event.target;
                                                     onUpdatePrintProperty({ name, "value": checked });
@@ -283,7 +326,7 @@ function SensitivityMapping({
                                         </label>
                                     </div>
                                 }
-                                {sensitivityMapping.selectedPrintApplication.report &&
+                                {sensitivityMappingStore.selectedPrintApplication.report &&
                                     <div className="checkbox">
                                         <label className="strong control-label" htmlFor="createReportCheckbox">
                                             <input
@@ -308,8 +351,8 @@ function SensitivityMapping({
                                 >
                                     <Message msgId="sensitivitymapping.print"/>
                                 </Button>
-                                <div className="btn btn-primary print-download" disabled={!sensitivityMapping.downloadUrl}>
-                                    <a href={sensitivityMapping.downloadUrl} target="_blank"><Glyphicon glyph="save"/></a>
+                                <div className="btn btn-primary print-download" disabled={!sensitivityMappingStore.downloadUrl}>
+                                    <a href={sensitivityMappingStore.downloadUrl} target="_blank"><Glyphicon glyph="save"/></a>
                                 </div>
                             </div>
                         </div>
@@ -345,12 +388,12 @@ const ConnectedSensitivityMappingPlugin = connect(
         state => state?.security.user.info.groups,
         state => state?.locale?.messages,
         state => state?.sensitivityMapping
-    ], (style, enabled, userGroups, messages, sensitivityMapping) => ({
+    ], (style, enabled, userGroups, messages, sensitivityMappingStore) => ({
         style,
         enabled,
         userGroups,
         messages,
-        sensitivityMapping
+        sensitivityMappingStore
     })), {
         onClose: setControlProperty.bind(null, 'sensitivityMapping', 'enabled', false),
         onSelectPrintApplication: setPrintApplication,

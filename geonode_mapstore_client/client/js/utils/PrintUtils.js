@@ -1,3 +1,11 @@
+/*
+ * Copyright 2025, National Environmental Emergencies Centre, ECCC
+ * All rights reserved.
+ *
+ * This source code is licensed under the BSD-style license found in the
+ * LICENSE file in the root directory of this source tree.
+ */
+
 import Proj4js from 'proj4';
 const proj4 = Proj4js;
 import assign from 'object-assign';
@@ -129,6 +137,14 @@ export const findUtmZoneFromLongitude = (longitude) => {
     return {};
 };
 
+/**
+ * This function determines the list of coordinate systems that will be offered in the form's
+ * choice list based on the printing application, map scale, and longitude.
+ * @param {object} selectedPrintApplication
+ * @param {number} scale
+ * @param {number} longitude
+ * @returns {array} - updatedCoordinatesSystems
+ */
 export const getProjections = (selectedPrintApplication, scale, longitude) => {
     const coordinatesSystems = selectedPrintApplication.coordinatesSystems;
     let updatedCoordinatesSystems = [...coordinatesSystems];
@@ -147,10 +163,31 @@ export const getProjections = (selectedPrintApplication, scale, longitude) => {
             updatedCoordinatesSystems.splice(atlasLambertProj, 1);
         }
     }
-
     return updatedCoordinatesSystems;
 };
 
+/**
+ * This function allows you to normalize the structure of a point object.
+ * Note: this function is extracted from the MapStore core: MapStore2/web/client/utils/CoordinatesUtils.js
+ * @param {object} point
+ * @returns {void}
+ */
+export const normalizePoint = (point) => {
+    return {
+        x: point.x || 0.0,
+        y: point.y || 0.0,
+        srs: point.srs || point.crs || 'EPSG:4326',
+        crs: point.srs || point.crs || 'EPSG:4326'
+    };
+};
+
+/**
+ * This function validates if the x and y coordinates of a point are in a numeric format. They
+ * are converted if not.
+ * Note: this function is extracted from the MapStore core: MapStore2/web/client/utils/CoordinatesUtils.js
+ * @param {object} point
+ * @returns {object} outpoint
+ */
 const numberize = (point) => {
     let outpoint = point;
     if (!isNumber(point.x)) {
@@ -162,15 +199,16 @@ const numberize = (point) => {
     return outpoint;
 };
 
-export const normalizePoint = (point) => {
-    return {
-        x: point.x || 0.0,
-        y: point.y || 0.0,
-        srs: point.srs || point.crs || 'EPSG:4326',
-        crs: point.srs || point.crs || 'EPSG:4326'
-    };
-};
-
+/**
+ * This function reprojects a point into a given coordinate system.
+ * Note: This is a modified version to work around an error with reprojection to UTM coordinate systems.
+ * The function is extracted from MapStore core: MapStore2/web/client/utils/CoordinatesUtils.js
+ * @param {object} point
+ * @param {object} source
+ * @param {object} dest
+ * @param {boolean} normalize
+ * @returns {object} transformed
+ */
 export const reproject = (point, source, dest, normalize = true) => {
     const sourceProj = source && proj4(source) ? new proj4.Proj(source) : null;
     const destProj = dest && proj4(dest) ? new proj4.Proj(dest) : null;
@@ -186,6 +224,13 @@ export const reproject = (point, source, dest, normalize = true) => {
     return null;
 };
 
+/**
+ * Note: this function is extracted from the MapStore core: MapStore2/web/client/utils/CoordinatesUtils.js
+ * @param {object} geojson
+ * @param {*} leafCallback
+ * @param {*} nodeCallback
+ * @returns
+ */
 function traverseGeoJson(geojson, leafCallback, nodeCallback) {
     if (geojson === null) return geojson;
 
@@ -206,17 +251,39 @@ function traverseGeoJson(geojson, leafCallback, nodeCallback) {
     return r;
 }
 
+/**
+ * Checks if `list` looks like a `[x, y]`.
+ * Note: this function is extracted from the MapStore core: MapStore2/web/client/utils/CoordinatesUtils.js
+ * @param {array} list
+ * @returns
+ */
 function isXY(list) {
     return list.length >= 2 &&
         typeof list[0] === 'number' &&
         typeof list[1] === 'number';
 }
 
+/**
+ * This function validates whether the coordinates received when reprojecting the geojson are in the [x, y]
+ * format and uses a callback function to project the coordinates.
+ * Note: this function is extracted from the MapStore core: MapStore2/web/client/utils/CoordinatesUtils.js
+ * @param {*array} coordinates
+ * @param {@function} callback
+ * @returns Projected coordinates
+ */
 function traverseCoords(coordinates, callback) {
     if (isXY(coordinates)) return callback(coordinates);
     return coordinates.map(function(coord) { return traverseCoords(coord, callback); });
 }
 
+/**
+ * This function reproduces a geojson in a coordinate system specified at the time of the call.
+ * Note: this function is extracted from the MapStore core: MapStore2/web/client/utils/CoordinatesUtils.js
+ * @param {object} geojson
+ * @param {string} fromParam
+ * @param {string} toParam
+ * @returns
+ */
 export const reprojectGeoJson = function(geojson, fromParam = "EPSG:4326", toParam = "EPSG:4326") {
     let from = fromParam;
     let to = toParam;
@@ -264,9 +331,9 @@ export const reprojectGeoJson = function(geojson, fromParam = "EPSG:4326", toPar
 
 /**
  * This function is used to create layer objects that will be sent to MapFish Print 3
- * depending on the layer format (WMS, WFS, vector or OSM). This is a modified version
- * of MapStore's specCreators function:
- * (https://github.com/geosolutions-it/MapStore2/blob/master/web/client/utils/PrintUtils.js#L583).
+ * depending on the layer format (WMS, WFS, vector or OSM).
+ * Note: This is a modified version of MapStore's specCreators function:
+ * MapStore2/web/client/utils/PrintUtils.js.
  * @param {object} layer - The layer object from MapStore
  * @param {object} state - The actual state of MapStore
  * @returns {object} - The layer object
@@ -274,7 +341,7 @@ export const reprojectGeoJson = function(geojson, fromParam = "EPSG:4326", toPar
 export const formatPrintLayer = (layer, state) => {
     if (layer.type === "wms") {
         const layerObject = {
-            baseURL: `${layer.url}?`,
+            baseURL: layer.url.slice(-1) === "?" ? layer.url : `${layer.url}?`,
             opacity: layer.opacity || (layer.opacity === 0 ? 0 : 1.0),
             type: "WMS",
             layers: [
@@ -287,7 +354,7 @@ export const formatPrintLayer = (layer, state) => {
             "customParams": addAuthenticationParameter(layer.url, assign({
                 "TRANSPARENT": true,
                 ...getPrintVendorParams(layer),
-                "EXCEPTIONS": "application/vnd.ogc.se_inimage",
+                // "EXCEPTIONS": "application/vnd.ogc.se_inimage",
                 "scaleMethod": "accurate"
             }, layer.baseParams || {}, layer.params || {}, {
                 ...optionsToVendorParams({
@@ -379,7 +446,7 @@ export const formatPrintLayer = (layer, state) => {
             "EPSG:3857",
             projectionDefinition.definition ? projectionDefinition.definition : `EPSG:${printProjection}`);
         } catch (error) {
-            return undefined;
+            return {};
         }
         if (geoJson) {
             return {
@@ -391,8 +458,9 @@ export const formatPrintLayer = (layer, state) => {
                 geoJson: geoJson
             };
         }
-        return undefined;
+        return {};
     }
+    return {};
 };
 
 /**
@@ -427,7 +495,8 @@ export const getLayerTitle = (layer, mapLanguage) => {
  */
 export const formatLegend = (layer, bbox, state) => {
     if (layer.type === "wms") {
-        const layoutMainMap = state.sensitivityMapping.printLayout.attributes.find((attribute) => attribute.name === "mainMap");
+        const layoutMainMap = state.sensitivityMapping.printLayout.attributes
+            .find((attribute) => attribute.name === "mainMap");
         const legendTitle = getLayerTitle(layer, state.sensitivityMapping.printProperties.language);
 
         // Legend options let you configure the appearance of the legend. We use a default set of options
@@ -494,4 +563,5 @@ export const formatLegend = (layer, bbox, state) => {
             ]
         };
     }
+    return {};
 };

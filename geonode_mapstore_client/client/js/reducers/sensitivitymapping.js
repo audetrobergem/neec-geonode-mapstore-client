@@ -1,3 +1,11 @@
+/*
+ * Copyright 2025, National Environmental Emergencies Centre, ECCC
+ * All rights reserved.
+ *
+ * This source code is licensed under the BSD-style license found in the
+ * LICENSE file in the root directory of this source tree.
+ */
+
 import {
     SET_PRINT_APPLICATION,
     SET_INITIAL_MAP_PROPERTIES,
@@ -15,10 +23,9 @@ import {
     LOAD_FEATURES,
     INIT_SENSITIVITY_MAPPING_PRINT,
     START_MANAGEMENT_COMMAND,
+    PRINT_ERROR,
     CHANGE_PRINT_STATUS
 } from "@js/actions/sensitivitymapping";
-import { PRINT_ERROR } from "@mapstore/framework/actions/print";
-
 
 export const sensitivityMapping = (state = {}, action) => {
     switch (action.type) {
