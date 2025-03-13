@@ -309,6 +309,8 @@ export const loadSelectedStyleEpic = (action$, store) =>
                             layerToEdit.selectedStyle = response.data;
                         })
                 );
+            } else {
+                console.warn(`Style for layer ${action.layer} could not be loaded...`);
             }
             return Rx.Observable.empty();
         });
@@ -331,21 +333,28 @@ export const loadSelectedStylesEpic = (action$, store) =>
                     layer.extendedParams &&
                     layer.style.length > 0;
             });
-            localLayers.forEach(layer => {
-                const selectedStyle = layer.extendedParams.mapLayer.dataset.styles
-                    .find((style) => layer.style.includes(style.name) || style.name.includes(layer.style));
-                if (selectedStyle) {
-                    Rx.Observable.fromPromise(
-                        axios.get(selectedStyle.sld_url)
-                            .then((response) => {
-                                layer.selectedStyle = response.data;
-                            })
-                    );
-                }
-            });
-            return Rx.Observable.of(
-                loadFeatures(action.layers)
-            );
+            if (localLayers) {
+                localLayers.forEach(layer => {
+                    try {
+                        const selectedStyle = layer.extendedParams.mapLayer.dataset.styles
+                            .find((style) => layer.style.includes(style.name) || style.name.includes(layer.style));
+                        if (selectedStyle) {
+                            Rx.Observable.fromPromise(
+                                axios.get(selectedStyle.sld_url)
+                                    .then((response) => {
+                                        layer.selectedStyle = response.data;
+                                    })
+                            );
+                        }
+                    } catch (error) {
+                        console.warn(`Style for layer ${layer.name} could not be loaded... \n ${error}`);
+                    }
+                });
+                return Rx.Observable.of(
+                    loadFeatures(action.layers)
+                );
+            }
+            return Rx.Observable.empty();
         });
 
 /**
