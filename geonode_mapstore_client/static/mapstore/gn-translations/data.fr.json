@@ -418,6 +418,41 @@
             "includeFullscreen": "Inclure le mode plein écran",
             "group": "Groupe",
             "editFields": "Éditer les champs"
+        },
+        "sensitivitymapping": {
+            "sensitivityMapping": "Imprimer",
+            "sensitivityMappingTitle": "Imprimer",
+            "apps": {
+                "neecGeoportal": "Modèle par défaut",
+                "sensitivityMapping": "Cartographie des sensibilités",
+                "ics232": "Ressources à risque (SCI 232)"
+            },
+            "notifications": {
+                "success": "Succès",
+                "warning": "Avertissement",
+                "error": "Erreur",
+                "close": "Fermer",
+                "printSuccess": "La carte a été imprimée correctement, veuillez cliquer sur le bouton de téléchargement pour télécharger votre carte.",
+                "warningMessage": "L'objet couche ou la légende des couches suivantes n'a pas pu être créé pour l'impression: \n{couches}",
+                "getPrintStatusError": "Une erreur s'est produite lors du traitement de la demande d'impression au serveur d'impression. Veuillez contacter l'équipe technique de NEEC GeoPortal avec le message d'erreur suivant: {erreur}",
+                "loadPrintLayoutError": "Le modèle d'impression sélectionné ({printLayoutName}) ne figure pas dans la liste des modèles disponibles. Il se peut que l'outil d'impression n'ait pas été complètement chargé lors de l'ouverture de la carte. Veuillez rafraîchir la page et réessayer. Contactez l'équipe technique de NEEC GeoPortal si le problème persiste.",
+                "initSensitivityMappingPrintError": "L'application mapfish print ne semble pas être disponible pour le moment. Veuillez patienter quelques instants, puis rafraîchir la page. Veuillez contacter l'équipe technique de NEEC GeoPortal si le problème persiste.\nMessage du serveur d'impression : {message}"
+            },
+            "mapTitle": "Titre de la carte",
+            "mapLanguage": "Langue",
+            "mapFormat": "Format",
+            "mapResolution": "Résolution (PPP)",
+            "mapCoordinatesSystem": "Système de coordonnées",
+            "mapScale": "Échelle de la carte",
+            "mapOrientation": "Orientation",
+            "mapGridLayer": "Ajouter une grille avec des étiquettes",
+            "mapLegend": "Inclure la légende",
+            "mapLegend2Page": "Afficher la légende sur une page disctincte",
+            "mapFilterLegend": "Filtrer le contenu de la légende avec la carte",
+            "mapReport": "Créer un rapport sur les sensibilités",
+            "print": "Imprimer",
+            "getPrintStatus": "Une erreur s'est produite lors du traitement de la demande d'impression sur le serveur d'impression. Veuillez contacter l'équipe technique du Géoportail du CNUE avec le message d'erreur suivant :<br>{error}",
+            "loadPrintLayout": "Le gabarit d'impression sélectionné (<strong>{error}</strong>) ne figure pas dans la liste des gabarits disponibles. Il se peut que l'outil d'impression n'ait pas été complètement chargé lors de l'ouverture de la carte. Veuillez rafraîchir la page et réessayer. Veuillez contacter l'équipe technique du Géoportail du CNUE si le problème persiste."
         }
     }
 }
