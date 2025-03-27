@@ -53,7 +53,8 @@ function getBaseCSSStyle({ type, title }) {
 
 function getStyleId({ name }) {
     // geonode allows to create styles with this structure {uuid}_ms_{*}
-    return `geonode:${uuidv1()}_ms_${name}`;
+    return `neec_geodb:${uuidv1()}_ms_${name}`;
+    // return `geonode:${uuidv1()}_ms_${name}`;
 }
 
 /**
