@@ -3,6 +3,9 @@
         "url": "proxy/?url=",
         "useCORS": []
     },
+    "miscSettings": {
+        "experimentalInteractiveLegend": true
+    },
     "geoNodeApi": {
         "endpointV1": "/api",
         "endpointV2": "/api/v2"
