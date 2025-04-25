@@ -26,7 +26,8 @@ import {
     selectFirstMediaFeature,
     selectPreviousMediaFeature,
     selectNextMediaFeature,
-    selectLastMediaFeature
+    selectLastMediaFeature,
+    setShorelineStyle
 } from '@js/actions/shorelineviewer';
 import ShorelineViewerEpics from '@js/epics/shorelineviewer';
 import shorelineViewer from '@js/reducers/shorelineviewer';
@@ -34,6 +35,8 @@ import { mapLayoutValuesSelector } from '@mapstore/framework/selectors/maplayout
 import { updateAdditionalLayer } from '@mapstore/framework/actions/additionallayers';
 import tooltip from '@mapstore/framework/components/misc/enhancers/tooltip';
 import { getMessageById } from '@mapstore/framework/utils/LocaleUtils';
+import InfoPopover from '@mapstore/framework/components/widgets/widget/InfoPopover';
+import parse from 'html-react-parser';
 
 const Button = tooltip(GNButton);
 
@@ -174,12 +177,14 @@ const ConnectedPhotoNavigationButton = connect(
 function ShorelineViewer({
     style,
     selectedRegion,
+    selectedStyle,
     selectedFeature,
     loading,
     messages,
     onClose,
     regions,
-    onSelectRegion
+    onSelectRegion,
+    onSelectStyle
 }) {
     const isMounted = useRef(false);
 
@@ -193,6 +198,11 @@ function ShorelineViewer({
     const localizedRegions = regions.map((region) => {
         region.labelId = getMessageById(messages, region.labelId);
         return region;
+    });
+
+    const localizedStyles = selectedRegion?.styles?.map((style) => {
+        style.labelId = getMessageById(messages, style.labelId);
+        return style;
     });
 
     return (
@@ -219,6 +229,39 @@ function ShorelineViewer({
                     textField="labelId"
                     valueField="id"
                 />
+                <div className="shoreline-viewer-body-styles">
+                    {selectedRegion && selectedRegion.styles &&
+                    <div className="shoreline-viewer-body-styles-left">
+                        <Message msgId="shorelineviewer.selectStyle" />
+                    </div>
+                    }
+                    {selectedRegion && selectedRegion.styles &&
+                    <div className="shoreline-viewer-body-styles-center">
+                        <DropdownList
+                            className="shoreline-viewer-dropdown"
+                            defaultValue={getMessageById(messages, `shorelineviewer.styles.${selectedStyle.id}.label`)}
+                            onChange={(value) => {
+                                console.log(value);
+                                onSelectStyle(value);
+                            }}
+                            data={localizedStyles}
+                            textField="labelId"
+                            valueField="id"
+                        />   
+                    </div>
+                    }
+                    {selectedRegion && selectedRegion.styles &&
+                    <div className="shoreline-viewer-body-styles-right">
+                        <InfoPopover 
+                            text={parse(getMessageById(messages, `shorelineviewer.styles.${selectedStyle.id}.tooltip`))} 
+                            placement="left"
+                            title={getMessageById(messages, `shorelineviewer.styles.${selectedStyle.id}.label`)} 
+                            popoverStyle={{ maxWidth: 500 }}
+                            data-bs-html="true"
+                        />
+                    </div>
+                    }
+                </div>
                 <div className="shoreline-viewer-body">
                     {selectedRegion != null &&
                     <ConnectedShorelineTypeButton />
@@ -335,12 +378,14 @@ function ShorelineViewer({
 ShorelineViewer.propTypes = {
     onClose: PropTypes.func,
     onSelectRegion: PropTypes.func,
+    onSelectStyle: PropTypes.func,
     addMarkers: PropTypes.func
 };
 
 ShorelineViewer.defaultProps = {
     onClose: () => { },
     onSelectRegion: () => { },
+    onSelectStyle: () => { },
     addMarkers: () => { }
 };
 
@@ -354,20 +399,23 @@ const ConnectedShorelineViewerPlugin = connect(
         state => state?.controls?.shorelineViewer?.enabled,
         state => state?.shorelineViewer?.selectedMediaType,
         state => state?.shorelineViewer?.selectedRegion,
+        state => state?.shorelineViewer?.selectedStyle,
         state => state?.shorelineViewer?.selectedFeature,
         state => state?.shorelineViewer?.loading || false,
         state => state?.locale?.messages
-    ], (style, enabled, selectedMediaType, selectedRegion, selectedFeature, loading, messages) => ({
+    ], (style, enabled, selectedMediaType, selectedRegion, selectedStyle, selectedFeature, loading, messages) => ({
         style,
         enabled,
         selectedMediaType,
         selectedRegion,
+        selectedStyle,
         selectedFeature,
         loading,
         messages
     })), {
         onClose: setControlProperty.bind(null, 'shorelineViewer', 'enabled', false),
         onSelectRegion: setShorelineRegion,
+        onSelectStyle: setShorelineStyle,
         addMarkers: updateAdditionalLayer
     }
 )(ShorelineViewerPlugin);

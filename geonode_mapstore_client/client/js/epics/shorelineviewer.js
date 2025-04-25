@@ -19,6 +19,7 @@ import {
     shorelineSelectedFeature,
     loadSelectedMediaDatasetFeatures,
     setShorelineLoading,
+    setShorelineStyle,
     SET_SHORELINE_REGION,
     UPDATE_SHORELINE_SELECTED_MEDIA_TYPE,
     SHORELINE_FEATURE_INFO_CLICK,
@@ -26,7 +27,8 @@ import {
     SELECT_FIRST_MEDIA_FEATURE,
     SELECT_PREVIOUS_MEDIA_FEATURE,
     SELECT_NEXT_MEDIA_FEATURE,
-    SELECT_LAST_MEDIA_FEATURE
+    SELECT_LAST_MEDIA_FEATURE,
+    SET_SHORELINE_STYLE
 } from "@js/actions/shorelineviewer";
 import { registerEventListener, unRegisterEventListener, zoomToExtent, CLICK_ON_MAP } from '@mapstore/framework/actions/map';
 import { LAYER_LOAD, LAYER_LOADING } from '@mapstore/framework/actions/layers';
@@ -126,6 +128,7 @@ export const closeShorelineViewerEpic = (action$) => action$.ofType(SET_CONTROL_
         return Rx.Observable.of(
             removeAdditionalLayer({ owner: "ShorelineViewer" }),
             setShorelineRegion(null),
+            setShorelineStyle(null),
             updateShorelineSelectedMediaType(null),
             shorelineSelectedFeature(null),
             toggleMapInfoState(),
@@ -140,9 +143,11 @@ export const zoomToSelectedShorelineRegionEpic = (action$, store) => action$.ofT
             const state = store.getState();
             const accessToken = state.security?.user?.info?.access_token;
             const geoserverUrl = state.gnsettings?.geoserverUrl;
+            const selectedStyle = state.shorelineViewer.selectedStyle ? state.shorelineViewer.selectedStyle : action.selectedRegion.styles[0];
             return Rx.Observable.of(
                 shorelineSelectedFeature(null),
                 updateShorelineSelectedMediaType(null),
+                setShorelineStyle(selectedStyle),
                 removeAdditionalLayer({ id: "shoreline-viewer-selected-feature" }),
                 removeAdditionalLayer({ id: "shoreline-classification-layer" }),
                 updateAdditionalLayer(
@@ -154,8 +159,10 @@ export const zoomToSelectedShorelineRegionEpic = (action$, store) => action$.ofT
                         url: `${geoserverUrl}wms`,
                         name: action.selectedRegion.shorelineClassificationDataset,
                         format: "image/png8",
+                        singleTile: true,
                         params: {
-                            access_token: accessToken
+                            access_token: accessToken,
+                            STYLES: selectedStyle.styleName
                         }
                     }
                 ),
@@ -296,6 +303,7 @@ export const displayShorelineMediaLayerEpic = (action$, store) => action$.ofType
                         url: `${geoserverUrl}wms`,
                         name: layerName,
                         format: "image/png8",
+                        singleTile: true,
                         params: {
                             access_token: accessToken
                         }
@@ -384,6 +392,38 @@ export const shorelineStopLoadingEpic = (action$, store) => action$.ofType(LAYER
         );
     });
 
+export const changeShorelineStyleEpic = (action$, store) => action$.ofType(SET_SHORELINE_STYLE)
+    .filter(() => store.getState()?.controls?.shorelineViewer?.enabled)
+    .switchMap(
+        (action) => {
+            const state = store.getState();
+            const accessToken = state.security?.user?.info?.access_token;
+            const geoserverUrl = state.gnsettings?.geoserverUrl;
+            return Rx.Observable.of(
+                shorelineSelectedFeature(null),
+                updateShorelineSelectedMediaType(null),
+                removeAdditionalLayer({ id: "shoreline-viewer-selected-feature" }),
+                removeAdditionalLayer({ id: "shoreline-classification-layer" }),
+                updateAdditionalLayer(
+                    "shoreline-classification-layer",
+                    "ShorelineViewer",
+                    "overlay",
+                    {
+                        type: "wms",
+                        url: `${geoserverUrl}wms`,
+                        name: state.shorelineViewer.selectedRegion.shorelineClassificationDataset,
+                        format: "image/png8",
+                        singleTile: true,
+                        params: {
+                            access_token: accessToken,
+                            STYLES: action.selectedStyle.styleName
+                        }
+                    }
+                )
+            );
+        }
+    );
+
 export default {
     gnUpdateShorelineViewerMapLayoutEpic,
     openShorelineViewerEpic,
@@ -399,5 +439,6 @@ export default {
     selectNextMediaFeatureEpic,
     selectLastMediaFeatureEpic,
     shorelineStartLoadingEpic,
-    shorelineStopLoadingEpic
+    shorelineStopLoadingEpic,
+    changeShorelineStyleEpic
 };

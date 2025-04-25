@@ -17,7 +17,7 @@ export const shorelineViewerRegionsSelector = state => state?.shorelineViewer?.s
  * @returns {object} the selected region
  */
 export const shorelineViewerRegionSelector = state => state?.shorelineViewer?.selectedRegion;
-
+export const shorelineViewerStyleSelector = state => state?.shorelineViewer?.selectedStyle;
 export const shorelineClickPointSelector = state => state && state.mapInfo && state.shorelineViewer.clickPoint;
 export const shorelineClickLayerSelector = state => state && state.mapInfo && state.shorelineViewer.clickLayers;
 export const shorelineSelectedFeature = state => state?.shorelineViewer?.selectedFeature;

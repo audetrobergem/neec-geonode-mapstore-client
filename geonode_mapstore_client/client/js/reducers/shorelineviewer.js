@@ -4,7 +4,8 @@ import {
     SHORELINE_FEATURE_INFO_CLICK,
     SHORELINE_SELECTED_FEATURE,
     LOAD_SELECTED_MEDIA_DATASET_FEATURES,
-    SET_SHORELINE_LOADING
+    SET_SHORELINE_LOADING,
+    SET_SHORELINE_STYLE
 } from '@js/actions/shorelineviewer';
 
 export const shorelineViewer = (state = {}, action) => {
@@ -48,6 +49,13 @@ export const shorelineViewer = (state = {}, action) => {
         return {
             ...state,
             loading: action.loading
+        };
+    }
+
+    case SET_SHORELINE_STYLE: {
+        return {
+            ...state,
+            selectedStyle: action.selectedStyle
         };
     }
 

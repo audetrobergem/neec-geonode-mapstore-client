@@ -8,6 +8,7 @@ export const SELECT_PREVIOUS_MEDIA_FEATURE = "SHORELINE:SELECT_PREVIOUS_MEDIA_FE
 export const SELECT_NEXT_MEDIA_FEATURE = "SHORELINE:SELECT_NEXT_MEDIA_FEATURE";
 export const SELECT_LAST_MEDIA_FEATURE = "SHORELINE:SELECT_LAST_MEDIA_FEATURE";
 export const SET_SHORELINE_LOADING = "SHORELINE:SET_SHORELINE_LOADING";
+export const SET_SHORELINE_STYLE = "SHORELINE:SET_SHORELINE_STYLE";
 
 
 /**
@@ -97,4 +98,13 @@ export const selectNextMediaFeature = (selectedFeature) => ({
 export const setShorelineLoading = (loading) => ({
     type: SET_SHORELINE_LOADING,
     loading
+});
+
+/**
+* edit the selected shoreline classification style for the shoreline viewer plugin in the state
+* @param {string} selectedStyle
+*/
+export const setShorelineStyle = (selectedStyle) => ({
+    type: SET_SHORELINE_STYLE,
+    selectedStyle
 });

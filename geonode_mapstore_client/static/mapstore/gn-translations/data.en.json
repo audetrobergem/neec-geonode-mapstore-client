@@ -438,12 +438,33 @@
             "nextPhotoTooltip": "Go to the next photo",
             "lastPhotoTooltip": "Go to the last photo",
             "shorelineViewerTitle": "Shoreline Viewer Tool",
-            "bayOfFundy": "Bay of Fundy",
-            "bcNorthCoast": "North Coast of British Columbia",
-            "beaufortSea": "Beaufort Sea",
-            "chedabuctoBay": "Chedabucto Bay",
-            "nunavik": "Nunavik",
-            "stClairRiver": "St. Clair River"
+            "selectStyle": "Select a style",
+            "regions": {
+                "bayOfFundy": "Bay of Fundy",
+                "bcNorthCoast": "North Coast of British Columbia",
+                "beaufortSea": "Beaufort Sea",
+                "chedabuctoBay": "Chedabucto Bay",
+                "nunavik": "Nunavik",
+                "stClairRiver": "St. Clair River"
+            },
+            "styles": {
+                "shorelineClassification": {
+                    "label": "Shoreline Classification (SCAT)",
+                    "tooltip": "Dominant <strong>shoreline type</strong> in the upper intertidal zone, based primarily on <strong>material</strong> (e.g., sand, mud, vegetation), and secondarily on <strong>form</strong>.<br><br><center><img src='../static/mapstore/img/shoreline_classification_legend_en.png' width='450'/></center>"
+                },
+                "alongshoreAccess": {
+                    "label": "Alongshore Access",
+                    "tooltip": "Indicates whether the upper intertidal zone of a segment can be accessed <strong>by foot</strong> via an adjacent area (UI, SI, or MI).<br><br><center><img src='../static/mapstore/img/shoreline_alongshore_access_legend_en.png'/></center>"
+                },
+                "backshoreAccess": {
+                    "label": "Backshore Access",
+                    "tooltip": "Indicates whether the upper intertidal zone of a segment can be accessed <strong>by foot</strong> from the backshore of the same segment.<br><br><center><img src='../static/mapstore/img/shoreline_backshore_access_legend_en.png'/></center>"
+                },
+                "shorelineFetch": {
+                    "label": "Wave Exposure (Fetch)",
+                    "tooltip": "Estimate of <strong>wave exposure</strong> based on the open water distance where waves can form.<br><br><center><img src='../static/mapstore/img/shoreline_fetch_legend_en.png'/></center>"
+                }
+            }
         },
         "sensitivitymapping": {
             "sensitivityMapping": "Print",
