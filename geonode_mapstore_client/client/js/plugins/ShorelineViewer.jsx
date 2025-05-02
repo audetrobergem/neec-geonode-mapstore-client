@@ -27,7 +27,7 @@ import {
     selectPreviousMediaFeature,
     selectNextMediaFeature,
     selectLastMediaFeature,
-    setShorelineStyle
+    setShorelineThematic
 } from '@js/actions/shorelineviewer';
 import ShorelineViewerEpics from '@js/epics/shorelineviewer';
 import shorelineViewer from '@js/reducers/shorelineviewer';
@@ -37,6 +37,7 @@ import tooltip from '@mapstore/framework/components/misc/enhancers/tooltip';
 import { getMessageById } from '@mapstore/framework/utils/LocaleUtils';
 import InfoPopover from '@mapstore/framework/components/widgets/widget/InfoPopover';
 import parse from 'html-react-parser';
+import ShorelineInformation from '@js/components/ShorelineInformation/ShorelineInformation';
 
 const Button = tooltip(GNButton);
 
@@ -177,14 +178,15 @@ const ConnectedPhotoNavigationButton = connect(
 function ShorelineViewer({
     style,
     selectedRegion,
-    selectedStyle,
+    selectedThematic,
     selectedFeature,
     loading,
     messages,
     onClose,
     regions,
+    tabs,
     onSelectRegion,
-    onSelectStyle
+    onSelectThematic
 }) {
     const isMounted = useRef(false);
 
@@ -200,9 +202,9 @@ function ShorelineViewer({
         return region;
     });
 
-    const localizedStyles = selectedRegion?.styles?.map((style) => {
-        style.labelId = getMessageById(messages, style.labelId);
-        return style;
+    const localizedThematics = selectedRegion?.thematics?.map((thematic) => {
+        thematic.labelId = getMessageById(messages, thematic.labelId);
+        return thematic;
     });
 
     return (
@@ -229,33 +231,32 @@ function ShorelineViewer({
                     textField="labelId"
                     valueField="id"
                 />
-                <div className="shoreline-viewer-body-styles">
-                    {selectedRegion && selectedRegion.styles &&
-                    <div className="shoreline-viewer-body-styles-left">
+                <div className="shoreline-viewer-body-thematics">
+                    {selectedRegion && selectedRegion.thematics &&
+                    <div className="shoreline-viewer-body-thematics-left">
                         <Message msgId="shorelineviewer.selectStyle" />
                     </div>
                     }
-                    {selectedRegion && selectedRegion.styles &&
-                    <div className="shoreline-viewer-body-styles-center">
+                    {selectedRegion && selectedRegion.thematics &&
+                    <div className="shoreline-viewer-body-thematics-center">
                         <DropdownList
                             className="shoreline-viewer-dropdown"
-                            defaultValue={getMessageById(messages, `shorelineviewer.styles.${selectedStyle.id}.label`)}
+                            defaultValue={getMessageById(messages, `shorelineviewer.thematics.${selectedThematic.id}.label`)}
                             onChange={(value) => {
-                                console.log(value);
-                                onSelectStyle(value);
+                                onSelectThematic(value);
                             }}
-                            data={localizedStyles}
+                            data={localizedThematics}
                             textField="labelId"
                             valueField="id"
-                        />   
+                        />
                     </div>
                     }
-                    {selectedRegion && selectedRegion.styles &&
-                    <div className="shoreline-viewer-body-styles-right">
-                        <InfoPopover 
-                            text={parse(getMessageById(messages, `shorelineviewer.styles.${selectedStyle.id}.tooltip`))} 
+                    {selectedRegion && selectedRegion.thematics &&
+                    <div className="shoreline-viewer-body-thematics-right">
+                        <InfoPopover
+                            text={parse(getMessageById(messages, `shorelineviewer.thematics.${selectedThematic.id}.tooltip`))}
                             placement="left"
-                            title={getMessageById(messages, `shorelineviewer.styles.${selectedStyle.id}.label`)} 
+                            title={getMessageById(messages, `shorelineviewer.thematics.${selectedThematic.id}.label`)}
                             popoverStyle={{ maxWidth: 500 }}
                             data-bs-html="true"
                         />
@@ -273,70 +274,7 @@ function ShorelineViewer({
                         <Spinner />
                     </div>}
                     {selectedFeature != null && selectedFeature.id.includes("shoreline_classification") &&
-                    <div className="shoreline-viewer-info-table">
-                        <div className="shoreline-viewer-info-fields">
-                            {selectedFeature.properties.upper_intertidal_scat_class &&
-                                <div className="shoreline-viewer-info-row">
-                                    <div className="shoreline-viewer-info-label">Upper Intertidal SCAT Class</div>
-                                    <div className="shoreline-viewer-info-value">{selectedFeature.properties.upper_intertidal_scat_class}</div>
-                                </div>
-                            }
-                            {selectedFeature.properties.shoreline_processes &&
-                                <div className="shoreline-viewer-info-row">
-                                    <div className="shoreline-viewer-info-label">Shoreline Processes</div>
-                                    <div className="shoreline-viewer-info-value">
-                                        <ul className="shoreline-viewer-list">
-                                            {selectedFeature.properties.shoreline_processes
-                                                .replace('[', '').replace(']', '').replace(/"/g, '').split(',').map(process => <li>{process}</li>)
-                                            }
-                                        </ul>
-                                    </div>
-                                </div>
-                            }
-                            {selectedFeature.properties.transportation_mode &&
-                                <div className="shoreline-viewer-info-row">
-                                    <div className="shoreline-viewer-info-label">Transportation Mode</div>
-                                    <div className="shoreline-viewer-info-value">
-                                        <ul className="shoreline-viewer-list">
-                                            {selectedFeature.properties.transportation_mode
-                                                .replace('[', '').replace(']', '').replace(/"/g, '').split(',').map(mode => <li>{mode}</li>)
-                                            }
-                                        </ul>
-                                    </div>
-                                </div>
-                            }
-                            {selectedFeature.properties.backshore_access &&
-                                <div className="shoreline-viewer-info-row">
-                                    <div className="shoreline-viewer-info-label">Backshore Access</div>
-                                    <div className="shoreline-viewer-info-value">{selectedFeature.properties.backshore_access}</div>
-                                </div>
-                            }
-                            {selectedFeature.properties.alongshore_access &&
-                                <div className="shoreline-viewer-info-row">
-                                    <div className="shoreline-viewer-info-label">Alongshore Access</div>
-                                    <div className="shoreline-viewer-info-value">{selectedFeature.properties.alongshore_access}</div>
-                                </div>
-                            }
-                            {selectedFeature.properties.length_m &&
-                                <div className="shoreline-viewer-info-row">
-                                    <div className="shoreline-viewer-info-label">Length (m)</div>
-                                    <div className="shoreline-viewer-info-value">{selectedFeature.properties.length_m}</div>
-                                </div>
-                            }
-                            {selectedFeature.properties.name &&
-                                <div className="shoreline-viewer-info-row">
-                                    <div className="shoreline-viewer-info-label">Name</div>
-                                    <div className="shoreline-viewer-info-value">{selectedFeature.properties.name}</div>
-                                </div>
-                            }
-                            {selectedFeature.properties.survey_year &&
-                                <div className="shoreline-viewer-info-row">
-                                    <div className="shoreline-viewer-info-label">Survey Year</div>
-                                    <div className="shoreline-viewer-info-value">{selectedFeature.properties.survey_year}</div>
-                                </div>
-                            }
-                        </div>
-                    </div>
+                    <ShorelineInformation segmentProperties={selectedFeature.properties} tabs={tabs}/>
                     }
 
                     {selectedFeature != null && selectedFeature.id.includes("shoreline_photos") &&
@@ -378,14 +316,14 @@ function ShorelineViewer({
 ShorelineViewer.propTypes = {
     onClose: PropTypes.func,
     onSelectRegion: PropTypes.func,
-    onSelectStyle: PropTypes.func,
+    onSelectThematic: PropTypes.func,
     addMarkers: PropTypes.func
 };
 
 ShorelineViewer.defaultProps = {
     onClose: () => { },
     onSelectRegion: () => { },
-    onSelectStyle: () => { },
+    onSelectThematic: () => { },
     addMarkers: () => { }
 };
 
@@ -399,23 +337,23 @@ const ConnectedShorelineViewerPlugin = connect(
         state => state?.controls?.shorelineViewer?.enabled,
         state => state?.shorelineViewer?.selectedMediaType,
         state => state?.shorelineViewer?.selectedRegion,
-        state => state?.shorelineViewer?.selectedStyle,
+        state => state?.shorelineViewer?.selectedThematic,
         state => state?.shorelineViewer?.selectedFeature,
         state => state?.shorelineViewer?.loading || false,
         state => state?.locale?.messages
-    ], (style, enabled, selectedMediaType, selectedRegion, selectedStyle, selectedFeature, loading, messages) => ({
+    ], (style, enabled, selectedMediaType, selectedRegion, selectedThematic, selectedFeature, loading, messages) => ({
         style,
         enabled,
         selectedMediaType,
         selectedRegion,
-        selectedStyle,
+        selectedThematic,
         selectedFeature,
         loading,
         messages
     })), {
         onClose: setControlProperty.bind(null, 'shorelineViewer', 'enabled', false),
         onSelectRegion: setShorelineRegion,
-        onSelectStyle: setShorelineStyle,
+        onSelectThematic: setShorelineThematic,
         addMarkers: updateAdditionalLayer
     }
 )(ShorelineViewerPlugin);

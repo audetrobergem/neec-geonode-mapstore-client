@@ -438,9 +438,9 @@
                 "nunavik": "Nunavik",
                 "stClairRiver": "Rivière Sainte-Claire"
             },
-            "styles": {
+            "thematics": {
                 "shorelineClassification": {
-                    "label": "Classification du rivage (TERR)",
+                    "label": "Type de rivage",
                     "tooltip": "<strong>Type de rivage</strong> dominant dans la zone intertidale supérieure, basé sur le <strong>matériau</strong> principal (ex. sable, vase, végétation) et, en second lieu, sur la <strong>forme</strong>.<br><br><center><img src='../static/mapstore/img/shoreline_classification_legend_fr.png' width='450'/></center>"
                 },
                 "alongshoreAccess": {
@@ -455,6 +455,35 @@
                     "label": "Exposition aux vagues",
                     "tooltip": "Estimation de l'<strong>exposition aux vagues</strong> basée sur la distance d'eau libre où les vagues peuvent se former.<br><br><center><img src='../static/mapstore/img/shoreline_fetch_legend_fr.png'/></center>"
                 }
+            },
+            "segment": {
+                "name": "Nom",
+                "general": "Général",
+                "upperIntertidal": "Intertidal supérieure",
+                "lowerIntertidal": "Intertidal inférieure",
+                "supratidal": "Supratidal",
+                "backshore": "Arrière-plage",
+                "province": "Province",
+                "length": "Longueur (m)",
+                "width": "Largeur (m)",
+                "generalComments": "Commentaires généraux",
+                "transportationMode": "Mode de transport",
+                "alongshoreAccess": "Accès le long du rivage",
+                "backshoreAccess": "Accès par l'arrière-plage",
+                "fetch": "Fetch",
+                "shorelineProcesses": "Processus côtiers",
+                "datasource": "Source de la donnée",
+                "surveyYear": "Année d'acquisition de la donnée",
+                "scatClass": "SCAT Class",
+                "classeTerr": "Classe TERR",
+                "form": "Forme",
+                "slope": "Pente",
+                "height": "Hauteur",
+                "primarySubstrate": "Substrat ou couvert du sol principal",
+                "secondarySubstrate": "Substrat ou couvert du sol secondaire",
+                "tertiarySubstrate": "Substrat ou couvert du sol tertiaire",
+                "primaryLandCoverClass": "Type de rivage et d'arrière-plage principal",
+                "secondaryLandCoverClass": "Type de rivage et d'arrière-plage secondaire"
             }
         },
         "zoneIdentify": {

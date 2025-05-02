@@ -19,7 +19,7 @@ import {
     shorelineSelectedFeature,
     loadSelectedMediaDatasetFeatures,
     setShorelineLoading,
-    setShorelineStyle,
+    setShorelineThematic,
     SET_SHORELINE_REGION,
     UPDATE_SHORELINE_SELECTED_MEDIA_TYPE,
     SHORELINE_FEATURE_INFO_CLICK,
@@ -28,7 +28,7 @@ import {
     SELECT_PREVIOUS_MEDIA_FEATURE,
     SELECT_NEXT_MEDIA_FEATURE,
     SELECT_LAST_MEDIA_FEATURE,
-    SET_SHORELINE_STYLE
+    SET_SHORELINE_THEMATIC
 } from "@js/actions/shorelineviewer";
 import { registerEventListener, unRegisterEventListener, zoomToExtent, CLICK_ON_MAP } from '@mapstore/framework/actions/map';
 import { LAYER_LOAD, LAYER_LOADING } from '@mapstore/framework/actions/layers';
@@ -128,7 +128,7 @@ export const closeShorelineViewerEpic = (action$) => action$.ofType(SET_CONTROL_
         return Rx.Observable.of(
             removeAdditionalLayer({ owner: "ShorelineViewer" }),
             setShorelineRegion(null),
-            setShorelineStyle(null),
+            setShorelineThematic(null),
             updateShorelineSelectedMediaType(null),
             shorelineSelectedFeature(null),
             toggleMapInfoState(),
@@ -143,11 +143,11 @@ export const zoomToSelectedShorelineRegionEpic = (action$, store) => action$.ofT
             const state = store.getState();
             const accessToken = state.security?.user?.info?.access_token;
             const geoserverUrl = state.gnsettings?.geoserverUrl;
-            const selectedStyle = state.shorelineViewer.selectedStyle ? state.shorelineViewer.selectedStyle : action.selectedRegion.styles[0];
+            const selectedThematic = state.shorelineViewer.selectedThematic ? state.shorelineViewer.selectedThematic : action.selectedRegion.thematics[0];
             return Rx.Observable.of(
                 shorelineSelectedFeature(null),
                 updateShorelineSelectedMediaType(null),
-                setShorelineStyle(selectedStyle),
+                setShorelineThematic(selectedThematic),
                 removeAdditionalLayer({ id: "shoreline-viewer-selected-feature" }),
                 removeAdditionalLayer({ id: "shoreline-classification-layer" }),
                 updateAdditionalLayer(
@@ -162,7 +162,7 @@ export const zoomToSelectedShorelineRegionEpic = (action$, store) => action$.ofT
                         singleTile: true,
                         params: {
                             access_token: accessToken,
-                            STYLES: selectedStyle.styleName
+                            STYLES: selectedThematic.thematicName
                         }
                     }
                 ),
@@ -392,7 +392,7 @@ export const shorelineStopLoadingEpic = (action$, store) => action$.ofType(LAYER
         );
     });
 
-export const changeShorelineStyleEpic = (action$, store) => action$.ofType(SET_SHORELINE_STYLE)
+export const changeShorelineThematicEpic = (action$, store) => action$.ofType(SET_SHORELINE_THEMATIC)
     .filter(() => store.getState()?.controls?.shorelineViewer?.enabled)
     .switchMap(
         (action) => {
@@ -400,9 +400,6 @@ export const changeShorelineStyleEpic = (action$, store) => action$.ofType(SET_S
             const accessToken = state.security?.user?.info?.access_token;
             const geoserverUrl = state.gnsettings?.geoserverUrl;
             return Rx.Observable.of(
-                shorelineSelectedFeature(null),
-                updateShorelineSelectedMediaType(null),
-                removeAdditionalLayer({ id: "shoreline-viewer-selected-feature" }),
                 removeAdditionalLayer({ id: "shoreline-classification-layer" }),
                 updateAdditionalLayer(
                     "shoreline-classification-layer",
@@ -416,7 +413,7 @@ export const changeShorelineStyleEpic = (action$, store) => action$.ofType(SET_S
                         singleTile: true,
                         params: {
                             access_token: accessToken,
-                            STYLES: action.selectedStyle.styleName
+                            STYLES: action.selectedThematic.thematicName
                         }
                     }
                 )
@@ -440,5 +437,5 @@ export default {
     selectLastMediaFeatureEpic,
     shorelineStartLoadingEpic,
     shorelineStopLoadingEpic,
-    changeShorelineStyleEpic
+    changeShorelineThematicEpic
 };

@@ -5,7 +5,7 @@ import {
     SHORELINE_SELECTED_FEATURE,
     LOAD_SELECTED_MEDIA_DATASET_FEATURES,
     SET_SHORELINE_LOADING,
-    SET_SHORELINE_STYLE
+    SET_SHORELINE_THEMATIC
 } from '@js/actions/shorelineviewer';
 
 export const shorelineViewer = (state = {}, action) => {
@@ -52,10 +52,10 @@ export const shorelineViewer = (state = {}, action) => {
         };
     }
 
-    case SET_SHORELINE_STYLE: {
+    case SET_SHORELINE_THEMATIC: {
         return {
             ...state,
-            selectedStyle: action.selectedStyle
+            selectedThematic: action.selectedThematic
         };
     }
 

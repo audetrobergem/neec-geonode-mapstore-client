@@ -438,7 +438,7 @@
             "nextPhotoTooltip": "Go to the next photo",
             "lastPhotoTooltip": "Go to the last photo",
             "shorelineViewerTitle": "Shoreline Viewer Tool",
-            "selectStyle": "Select a style",
+            "selectStyle": "Select a thematic",
             "regions": {
                 "bayOfFundy": "Bay of Fundy",
                 "bcNorthCoast": "North Coast of British Columbia",
@@ -447,9 +447,9 @@
                 "nunavik": "Nunavik",
                 "stClairRiver": "St. Clair River"
             },
-            "styles": {
+            "thematics": {
                 "shorelineClassification": {
-                    "label": "Shoreline Classification (SCAT)",
+                    "label": "Shoreline Type",
                     "tooltip": "Dominant <strong>shoreline type</strong> in the upper intertidal zone, based primarily on <strong>material</strong> (e.g., sand, mud, vegetation), and secondarily on <strong>form</strong>.<br><br><center><img src='../static/mapstore/img/shoreline_classification_legend_en.png' width='450'/></center>"
                 },
                 "alongshoreAccess": {
@@ -464,6 +464,35 @@
                     "label": "Wave Exposure (Fetch)",
                     "tooltip": "Estimate of <strong>wave exposure</strong> based on the open water distance where waves can form.<br><br><center><img src='../static/mapstore/img/shoreline_fetch_legend_en.png'/></center>"
                 }
+            },
+            "segment": {
+                "name": "Name",
+                "general": "General",
+                "upperIntertidal": "Upper Intertidal",
+                "lowerIntertidal": "Lower Intertidal",
+                "supratidal": "Supratidal",
+                "backshore": "Backshore",
+                "province": "Province",
+                "length": "Length (m)",
+                "width": "Width (m)",
+                "generalComments": "General Comments",
+                "transportationMode": "Transportation Mode",
+                "alongshoreAccess": "Alongshore Access",
+                "backshoreAccess": "Backshore Access",
+                "fetch": "Fetch",
+                "shorelineProcesses": "Shoreline Processes",
+                "datasource": "Data Source",
+                "surveyYear": "Survey Year",
+                "scatClass": "SCAT Class",
+                "classeTerr": "Classe TERR",
+                "form": "Form",
+                "slope": "Slope",
+                "height": "Height",
+                "primarySubstrate": "Primary Substrate",
+                "secondarySubstrate": "Secondary Substrate",
+                "tertiarySubstrate": "Tertiary Substrate",
+                "primaryLandCoverClass": "Primary Land Cover Class",
+                "secondaryLandCoverClass": "Secondary Land Cover Class"
             }
         },
         "sensitivitymapping": {
