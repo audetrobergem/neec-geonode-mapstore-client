@@ -1,4 +1,5 @@
 export const SET_SHORELINE_REGION = "SHORELINE:SET_SHORELINE_REGION";
+export const ZOOM_TO_REGION = "SHORELINE:ZOOM_TO_REGION";
 export const UPDATE_SHORELINE_SELECTED_MEDIA_TYPE = "SHORELINE:UPDATE_SHORELINE_SELECTED_MEDIA_TYPE";
 export const SHORELINE_FEATURE_INFO_CLICK = "SHORELINE:SHORELINE_FEATURE_INFO_CLICK";
 export const SHORELINE_SELECTED_FEATURE = "SHORELINE:SHORELINE_SELECTED_FEATURE";
@@ -18,6 +19,14 @@ export const SET_SHORELINE_THEMATIC = "SHORELINE:SET_SHORELINE_THEMATIC";
 export const setShorelineRegion = (selectedRegion) => ({
     type: SET_SHORELINE_REGION,
     selectedRegion
+});
+
+/**
+* zoom to the selected region. Zoom to all regions if no region is selected
+* @param {string} zoomToRegion
+*/
+export const zoomToRegion = () => ({
+    type: ZOOM_TO_REGION
 });
 
 /**

@@ -28,7 +28,8 @@ import {
     SELECT_PREVIOUS_MEDIA_FEATURE,
     SELECT_NEXT_MEDIA_FEATURE,
     SELECT_LAST_MEDIA_FEATURE,
-    SET_SHORELINE_THEMATIC
+    SET_SHORELINE_THEMATIC,
+    ZOOM_TO_REGION
 } from "@js/actions/shorelineviewer";
 import { registerEventListener, unRegisterEventListener, zoomToExtent, CLICK_ON_MAP } from '@mapstore/framework/actions/map';
 import { LAYER_LOAD, LAYER_LOADING } from '@mapstore/framework/actions/layers';
@@ -117,8 +118,27 @@ export const openShorelineViewerEpic = (action$, store) => action$.ofType(SET_CO
                     }))
                 }
             ),
-            zoomToExtent(extractRegionsBbox(shorelineViewerConfig.cfg.regions), "EPSG:4326")
+            // zoomToExtent(extractRegionsBbox(shorelineViewerConfig.cfg.regions), "EPSG:4326")
         );
+    });
+
+export const zoomToSelectedRegionEpic = (action$, store) => action$.ofType(ZOOM_TO_REGION)
+    .filter(() => store.getState()?.controls?.shorelineViewer?.enabled)
+    .switchMap(() => {
+        const state = store.getState();
+        const selectedRegion = state.shorelineViewer.selectedRegion;
+        if (selectedRegion) {
+            return Rx.Observable.of(
+                zoomToExtent(selectedRegion.extent, "EPSG:4326")
+            )
+        }
+        else {
+            const shorelineViewerConfig = state.localConfig.plugins.map_viewer.find(({ name }) => name === "ShorelineViewer");
+            return Rx.Observable.of(
+                zoomToExtent(extractRegionsBbox(shorelineViewerConfig.cfg.regions), "EPSG:4326")
+                
+            )
+        }
     });
 
 export const closeShorelineViewerEpic = (action$) => action$.ofType(SET_CONTROL_PROPERTY)
@@ -166,7 +186,7 @@ export const zoomToSelectedShorelineRegionEpic = (action$, store) => action$.ofT
                         }
                     }
                 ),
-                zoomToExtent(action.selectedRegion.extent, "EPSG:4326")
+                // zoomToExtent(action.selectedRegion.extent, "EPSG:4326")
             );
         }
     );
@@ -424,6 +444,7 @@ export const changeShorelineThematicEpic = (action$, store) => action$.ofType(SE
 export default {
     gnUpdateShorelineViewerMapLayoutEpic,
     openShorelineViewerEpic,
+    zoomToSelectedRegionEpic,
     closeShorelineViewerEpic,
     zoomToSelectedShorelineRegionEpic,
     selectShorelineFeatureEpic,

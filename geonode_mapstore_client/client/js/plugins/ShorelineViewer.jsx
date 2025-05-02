@@ -16,7 +16,7 @@ import Message from '@mapstore/framework/components/I18N/Message';
 import GNButton from '@js/components/Button';
 import FaIcon from '@js/components/FaIcon';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faRoute } from '@fortawesome/free-solid-svg-icons';
+import { faRoute, faGlobe } from '@fortawesome/free-solid-svg-icons';
 import { DropdownList } from 'react-widgets';
 import Spinner from '@js/components/Spinner';
 import { setControlProperty } from '@mapstore/framework/actions/controls';
@@ -27,7 +27,8 @@ import {
     selectPreviousMediaFeature,
     selectNextMediaFeature,
     selectLastMediaFeature,
-    setShorelineThematic
+    setShorelineThematic,
+    zoomToRegion
 } from '@js/actions/shorelineviewer';
 import ShorelineViewerEpics from '@js/epics/shorelineviewer';
 import shorelineViewer from '@js/reducers/shorelineviewer';
@@ -186,6 +187,7 @@ function ShorelineViewer({
     regions,
     tabs,
     onSelectRegion,
+    onZoomToSelectedRegion,
     onSelectThematic
 }) {
     const isMounted = useRef(false);
@@ -221,16 +223,29 @@ function ShorelineViewer({
                 </Button>
             </div>
             <div className="shoreline-viewer-body">
-                <DropdownList
-                    className="shoreline-viewer-dropdown"
-                    defaultValue={getMessageById(messages, "shorelineviewer.defaultRegionSelect")}
-                    onChange={(value) => {
-                        onSelectRegion(value);
-                    }}
-                    data={localizedRegions}
-                    textField="labelId"
-                    valueField="id"
-                />
+                <div className="shoreline-viewer-body-regions">
+                    <div className="shoreline-viewer-body-regions-left">
+                        <DropdownList
+                            className="shoreline-viewer-dropdown"
+                            defaultValue={getMessageById(messages, "shorelineviewer.defaultRegionSelect")}
+                            onChange={(value) => {
+                                onSelectRegion(value);
+                            }}
+                            data={localizedRegions}
+                            textField="labelId"
+                            valueField="id"
+                        />
+                    </div>
+                    <div className="shoreline-viewer-body-regions-right">
+                        <Button 
+                            className="square-button" 
+                            onClick={() => onZoomToSelectedRegion()}
+                            tooltipId={<Message msgId="shorelineviewer.zoomToRegion" />}
+                        >
+                            <FontAwesomeIcon icon={faGlobe} size="1x" />
+                        </Button>
+                    </div>
+                </div>
                 <div className="shoreline-viewer-body-thematics">
                     {selectedRegion && selectedRegion.thematics &&
                     <div className="shoreline-viewer-body-thematics-left">
@@ -316,6 +331,7 @@ function ShorelineViewer({
 ShorelineViewer.propTypes = {
     onClose: PropTypes.func,
     onSelectRegion: PropTypes.func,
+    onZoomToSelectedRegion: PropTypes.func,
     onSelectThematic: PropTypes.func,
     addMarkers: PropTypes.func
 };
@@ -323,6 +339,7 @@ ShorelineViewer.propTypes = {
 ShorelineViewer.defaultProps = {
     onClose: () => { },
     onSelectRegion: () => { },
+    onZoomToSelectedRegion: () => { },
     onSelectThematic: () => { },
     addMarkers: () => { }
 };
@@ -353,6 +370,7 @@ const ConnectedShorelineViewerPlugin = connect(
     })), {
         onClose: setControlProperty.bind(null, 'shorelineViewer', 'enabled', false),
         onSelectRegion: setShorelineRegion,
+        onZoomToSelectedRegion: zoomToRegion,
         onSelectThematic: setShorelineThematic,
         addMarkers: updateAdditionalLayer
     }

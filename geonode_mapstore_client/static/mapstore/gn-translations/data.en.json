@@ -438,6 +438,7 @@
             "nextPhotoTooltip": "Go to the next photo",
             "lastPhotoTooltip": "Go to the last photo",
             "shorelineViewerTitle": "Shoreline Viewer Tool",
+            "zoomToRegion": "Zoom to the selected region",
             "selectStyle": "Select a thematic",
             "regions": {
                 "bayOfFundy": "Bay of Fundy",

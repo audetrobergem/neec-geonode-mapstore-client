@@ -429,6 +429,7 @@
             "nextPhotoTooltip": "Aller à la photo suivante",
             "lastPhotoTooltip": "Aller à la dernière photo",
             "shorelineViewerTitle": "Outil de visualisation du rivage",
+            "zoomToRegion": "Zoom sur la région sélectionnée",
             "selectStyle": "Sélectionnez un style",
             "regions": {
                 "bayOfFundy": "Baie de Fundy",
