@@ -170,9 +170,10 @@ const ConnectedPhotoNavigationButton = connect(
 */
 
 /**
- * render a panel for detail information about a resource inside the viewer pages
+ * render a panel for detail information about the shoreline information
  * @name ShorelineViewer
  * @prop {array} regions list of regions where shoreline videos are available
+ * @prop {array} tabs list of attributes organized by categories for the shoreline classification layer
  * @example
  */
 
@@ -273,7 +274,6 @@ function ShorelineViewer({
                             placement="left"
                             title={getMessageById(messages, `shorelineviewer.thematics.${selectedThematic.id}.label`)}
                             popoverStyle={{ maxWidth: 500 }}
-                            data-bs-html="true"
                         />
                     </div>
                     }
@@ -384,7 +384,6 @@ export default createPlugin('ShorelineViewer', {
             position: 5,
             tooltip: "shorelineviewer.shorelineViewer",
             icon: <FontAwesomeIcon icon={faRoute} size="2x" />,
-            // icon: <Glyphicon glyph="point-coordinates" />,
             action: setControlProperty.bind(null, 'shorelineViewer', 'enabled', 'true'),
             doNotHide: true,
             priority: 2
