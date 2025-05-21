@@ -40,7 +40,9 @@
     "mapstore": "file:MapStore2",
     "react-helmet": "6.1.0",
     "react-intl": "2.3.0",
-    "react-router-dom": "4.1.1"
+    "react-router-dom": "4.1.1",
+    "video.js": "^8.22.0",
+    "videojs-hls-quality-selector": "^2.0.0"
   },
   "mapstore": {
     "output": "dist",

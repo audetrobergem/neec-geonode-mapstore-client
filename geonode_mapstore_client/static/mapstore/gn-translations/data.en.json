@@ -441,12 +441,11 @@
             "zoomToRegion": "Zoom to the selected region",
             "selectStyle": "Select a thematic",
             "regions": {
-                "bayOfFundy": "Bay of Fundy",
-                "bcNorthCoast": "North Coast of British Columbia",
-                "beaufortSea": "Beaufort Sea",
-                "chedabuctoBay": "Chedabucto Bay",
-                "nunavik": "Nunavik",
-                "stClairRiver": "St. Clair River"
+                "arctic": "Arctic",
+                "atlantic": "Atlantic",
+                "britishColumbia": "British Columbia",
+                "greatLakes": "Great Lakes",
+                "stLawrence": "St. Lawrence River"
             },
             "thematics": {
                 "shorelineClassification": {
@@ -494,6 +493,11 @@
                 "tertiarySubstrate": "Tertiary Substrate",
                 "primaryLandCoverClass": "Primary Land Cover Class",
                 "secondaryLandCoverClass": "Secondary Land Cover Class"
+            },
+            "notifications": {
+                "error": "Error",
+                "close": "Close",
+                "videoDurationError": "The requested video cannot be played because the video time ({time}) corresponding to the selected point exceeds the total video duration ({duration}) selected."
             }
         },
         "sensitivitymapping": {

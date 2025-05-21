@@ -7,6 +7,7 @@
  */
 
 import Rx from 'rxjs';
+import axios from '@mapstore/framework/libs/ajax';
 import { SET_CONTROL_PROPERTY } from '@mapstore/framework/actions/controls';
 import { updateMapLayout, UPDATE_MAP_LAYOUT } from '@mapstore/framework/actions/maplayout';
 import { mapLayoutSelector, boundingSidebarRectSelector } from '@mapstore/framework/selectors/maplayout';
@@ -29,19 +30,44 @@ import {
     SELECT_NEXT_MEDIA_FEATURE,
     SELECT_LAST_MEDIA_FEATURE,
     SET_SHORELINE_THEMATIC,
-    ZOOM_TO_REGION
+    ZOOM_TO_REGION,
+    VIDEO_ERROR,
+    UPDATE_VIDEO_INFORMATION,
+    setVideoInformations,
+    LOAD_VIDEO,
+    loadVideo
 } from "@js/actions/shorelineviewer";
-import { registerEventListener, unRegisterEventListener, zoomToExtent, CLICK_ON_MAP } from '@mapstore/framework/actions/map';
+import { registerEventListener, unRegisterEventListener, zoomToExtent, CLICK_ON_MAP, CHANGE_MAP_VIEW } from '@mapstore/framework/actions/map';
 import { LAYER_LOAD, LAYER_LOADING } from '@mapstore/framework/actions/layers';
-import { removeAdditionalLayer, updateAdditionalLayer, UPDATE_ADDITIONAL_LAYER } from '@mapstore/framework/actions/additionallayers';
+import { removeAdditionalLayer, updateAdditionalLayer } from '@mapstore/framework/actions/additionallayers';
 import { updatePointWithGeometricFilter } from "@mapstore/framework/utils/IdentifyUtils";
 import { projectionSelector } from '@mapstore/framework/selectors/map';
 import { hideMapinfoMarker, purgeMapInfoResults, toggleMapInfoState } from '@mapstore/framework/actions/mapInfo';
 import { getFeatureInfo } from '@mapstore/framework/api/identify';
 import { reproject } from '@mapstore/framework/utils/CoordinatesUtils';
 import { getFeature } from '@mapstore/framework/api/WFS';
-import { extractRegionsBbox, extractBboxFromGeometry, DEFAULT_LINE_STYLE, DEFAULT_POINT_STYLE } from '@js/utils/ShorelineViewerUtils';
+import { extractRegionsBbox, extractBboxFromGeometry, DEFAULT_LINE_STYLE, DEFAULT_POINT_STYLE, generateExtentLayer } from '@js/utils/ShorelineViewerUtils';
+import { error } from '@mapstore/framework/actions/notifications';
 
+export const VIDEO_STYLE = {
+    "format": "geostyler",
+    "body": {
+        "name": "Selected Video Feature",
+        "rules": [
+            {
+                "name": "Selected Video Feature",
+                "symbolizers": [
+                    {
+                        "kind": "Icon",
+                        "image": `https://localhost:8081/static/mapstore/symbols/video-position.png`,
+                        // "image": `${state.gnsettings?.geonodeUrl}static/mapstore/symbols/circle-up-solid.svg`,
+                        "size": 32
+                    }
+                ]
+            }
+        ]
+    }
+};
 /**
 * @module epics/shorelineviewer
 */
@@ -117,7 +143,7 @@ export const openShorelineViewerEpic = (action$, store) => action$.ofType(SET_CO
                         }
                     }))
                 }
-            ),
+            )
             // zoomToExtent(extractRegionsBbox(shorelineViewerConfig.cfg.regions), "EPSG:4326")
         );
     });
@@ -130,15 +156,15 @@ export const zoomToSelectedRegionEpic = (action$, store) => action$.ofType(ZOOM_
         if (selectedRegion) {
             return Rx.Observable.of(
                 zoomToExtent(selectedRegion.extent, "EPSG:4326")
-            )
+            );
         }
-        else {
-            const shorelineViewerConfig = state.localConfig.plugins.map_viewer.find(({ name }) => name === "ShorelineViewer");
-            return Rx.Observable.of(
-                zoomToExtent(extractRegionsBbox(shorelineViewerConfig.cfg.regions), "EPSG:4326")
-                
-            )
-        }
+
+        const shorelineViewerConfig = state.localConfig.plugins.map_viewer.find(({ name }) => name === "ShorelineViewer");
+        return Rx.Observable.of(
+            zoomToExtent(extractRegionsBbox(shorelineViewerConfig.cfg.regions), "EPSG:4326")
+
+        );
+
     });
 
 export const closeShorelineViewerEpic = (action$) => action$.ofType(SET_CONTROL_PROPERTY)
@@ -151,6 +177,8 @@ export const closeShorelineViewerEpic = (action$) => action$.ofType(SET_CONTROL_
             setShorelineThematic(null),
             updateShorelineSelectedMediaType(null),
             shorelineSelectedFeature(null),
+            setVideoInformations(null),
+            loadSelectedMediaDatasetFeatures(null),
             toggleMapInfoState(),
             unRegisterEventListener('click', 'shorelineViewer')
         );
@@ -185,7 +213,7 @@ export const zoomToSelectedShorelineRegionEpic = (action$, store) => action$.ofT
                             STYLES: selectedThematic.thematicName
                         }
                     }
-                ),
+                )
                 // zoomToExtent(action.selectedRegion.extent, "EPSG:4326")
             );
         }
@@ -195,11 +223,15 @@ export const selectShorelineFeatureEpic = (action$, store) => action$.ofType(CLI
     .filter(() => store.getState().controls?.shorelineViewer?.enabled)
     .switchMap(({ point }) => {
         const queryLayers = [];
-        for (const layer of store.getState().additionallayers) {
-            if (layer.id === "shoreline-classification-layer" || layer.id === "shoreline-media-layer") {
-                queryLayers.push(layer.options.name);
+        store.getState().additionallayers.map(additionalLayer => {
+            if (additionalLayer.id === "shoreline-classification-layer") {
+                queryLayers.push(additionalLayer.options.name);
+            } else if (additionalLayer.id.includes("shoreline-media-layer")) {
+                const layerList = additionalLayer.options.name.split(",");
+                layerList.map(layer => queryLayers.unshift(layer));
             }
-        }
+        });
+
         if (queryLayers) {
             const projection = projectionSelector(store.getState());
             const updatedPoint = updatePointWithGeometricFilter(point, projection);
@@ -220,7 +252,7 @@ export const getShorelineFeatureInfoClickEpic = (action$, store) => action$.ofTy
         const mapSize = state.map.present.size;
         const mapProjection = state.map.present.projection;
         const url = state.additionallayers.filter(
-            (additionalLayer) => additionalLayer.options.name === layers[0])[0].options.url;
+            (additionalLayer) => additionalLayer.options.name.includes(layers[0]))[0].options.url;
         if (url) {
             const mapBbox = [
                 mapExtent.bounds.minx,
@@ -246,7 +278,35 @@ export const getShorelineFeatureInfoClickEpic = (action$, store) => action$.ofTy
                 width: `${mapSize.width}`
             };
             return getFeatureInfo(url, params, layers)
-                .map((response) => shorelineSelectedFeature(response.features[0], mapProjection));
+                .switchMap((response) => {
+                    if (response.features.length > 0) {
+                        const selectedLayer = response.features[0].id.substring(0, response.features[0].id.indexOf("."));
+                        const feature = response.features[0];
+                        const geoserverUrl = state.gnsettings?.geoserverUrl;
+                        const requestUrl = `${geoserverUrl}wfs`;
+                        const wfsParams = {
+                            service: "WFS",
+                            version: "1.1.0",
+                            request: "GetFeature",
+                            outputFormat: "application/json",
+                            access_token: accessToken
+                        };
+                        return Rx.Observable.fromPromise(getFeature(requestUrl, selectedLayer, wfsParams))
+                            .switchMap((resp) => {
+                                return Rx.Observable.of(
+                                    loadSelectedMediaDatasetFeatures(resp.data),
+                                    shorelineSelectedFeature({
+                                        selectedFeature: feature,
+                                        selectedLayer: selectedLayer,
+                                        selectedFeatureProjection: mapProjection,
+                                        trigger: "SHORELINE_FEATURE_INFO_CLICK"
+                                    })
+                                );
+                            });
+                    }
+                    return Rx.Observable.empty();
+
+                });
         }
         return Rx.Observable.empty();
     });
@@ -255,27 +315,113 @@ export const selectMediaFeatureEpic = (action$, store) => action$.ofType(SHORELI
     .filter((action) => action.selectedFeature)
     .filter(() => store.getState().shorelineViewer?.selectedFeature)
     .switchMap((action) => {
-        const featureCoordinates = action.selectedFeature.geometry.coordinates;
-        const featureGeometry = action.selectedFeature.geometry;
+        const state = store.getState();
+        const selectedMediaType = state.shorelineViewer?.selectedMediaType?.name;
+        const selectedRegion = state.shorelineViewer.selectedRegion;
+        const featureCoordinates = action.selectedFeature.selectedFeature.geometry.coordinates;
+        const featureGeometry = action.selectedFeature.selectedFeature.geometry;
         let featureExtent;
         let coordinates;
         let featureStyle;
         if (featureGeometry.type === "MultiLineString") {
             const projectedLine = [];
             featureGeometry.coordinates[0].filter((coords) => {
-                const projectedPoint = reproject(coords, action.selectedFeatureProjection, "EPSG:4326");
+                const projectedPoint = reproject(coords, action.selectedFeature.selectedFeatureProjection, "EPSG:4326");
                 projectedLine.push(projectedPoint);
             });
             featureExtent = extractBboxFromGeometry(projectedLine);
             coordinates = [projectedLine.map((coords) => [coords.x, coords.y])];
             featureStyle = DEFAULT_LINE_STYLE;
         } else if (featureGeometry.type === "Point") {
-            const projectedPoint = reproject(featureCoordinates, action.selectedFeatureProjection, "EPSG:4326");
+            const projectedPoint = reproject(featureCoordinates, action.selectedFeature.selectedFeatureProjection, "EPSG:4326");
             coordinates = [projectedPoint.x, projectedPoint.y];
             featureStyle = DEFAULT_POINT_STYLE;
             featureExtent = [coordinates[0], coordinates[1], coordinates[0], coordinates[1]];
         }
 
+        if (selectedMediaType && selectedMediaType === "Videos" && selectedRegion.videoDatasets.some(layer => layer.datasetName === action.selectedFeature.selectedLayer)) {
+            let videoStyle = VIDEO_STYLE;
+            if (action.selectedFeature.selectedFeature.properties.cog) {
+                videoStyle.body.rules[0].symbolizers[0].rotate = action.selectedFeature.selectedFeature.properties.cog;
+            }
+            if (action.selectedFeature.trigger === "UPDATE_VIDEO_INFORMATION") {
+                return Rx.Observable.of(
+                    updateAdditionalLayer(
+                        "shoreline-viewer-selected-feature",
+                        "ShorelineViewer",
+                        'overlay',
+                        {
+                            id: "shoreline-viewer-selected-feature",
+                            name: "shoreline-viewer-selected-feature",
+                            type: "vector",
+                            features: [
+                                {
+                                    type: "Feature",
+                                    properties: {},
+                                    geometry: {
+                                        type: featureGeometry.type,
+                                        coordinates: coordinates
+                                    }
+                                }
+                            ],
+                            style: videoStyle
+                        }
+                    )
+                );
+            }
+            return Rx.Observable.of(
+                updateAdditionalLayer(
+                    "shoreline-viewer-selected-feature",
+                    "ShorelineViewer",
+                    'overlay',
+                    {
+                        id: "shoreline-viewer-selected-feature",
+                        name: "shoreline-viewer-selected-feature",
+                        type: "vector",
+                        features: [
+                            {
+                                type: "Feature",
+                                properties: {},
+                                geometry: {
+                                    type: featureGeometry.type,
+                                    coordinates: coordinates
+                                }
+                            }
+                        ],
+                        style: videoStyle
+                    }
+                ),
+                zoomToExtent(featureExtent, "EPSG:4326", 15),
+                loadVideo(action.selectedFeature.selectedFeature.properties.filename)
+            );
+        }
+        if (state.shorelineViewer.videoInformations && selectedRegion.shorelineClassificationDataset.includes(action.selectedFeature.selectedLayer)) {
+            return Rx.Observable.of(
+                setVideoInformations(null),
+                updateAdditionalLayer(
+                    "shoreline-viewer-selected-feature",
+                    "ShorelineViewer",
+                    'overlay',
+                    {
+                        id: "shoreline-viewer-selected-feature",
+                        name: "shoreline-viewer-selected-feature",
+                        type: "vector",
+                        features: [
+                            {
+                                type: "Feature",
+                                properties: {},
+                                geometry: {
+                                    type: featureGeometry.type,
+                                    coordinates: coordinates
+                                },
+                                style: featureStyle
+                            }
+                        ]
+                    }
+                ),
+                zoomToExtent(featureExtent, "EPSG:4326", 14)
+            );
+        }
         return Rx.Observable.of(
             updateAdditionalLayer(
                 "shoreline-viewer-selected-feature",
@@ -302,95 +448,215 @@ export const selectMediaFeatureEpic = (action$, store) => action$.ofType(SHORELI
         );
     });
 
-export const displayShorelineMediaLayerEpic = (action$, store) => action$.ofType(UPDATE_SHORELINE_SELECTED_MEDIA_TYPE)
-    .filter((action) => action.selectedMediaType)
-    .switchMap(
-        (action) => {
-            const state = store.getState();
-            const layerName = (action.selectedMediaType.name === "Photos") ? state.shorelineViewer.selectedRegion.photoDataset : state.shorelineViewer.selectedRegion.videoLayerName;
-            const accessToken = state.security?.user?.info?.access_token;
-            const geoserverUrl = state.gnsettings?.geoserverUrl;
+/**
+ *
+ * @param {external:Observable} action$ manages `UPDATE_SHORELINE_SELECTED_MEDIA_TYPE`
+ * @returns {external:Observable} ``
+ */
+export const displayShorelineMediaLayerEpic = (action$, store) =>
+    action$.ofType(UPDATE_SHORELINE_SELECTED_MEDIA_TYPE)
+        .switchMap((action) => {
+            if (action.selectedMediaType) {
+                const state = store.getState();
+                const layerList = (action.selectedMediaType.name === "Photos") ? state.shorelineViewer.selectedRegion.photoDatasets : state.shorelineViewer.selectedRegion.videoDatasets;
+                const zoomLevel = state.map.present.zoom;
+                // Displaying several layers at the same time can be demanding for the server.
+                // We therefore return an extent polygon for each layer of the selected media,
+                // rather than the WMS, when the zoom level is below 10.
+                if (zoomLevel < 10) {
+                    const features = generateExtentLayer(layerList);
+                    if (state.additionallayers.some((additionalLayer) => additionalLayer.id === "shoreline-media-layer-wms")) {
+                        return Rx.Observable.of(
+                            removeAdditionalLayer({ id: "shoreline-media-layer-wms" }),
+                            updateAdditionalLayer(
+                                "shoreline-media-layer-bbox",
+                                "ShorelineViewer",
+                                'overlay',
+                                {
+                                    id: "shoreline-viewer-selected-feature",
+                                    name: "shoreline-viewer-selected-feature",
+                                    type: "vector",
+                                    features: features,
+                                    style: {
+                                        "format": "geostyler",
+                                        "body": {
+                                            "name": "Project Extents",
+                                            "rules": [
+                                                {
+                                                    "name": "Project Extents",
+                                                    "symbolizers": [
+                                                        {
+                                                            kind: "Fill",
+                                                            outlineWidth: 2,
+                                                            outlineOpacity: 1,
+                                                            outlineColor: '#6a0ced'
+                                                        }
+                                                    ]
+                                                }
+                                            ]
+                                        }
+                                    }
+                                }
+                            )
+                        );
+                    }
+                    return Rx.Observable.of(
+                        updateAdditionalLayer(
+                            "shoreline-media-layer-bbox",
+                            "ShorelineViewer",
+                            'overlay',
+                            {
+                                id: "shoreline-viewer-selected-feature",
+                                name: "shoreline-viewer-selected-feature",
+                                type: "vector",
+                                features: features,
+                                style: {
+                                    "format": "geostyler",
+                                    "body": {
+                                        "name": "Project Extents",
+                                        "rules": [
+                                            {
+                                                "name": "Project Extents",
+                                                "symbolizers": [
+                                                    {
+                                                        kind: "Fill",
+                                                        outlineWidth: 2,
+                                                        outlineOpacity: 1,
+                                                        outlineColor: '#6a0ced'
+                                                    }
+                                                ]
+                                            }
+                                        ]
+                                    }
+                                }
+                            }
+                        )
+                    );
+                }
+
+                let layerName = layerList.map(layer => layer.datasetName);
+                const accessToken = state.security?.user?.info?.access_token;
+                const geoserverUrl = state.gnsettings?.geoserverUrl;
+                if (state.additionallayers.some((additionalLayer) => additionalLayer.id === "shoreline-media-layer-bbox")) {
+                    return Rx.Observable.of(
+                        removeAdditionalLayer({ id: "shoreline-media-layer-bbox" }),
+                        updateAdditionalLayer(
+                            "shoreline-media-layer-wms",
+                            "ShorelineViewer",
+                            "overlay",
+                            {
+                                layerId: "shoreline-viewer-selected-feature",
+                                type: "wms",
+                                url: `${geoserverUrl}wms`,
+                                name: layerName.toString(),
+                                format: "image/png8",
+                                singleTile: true,
+                                params: {
+                                    access_token: accessToken
+                                }
+                            }
+                        )
+                    );
+                }
+                return Rx.Observable.of(
+                    updateAdditionalLayer(
+                        "shoreline-media-layer-wms",
+                        "ShorelineViewer",
+                        "overlay",
+                        {
+                            layerId: "shoreline-viewer-selected-feature",
+                            type: "wms",
+                            url: `${geoserverUrl}wms`,
+                            name: layerName.toString(),
+                            format: "image/png8",
+                            singleTile: true,
+                            params: {
+                                access_token: accessToken
+                            }
+                        }
+                    )
+                );
+
+            }
+
+            // We can disable the selected media type when the user clicks on the media type
+            // already selected in the plugin's menu bar.
             return Rx.Observable.of(
                 removeAdditionalLayer({ id: "shoreline-viewer-selected-feature" }),
+                removeAdditionalLayer({ id: "shoreline-media-layer-bbox" }),
+                removeAdditionalLayer({ id: "shoreline-media-layer-wms" }),
                 shorelineSelectedFeature(null),
-                updateAdditionalLayer(
-                    "shoreline-media-layer",
-                    "ShorelineViewer",
-                    "overlay",
-                    {
-                        layerId: "shoreline-viewer-selected-feature",
-                        type: "wms",
-                        url: `${geoserverUrl}wms`,
-                        name: layerName,
-                        format: "image/png8",
-                        singleTile: true,
-                        params: {
-                            access_token: accessToken
-                        }
-                    }
-                )
+                setVideoInformations(null),
+                loadSelectedMediaDatasetFeatures(null)
             );
-        }
-    );
 
-export const loadSelectedMediaDatasetFeaturesEpic = (action$, store) => action$.ofType(UPDATE_ADDITIONAL_LAYER)
-    .filter(() => store.getState().controls?.shorelineViewer?.enabled)
-    .filter((action) => action.id === "shoreline-media-layer")
-    .filter(() => store.getState().shorelineViewer?.selectedMediaType.name === "Photos")
-    .switchMap(() => {
-        const state = store.getState();
-        const accessToken = state.security?.user?.info?.access_token;
-        const shorelineMediaLayer = store.getState().additionallayers.filter((layer) => layer.id === "shoreline-media-layer")[0];
-        const geoserverUrl = state.gnsettings?.geoserverUrl;
-        const requestUrl = `${geoserverUrl}wfs`;
-        const params = {
-            service: "WFS",
-            version: "1.1.0",
-            request: "GetFeature",
-            outputFormat: "application/json",
-            sortBy: "name",
-            access_token: accessToken
-        };
-        return Rx.Observable.fromPromise(getFeature(requestUrl, shorelineMediaLayer.options.name, params))
-            .map((response) => loadSelectedMediaDatasetFeatures(response.data));
-    });
+        }
+        );
 
 export const selectFirstMediaFeatureEpic = (action$, store) => action$.ofType(SELECT_FIRST_MEDIA_FEATURE)
     .switchMap(() => {
-        const firstMediaFeature = store.getState().shorelineViewer?.selectedMediaDatasetFeatures?.features[0];
+        const state = store.getState();
+        const firstMediaFeature = state.shorelineViewer?.selectedMediaDatasetFeatures?.features[0];
+        const selectedLayer = state.shorelineViewer.selectedLayer;
         return Rx.Observable.of(
-            shorelineSelectedFeature(firstMediaFeature, "EPSG:4269")
+            shorelineSelectedFeature({
+                selectedFeature: firstMediaFeature,
+                selectedLayer: selectedLayer,
+                selectedFeatureProjection: "EPSG:4269",
+                trigger: "SELECT_FIRST_MEDIA_FEATURE"
+            })
         );
     });
 
 export const selectPreviousMediaFeatureEpic = (action$, store) => action$.ofType(SELECT_PREVIOUS_MEDIA_FEATURE)
     .switchMap((action) => {
-        const mediaFeatures = store.getState().shorelineViewer?.selectedMediaDatasetFeatures?.features;
+        const state = store.getState();
+        const mediaFeatures = state.shorelineViewer?.selectedMediaDatasetFeatures?.features;
         const selectedFeatureName = action.selectedFeature.properties.name;
         const selectedFeatureIndex = mediaFeatures.findIndex((x) => x.properties.name === selectedFeatureName);
         const previousMediaFeature = store.getState().shorelineViewer?.selectedMediaDatasetFeatures?.features[selectedFeatureIndex - 1];
+        const selectedLayer = state.shorelineViewer.selectedLayer;
         return Rx.Observable.of(
-            shorelineSelectedFeature(previousMediaFeature, "EPSG:4269")
+            shorelineSelectedFeature({
+                selectedFeature: previousMediaFeature,
+                selectedLayer: selectedLayer,
+                selectedFeatureProjection: "EPSG:4269",
+                trigger: "SELECT_PREVIOUS_MEDIA_FEATURE"
+            })
         );
     });
 
 export const selectNextMediaFeatureEpic = (action$, store) => action$.ofType(SELECT_NEXT_MEDIA_FEATURE)
     .switchMap((action) => {
-        const mediaFeatures = store.getState().shorelineViewer?.selectedMediaDatasetFeatures?.features;
+        const state = store.getState();
+        const mediaFeatures = state.shorelineViewer?.selectedMediaDatasetFeatures?.features;
         const selectedFeatureName = action.selectedFeature.properties.name;
         const selectedFeatureIndex = mediaFeatures.findIndex((x) => x.properties.name === selectedFeatureName);
         const nextMediaFeature = store.getState().shorelineViewer?.selectedMediaDatasetFeatures?.features[selectedFeatureIndex + 1];
+        const selectedLayer = state.shorelineViewer.selectedLayer;
         return Rx.Observable.of(
-            shorelineSelectedFeature(nextMediaFeature, "EPSG:4269")
+            shorelineSelectedFeature({
+                selectedFeature: nextMediaFeature,
+                selectedLayer: selectedLayer,
+                selectedFeatureProjection: "EPSG:4269",
+                trigger: "SELECT_NEXT_MEDIA_FEATURE"
+            })
         );
     });
 
 export const selectLastMediaFeatureEpic = (action$, store) => action$.ofType(SELECT_LAST_MEDIA_FEATURE)
     .switchMap(() => {
-        const mediaFeatures = store.getState().shorelineViewer?.selectedMediaDatasetFeatures?.features;
+        const state = store.getState();
+        const mediaFeatures = state.shorelineViewer?.selectedMediaDatasetFeatures?.features;
         const lastMediaFeature = mediaFeatures[mediaFeatures.length - 1];
+        const selectedLayer = state.shorelineViewer.selectedLayer;
         return Rx.Observable.of(
-            shorelineSelectedFeature(lastMediaFeature, "EPSG:4269")
+            shorelineSelectedFeature({
+                selectedFeature: lastMediaFeature,
+                selectedLayer: selectedLayer,
+                selectedFeatureProjection: "EPSG:4269",
+                trigger: "SELECT_LAST_MEDIA_FEATURE"
+            })
         );
     });
 
@@ -398,9 +664,16 @@ export const shorelineStartLoadingEpic = (action$, store) => action$.ofType(LAYE
     .filter(() => store.getState().controls?.shorelineViewer?.enabled)
     .filter((action) => !action.layerId)
     .switchMap(() => {
+        const state = store.getState();
+        if (state.shorelineViewer.videoInformations && state.shorelineViewer.videoInformations.status === "play") {
+            return Rx.Observable.of(
+                setShorelineLoading(false)
+            );
+        }
         return Rx.Observable.of(
             setShorelineLoading(true)
         );
+
     });
 
 export const shorelineStopLoadingEpic = (action$, store) => action$.ofType(LAYER_LOAD)
@@ -441,6 +714,162 @@ export const changeShorelineThematicEpic = (action$, store) => action$.ofType(SE
         }
     );
 
+/**
+ * This action is triggered when a point in a video layer is selected. It loads the corresponding video
+ * from the Vimeo API. Once loaded, it initiates the videoInformations state variable with the video's
+ * initial information (file name, time in video and URI).
+ * @param {external:Observable} action$ manages `LOAD_VIDEO`
+ * @returns {external:Observable} `SET_VIDEO_INFORMATIONS`
+ */
+export const loadVideoEpic = (action$, store) =>
+    action$.ofType(LOAD_VIDEO)
+        .filter(() => store.getState()?.controls?.shorelineViewer?.enabled)
+        .switchMap((action) => {
+            const state = store.getState();
+            const selectedFeature = state.shorelineViewer.selectedFeature;
+            const videoInformation = state.shorelineViewer.videoInformations;
+            if (!videoInformation || action.fileName !== videoInformation.fileName) {
+                return Rx.Observable.fromPromise(
+                    axios.get(`${state.gnsettings?.geonodeUrl}vimeo_proxy/${action.fileName}`)
+                        .catch(response => {
+                            return (
+                                error({
+                                    uid: "loadVideoError",
+                                    title: "shorelineViewer.notifications.error",
+                                    message: response.originalError.message,
+                                    action: {
+                                        label: "shorelineViewer.notifications.close"
+                                    },
+                                    position: "tr",
+                                    autoDismiss: 0
+                                })
+                            );
+                        })
+                )
+                    .switchMap((response) => {
+                        return Rx.Observable.of(
+                            setVideoInformations(
+                                {
+                                    fileName: action.fileName,
+                                    time: selectedFeature.selectedFeature.properties.time,
+                                    videoUri: response.data
+                                }
+                            )
+                        );
+                    });
+            } else if (videoInformation && action.fileName === videoInformation.fileName && selectedFeature.selectedFeature.properties.time !== videoInformation.time) {
+                videoInformation.time = selectedFeature.selectedFeature.properties.time;
+                let element = document.getElementsByTagName("video")[0];
+                element.currentTime = selectedFeature.selectedFeature.properties.time;
+                return Rx.Observable.of(
+                    setVideoInformations(videoInformation)
+                );
+            }
+            return Rx.Observable.empty();
+        });
+
+/**
+ * This function is triggered when a video setting is changed (video name, play time, etc.). The actions taken
+ * depend on the parameter modified.
+ * @param {external:Observable} action$ manages `UPDATE_VIDEO_INFORMATION`
+ * @returns {external:Observable} `SET_PRINT_PROPERTIES`, `SET_PRINT_EXTENT`, `GET_COORDINATES_SYSTEMS`
+ */
+export const updateVideoInformationEpic = (action$, store) =>
+    action$.ofType(UPDATE_VIDEO_INFORMATION)
+        .filter(() => store.getState()?.controls?.shorelineViewer?.enabled)
+        .switchMap((action) => {
+            const state = store.getState();
+            const selectedLayer = state.shorelineViewer.selectedFeature.selectedLayer;
+            state.shorelineViewer.videoInformations[`${action.videoInformation.name}`] = action.videoInformation.value;
+
+            if (action.videoInformation.name === "time") {
+                const selectedFeature = state.shorelineViewer.selectedFeature;
+                const nextFeature = state.shorelineViewer.selectedMediaDatasetFeatures.features.filter((feature) => {
+                    return feature.properties.filename === selectedFeature.selectedFeature.properties.filename && feature.properties.time === action.videoInformation.value;
+                });
+                if (nextFeature[0]) {
+                    if (action.videoInformation.value > state.shorelineViewer.videoInformations.duration) {
+                        return (
+                            error({
+                                uid: "videoDurationError",
+                                title: "shorelineViewer.notifications.error",
+                                message: "shorelineViewer.notifications.durationError",
+                                action: {
+                                    label: "shorelineViewer.notifications.close"
+                                },
+                                position: "tr",
+                                autoDismiss: 0
+                            })
+                        );
+                    }
+
+                    return Rx.Observable.of(
+                        setVideoInformations(state.shorelineViewer.videoInformations),
+                        shorelineSelectedFeature({
+                            selectedFeature: nextFeature[0],
+                            selectedLayer: selectedLayer,
+                            selectedFeatureProjection: "EPSG:3857",
+                            trigger: "UPDATE_VIDEO_INFORMATION"
+                        })
+                    );
+
+                }
+
+                return Rx.Observable.empty();
+
+            } else if (action.videoInformation.name === "status") {
+                return Rx.Observable.of(
+                    setVideoInformations(state.shorelineViewer.videoInformations)
+                );
+            }
+            return Rx.Observable.empty();
+        });
+
+/**
+ * This function displays an error message following an error during the process.
+ * @param {external:Observable} action$ manages `VIDEO_ERROR`
+ * @returns {external:Observable} `ERROR`
+ */
+export const videoErrorEpic = (action$) =>
+    action$.ofType(VIDEO_ERROR)
+        .switchMap((action) => {
+            return Rx.Observable.of(
+                error({
+                    uid: action.uid,
+                    title: action.title,
+                    message: action.message,
+                    action: {
+                        label: "sensitivitymapping.notifications.close"
+                    },
+                    values: action.values,
+                    position: "tr",
+                    autoDismiss: 0
+                })
+            );
+        });
+
+/**
+ * This function is triggered when there is a change to the map view. We capture this action
+ * to refresh the project extent layer. The display varies according to the zoom level of
+ * the map: the bbox is displayed when the zoom level is below 10, and the WMS when the zoom
+ * level is above 10.
+ * @param {external:Observable} action$ manages `CHANGE_MAP_VIEW`
+ * @returns {external:Observable} `UPDATE_SHORELINE_SELECTED_MEDIA_TYPE`
+ */
+export const changeMapViewEpic = (action$, store) =>
+    action$.ofType(CHANGE_MAP_VIEW)
+        .filter(() => store.getState()?.shorelineViewer?.selectedMediaType)
+        .switchMap((action) => {
+            const state = store.getState();
+            const previousZoomLevel = state.map.past[state.map.past.length - 1].zoom;
+            if (action.zoom !== previousZoomLevel) {
+                return Rx.Observable.of(
+                    updateShorelineSelectedMediaType(state.shorelineViewer.selectedMediaType)
+                );
+            }
+            return Rx.Observable.empty();
+        });
+
 export default {
     gnUpdateShorelineViewerMapLayoutEpic,
     openShorelineViewerEpic,
@@ -451,12 +880,15 @@ export default {
     getShorelineFeatureInfoClickEpic,
     selectMediaFeatureEpic,
     displayShorelineMediaLayerEpic,
-    loadSelectedMediaDatasetFeaturesEpic,
     selectFirstMediaFeatureEpic,
     selectPreviousMediaFeatureEpic,
     selectNextMediaFeatureEpic,
     selectLastMediaFeatureEpic,
     shorelineStartLoadingEpic,
     shorelineStopLoadingEpic,
-    changeShorelineThematicEpic
+    changeShorelineThematicEpic,
+    loadVideoEpic,
+    updateVideoInformationEpic,
+    videoErrorEpic,
+    changeMapViewEpic
 };

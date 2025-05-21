@@ -43,3 +43,23 @@ export const DEFAULT_LINE_STYLE = {
     fillColor: '#33eeff',
     fillOpacity: 0.8
 };
+
+export const generateExtentLayer = (layerList) => {
+    const jsonLayer = layerList.map(layer => ({
+        type: "Feature",
+        properties: {
+            "datasetName": layer.datasetName
+        },
+        geometry: {
+            type: "Polygon",
+            coordinates: [[
+                [layer.extent[0], layer.extent[1]],
+                [layer.extent[0], layer.extent[3]],
+                [layer.extent[2], layer.extent[3]],
+                [layer.extent[2], layer.extent[1]],
+                [layer.extent[0], layer.extent[1]]
+            ]]
+        }
+    }));
+    return jsonLayer;
+};

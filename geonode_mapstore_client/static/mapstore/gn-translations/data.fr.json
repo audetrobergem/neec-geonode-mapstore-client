@@ -430,14 +430,13 @@
             "lastPhotoTooltip": "Aller à la dernière photo",
             "shorelineViewerTitle": "Outil de visualisation du rivage",
             "zoomToRegion": "Zoom sur la région sélectionnée",
-            "selectStyle": "Sélectionnez un style",
+            "selectStyle": "Sélectionnez une thématique",
             "regions": {
-                "bayOfFundy": "Baie de Fundy",
-                "bcNorthCoast": "Côte Nord de la Colombie-Britannique",
-                "beaufortSea": "Mer de Beaufort",
-                "chedabuctoBay": "Baie de Chedabucto",
-                "nunavik": "Nunavik",
-                "stClairRiver": "Rivière Sainte-Claire"
+                "arctic": "Arctique",
+                "atlantic": "Atlantique",
+                "britishColumbia": "Colombie-Britannique",
+                "greatLakes": "Grands lacs",
+                "stLawrence": "Fleuve Saint-Laurent"
             },
             "thematics": {
                 "shorelineClassification": {
@@ -485,6 +484,11 @@
                 "tertiarySubstrate": "Substrat ou couvert du sol tertiaire",
                 "primaryLandCoverClass": "Type de rivage et d'arrière-plage principal",
                 "secondaryLandCoverClass": "Type de rivage et d'arrière-plage secondaire"
+            },
+            "notifications": {
+                "error": "Erreur",
+                "close": "Fermet",
+                "videoDurationError": "La vidéo demandée ne peut pas être lue car la durée de la vidéo ({heure}) correspondant au point sélectionné dépasse la durée totale de la vidéo ({durée}) sélectionnée."
             }
         },
         "zoneIdentify": {

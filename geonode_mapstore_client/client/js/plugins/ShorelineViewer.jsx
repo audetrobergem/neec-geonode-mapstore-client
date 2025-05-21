@@ -28,7 +28,10 @@ import {
     selectNextMediaFeature,
     selectLastMediaFeature,
     setShorelineThematic,
-    zoomToRegion
+    zoomToRegion,
+    updateVideoInformation,
+    videoError,
+    setVideoInformations
 } from '@js/actions/shorelineviewer';
 import ShorelineViewerEpics from '@js/epics/shorelineviewer';
 import shorelineViewer from '@js/reducers/shorelineviewer';
@@ -39,6 +42,7 @@ import { getMessageById } from '@mapstore/framework/utils/LocaleUtils';
 import InfoPopover from '@mapstore/framework/components/widgets/widget/InfoPopover';
 import parse from 'html-react-parser';
 import ShorelineInformation from '@js/components/ShorelineInformation/ShorelineInformation';
+import VideoPlayer from '@js/components/VideoPlayer/VideoPlayer';
 
 const Button = tooltip(GNButton);
 
@@ -52,14 +56,23 @@ function ShorelineTypeButton({
             name: "Photos",
             icon: "camera",
             tooltip: "shorelineviewer.displayPhotoTracklogsTooltip",
-            datasetName: "photoDataset"
+            datasetName: selectedRegion.photoDatasets
         }, {
             name: "Videos",
             icon: "video-camera",
             tooltip: "shorelineviewer.displayVideoTracklogsTooltip",
-            datasetName: "videoDataset"
+            datasetName: selectedRegion.videoDatasets
         }
     ];
+
+    const toggleMediaType = mediaType => {
+        if (selectedMediaType && mediaType.name === selectedMediaType.name) {
+            return onSelectMediaType(undefined);
+        }
+
+        return onSelectMediaType(mediaType);
+
+    };
 
     return (
         <div className="text-center col-xs-12">
@@ -67,10 +80,10 @@ function ShorelineTypeButton({
                 <Button
                     className="btn-primary"
                     tooltipId={<Message msgId={mediaType.tooltip} />}
-                    disabled={!(mediaType.datasetName in selectedRegion)}
+                    disabled={mediaType.datasetName.length === 0}
                     key={mediaType.name}
                     active={selectedMediaType === mediaType}
-                    onClick={() => { onSelectMediaType(mediaType); }}
+                    onClick={() => { toggleMediaType(mediaType); }}
                 >
                     <FaIcon name={mediaType.icon} />
                 </Button>
@@ -152,7 +165,7 @@ function PhotoNavigationButton({
 
 const ConnectedPhotoNavigationButton = connect(
     createSelector([
-        state => state?.shorelineViewer?.selectedFeature,
+        state => state?.shorelineViewer?.selectedFeature.selectedFeature,
         state => state?.shorelineViewer?.selectedMediaDatasetFeatures
     ], (selectedFeature, selectedMediaDatasetFeatures) => ({
         selectedFeature, selectedMediaDatasetFeatures
@@ -180,8 +193,10 @@ const ConnectedPhotoNavigationButton = connect(
 function ShorelineViewer({
     style,
     selectedRegion,
+    selectedMediaType,
     selectedThematic,
     selectedFeature,
+    videoInformations,
     loading,
     messages,
     onClose,
@@ -189,9 +204,46 @@ function ShorelineViewer({
     tabs,
     onSelectRegion,
     onZoomToSelectedRegion,
-    onSelectThematic
+    onSelectThematic,
+    onUpdateVideoInformation,
+    onVideoError,
+    onSetVideoInformations
 }) {
     const isMounted = useRef(false);
+    const playerRef = useRef();
+
+    const handlePlayerReady = (player) => {
+        playerRef.current = player;
+
+        player.on('loadedmetadata', () => {
+            if (videoInformations.time > player.duration()) {
+                onVideoError(
+                    "shorelineViewerVideoError",
+                    "shorelineViewer.notifications.error",
+                    "shorelineViewer.notifications.videoDurationError",
+                    {time: videoInformations.time, duration: player.duration()}
+                );
+                onSetVideoInformations(null);
+            } else {
+                player.currentTime(videoInformations.time);
+                onUpdateVideoInformation({"name": "duration", "value": player.duration()});
+            }
+        });
+
+        player.on('playing', () => {
+            onUpdateVideoInformation({"name": "status", "value": "play"});
+        });
+
+        player.on('pause', () => {
+            onUpdateVideoInformation({"name": "status", "value": "pause"});
+        });
+
+        player.on('timeupdate', () => {
+            if (Math.floor(player.currentTime()) !== videoInformations.time) {
+                onUpdateVideoInformation({"name": "time", "value": Math.floor(player.currentTime())});
+            }
+        });
+    };
 
     useEffect(() => {
         isMounted.current = true;
@@ -238,8 +290,8 @@ function ShorelineViewer({
                         />
                     </div>
                     <div className="shoreline-viewer-body-regions-right">
-                        <Button 
-                            className="square-button" 
+                        <Button
+                            className="btn-primary"
                             onClick={() => onZoomToSelectedRegion()}
                             tooltipId={<Message msgId="shorelineviewer.zoomToRegion" />}
                         >
@@ -279,7 +331,7 @@ function ShorelineViewer({
                     }
                 </div>
                 <div className="shoreline-viewer-body">
-                    {selectedRegion != null &&
+                    {selectedRegion &&
                     <ConnectedShorelineTypeButton />
                     }
                 </div>
@@ -288,11 +340,52 @@ function ShorelineViewer({
                         className="shoreline-viewer-spinner-container">
                         <Spinner />
                     </div>}
-                    {selectedFeature != null && selectedFeature.id.includes("shoreline_classification") &&
-                    <ShorelineInformation segmentProperties={selectedFeature.properties} tabs={tabs}/>
+                    {selectedFeature && selectedFeature.id?.includes("shoreline_classification") &&
+                        <ShorelineInformation segmentProperties={selectedFeature.properties} tabs={tabs}/>
                     }
 
-                    {selectedFeature != null && selectedFeature.id.includes("shoreline_photos") &&
+                    {videoInformations && videoInformations.videoUri &&
+                        <div className="shoreline-viewer-body">
+                            <div>
+                                <VideoPlayer
+                                    options={
+                                        {
+                                            autoplay: true,
+                                            width: '518',
+                                            controls: true,
+                                            responsive: true,
+                                            fluid: true,
+                                            muted: true,
+                                            sources: [{
+                                                src: videoInformations.videoUri,
+                                                type: 'application/x-mpegURL'
+                                            }]
+                                        }
+                                    }
+                                    onReady={handlePlayerReady}
+                                    videoInformations={videoInformations}
+                                />
+                            </div>
+                            <div className="shoreline-viewer-info-table">
+                                <div className="shoreline-viewer-info-fields">
+                                    <div className="shoreline-viewer-info-row">
+                                        <div className="shoreline-viewer-info-label">FileName</div>
+                                        <div className="shoreline-viewer-info-value">{selectedFeature.properties.filename}</div>
+                                    </div>
+                                    <div className="shoreline-viewer-info-row">
+                                        <div className="shoreline-viewer-info-label">Time</div>
+                                        <div className="shoreline-viewer-info-value">{selectedFeature.properties.time} / {Math.floor(videoInformations.duration)}</div>
+                                    </div>
+                                    <div className="shoreline-viewer-info-row">
+                                        <div className="shoreline-viewer-info-label">Date</div>
+                                        <div className="shoreline-viewer-info-value">{selectedFeature.properties.datetime}</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    }
+
+                    {selectedFeature && selectedMediaType && selectedMediaType.name === "Photos" && !selectedFeature.id?.includes("shoreline_classification") &&
                     <div className="shoreline-viewer-body">
                         <a href={"javascript:window.open('" + selectedFeature.properties.photo + "', 'popup', 'width=800,height=600'); void(0)"}>
                             <img className="img-responsive" src={selectedFeature.properties.photo} />
@@ -333,7 +426,10 @@ ShorelineViewer.propTypes = {
     onSelectRegion: PropTypes.func,
     onZoomToSelectedRegion: PropTypes.func,
     onSelectThematic: PropTypes.func,
-    addMarkers: PropTypes.func
+    addMarkers: PropTypes.func,
+    onUpdateVideoInformation: PropTypes.func,
+    onVideoError: PropTypes.func,
+    onSetVideoInformations: PropTypes.func
 };
 
 ShorelineViewer.defaultProps = {
@@ -341,7 +437,10 @@ ShorelineViewer.defaultProps = {
     onSelectRegion: () => { },
     onZoomToSelectedRegion: () => { },
     onSelectThematic: () => { },
-    addMarkers: () => { }
+    addMarkers: () => { },
+    onUpdateVideoInformation: () => { },
+    onVideoError: () => { },
+    onSetVideoInformations: () => { }
 };
 
 function ShorelineViewerPlugin({ enabled, ...props }) {
@@ -355,16 +454,18 @@ const ConnectedShorelineViewerPlugin = connect(
         state => state?.shorelineViewer?.selectedMediaType,
         state => state?.shorelineViewer?.selectedRegion,
         state => state?.shorelineViewer?.selectedThematic,
-        state => state?.shorelineViewer?.selectedFeature,
+        state => state?.shorelineViewer?.selectedFeature?.selectedFeature,
+        state => state?.shorelineViewer?.videoInformations,
         state => state?.shorelineViewer?.loading || false,
         state => state?.locale?.messages
-    ], (style, enabled, selectedMediaType, selectedRegion, selectedThematic, selectedFeature, loading, messages) => ({
+    ], (style, enabled, selectedMediaType, selectedRegion, selectedThematic, selectedFeature, videoInformations, loading, messages) => ({
         style,
         enabled,
         selectedMediaType,
         selectedRegion,
         selectedThematic,
         selectedFeature,
+        videoInformations,
         loading,
         messages
     })), {
@@ -372,7 +473,10 @@ const ConnectedShorelineViewerPlugin = connect(
         onSelectRegion: setShorelineRegion,
         onZoomToSelectedRegion: zoomToRegion,
         onSelectThematic: setShorelineThematic,
-        addMarkers: updateAdditionalLayer
+        addMarkers: updateAdditionalLayer,
+        onUpdateVideoInformation: updateVideoInformation,
+        onVideoError: videoError,
+        onSetVideoInformations: setVideoInformations
     }
 )(ShorelineViewerPlugin);
 
