@@ -59,8 +59,8 @@ export const VIDEO_STYLE = {
                 "symbolizers": [
                     {
                         "kind": "Icon",
-                        "image": `https://localhost:8081/static/mapstore/symbols/video-position.png`,
-                        // "image": `${state.gnsettings?.geonodeUrl}static/mapstore/symbols/circle-up-solid.svg`,
+                        // "image": `https://localhost:8081/static/mapstore/symbols/video-position.png`,
+                        "image": `${state.gnsettings?.geonodeUrl}static/mapstore/symbols/video-position.png`,
                         "size": 32
                     }
                 ]
