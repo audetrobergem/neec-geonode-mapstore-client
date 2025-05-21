@@ -59,8 +59,6 @@ export const VIDEO_STYLE = {
                 "symbolizers": [
                     {
                         "kind": "Icon",
-                        // "image": `https://localhost:8081/static/mapstore/symbols/video-position.png`,
-                        "image": `${state.gnsettings?.geonodeUrl}static/mapstore/symbols/video-position.png`,
                         "size": 32
                     }
                 ]
@@ -341,6 +339,8 @@ export const selectMediaFeatureEpic = (action$, store) => action$.ofType(SHORELI
 
         if (selectedMediaType && selectedMediaType === "Videos" && selectedRegion.videoDatasets.some(layer => layer.datasetName === action.selectedFeature.selectedLayer)) {
             let videoStyle = VIDEO_STYLE;
+            videoStyle.body.rules[0].symbolizers[0].image = `${state.gnsettings?.geonodeUrl}static/mapstore/symbols/video-position.png`;
+            // videoStyle.body.rules[0].symbolizers[0].image = `https://localhost:8081/static/mapstore/symbols/video-position.png`;
             if (action.selectedFeature.selectedFeature.properties.cog) {
                 videoStyle.body.rules[0].symbolizers[0].rotate = action.selectedFeature.selectedFeature.properties.cog;
             }
