@@ -1713,7 +1713,7 @@
                                 {
                                     "id": "shorelineClassification",
                                     "labelId": "shorelineviewer.thematics.shorelineClassification.label",
-                                    "thematicName": "shoreline_classification_on_int"
+                                    "thematicName": "shoreline_classification_qc_int"
                                 },
                                 {
                                     "id": "alongshoreAccess",

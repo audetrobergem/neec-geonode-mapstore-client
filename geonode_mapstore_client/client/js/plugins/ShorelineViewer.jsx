@@ -66,11 +66,14 @@ function ShorelineTypeButton({
     ];
 
     const toggleMediaType = mediaType => {
-        if (selectedMediaType && mediaType.name === selectedMediaType.name) {
+        if (selectedMediaType && mediaType.name === selectedMediaType.mediaType.name) {
             return onSelectMediaType(undefined);
         }
 
-        return onSelectMediaType(mediaType);
+        return onSelectMediaType({
+            mediaType: mediaType,
+            trigger: "user"
+        });
 
     };
 
@@ -82,7 +85,7 @@ function ShorelineTypeButton({
                     tooltipId={<Message msgId={mediaType.tooltip} />}
                     disabled={mediaType.datasetName.length === 0}
                     key={mediaType.name}
-                    active={selectedMediaType === mediaType}
+                    active={selectedMediaType?.mediaType === mediaType}
                     onClick={() => { toggleMediaType(mediaType); }}
                 >
                     <FaIcon name={mediaType.icon} />
@@ -344,7 +347,7 @@ function ShorelineViewer({
                         <ShorelineInformation segmentProperties={selectedFeature.properties} tabs={tabs}/>
                     }
 
-                    {videoInformations && videoInformations.videoUri &&
+                    {selectedFeature && selectedMediaType && selectedMediaType.mediaType.name === "Videos" && videoInformations && videoInformations.videoUri &&
                         <div className="shoreline-viewer-body">
                             <div>
                                 <VideoPlayer
@@ -385,7 +388,7 @@ function ShorelineViewer({
                         </div>
                     }
 
-                    {selectedFeature && selectedMediaType && selectedMediaType.name === "Photos" && !selectedFeature.id?.includes("shoreline_classification") &&
+                    {selectedFeature && selectedMediaType && selectedMediaType.mediaType.name === "Photos" && !selectedFeature.id?.includes("shoreline_classification") &&
                     <div className="shoreline-viewer-body">
                         <a href={"javascript:window.open('" + selectedFeature.properties.photo + "', 'popup', 'width=800,height=600'); void(0)"}>
                             <img className="img-responsive" src={selectedFeature.properties.photo} />
