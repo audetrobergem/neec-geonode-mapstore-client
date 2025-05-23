@@ -370,7 +370,7 @@ export const selectMediaFeatureEpic = (action$, store) =>
                 let videoStyle = VIDEO_POINT_STYLE;
                 videoStyle.body.rules[0].symbolizers[0].image = `${state.gnsettings?.geonodeUrl}static/mapstore/symbols/video-position.png`;
                 // Uncomment the following line to display the correct symbol for the video position in dev mode.
-                videoStyle.body.rules[0].symbolizers[0].image = `https://localhost:8081/static/mapstore/symbols/video-position.png`;
+                // videoStyle.body.rules[0].symbolizers[0].image = `https://localhost:8081/static/mapstore/symbols/video-position.png`;
                 if (action.selectedFeature.selectedFeature.properties.cog) {
                     videoStyle.body.rules[0].symbolizers[0].rotate = action.selectedFeature.selectedFeature.properties.cog;
                 }
