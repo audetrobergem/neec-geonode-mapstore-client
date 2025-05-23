@@ -343,7 +343,7 @@ export const selectMediaFeatureEpic = (action$, store) =>
         .filter(() => store.getState().shorelineViewer?.selectedFeature)
         .switchMap((action) => {
             const state = store.getState();
-            const selectedMediaType = state.shorelineViewer?.selectedMediaType?.mediaType.name;
+            const selectedMediaType = state.shorelineViewer?.selectedMediaType?.name;
             const selectedRegion = state.shorelineViewer.selectedRegion;
             const featureCoordinates = action.selectedFeature.selectedFeature.geometry.coordinates;
             const featureGeometry = action.selectedFeature.selectedFeature.geometry;
@@ -497,7 +497,7 @@ export const displayShorelineMediaLayerEpic = (action$, store) =>
         .switchMap((action) => {
             if (action.selectedMediaType) {
                 const state = store.getState();
-                const layerList = (action.selectedMediaType.mediaType.name === "Photos") ? state.shorelineViewer.selectedRegion.photoDatasets : state.shorelineViewer.selectedRegion.videoDatasets;
+                const layerList = (action.selectedMediaType.name === "Photos") ? state.shorelineViewer.selectedRegion.photoDatasets : state.shorelineViewer.selectedRegion.videoDatasets;
                 const features = generateExtentLayer(layerList);
                 let layerName = layerList.map(layer => layer.datasetName);
                 const accessToken = state.security?.user?.info?.access_token;
