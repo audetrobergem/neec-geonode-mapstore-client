@@ -27,21 +27,104 @@ export const extractBboxFromGeometry = (geometry) => {
     return ([Math.min(...xList), Math.min(...yList), Math.max(...xList), Math.max(...yList)]);
 };
 
-export const DEFAULT_POINT_STYLE = {
-    radius: 10,
-    weight: 3,
-    color: '#33eeff',
-    opacity: 0.9,
-    fillColor: '#33eeff',
-    fillOpacity: 0
+export const POINT_SELECTION_STYLE = {
+    "format": "geostyler",
+    "body": {
+        "name": "Selected Point",
+        "rules": [
+            {
+                "name": "Selected Point",
+                "symbolizers": [
+                    {
+                        kind: "Mark",
+                        color: '#33eeff',
+                        fillOpacity: 0.5,
+                        strokeColor: '#33eeff',
+                        strokeOpacity: 0.9,
+                        radius: 11
+                    }
+                ]
+            }
+        ]
+    }
 };
 
-export const DEFAULT_LINE_STYLE = {
-    weight: 8,
-    color: '#33eeff',
-    opacity: 0.8,
-    fillColor: '#33eeff',
-    fillOpacity: 0.8
+export const LINE_SELECTION_STYLE = {
+    "format": "geostyler",
+    "body": {
+        "name": "Selected Line",
+        "rules": [
+            {
+                "name": "Selected Line",
+                "symbolizers": [
+                    {
+                        kind: "Line",
+                        color: '#33eeff',
+                        opacity: 0.5,
+                        width: 11
+                    }
+                ]
+            }
+        ]
+    }
+};
+
+export const VIDEO_POINT_STYLE = {
+    "format": "geostyler",
+    "body": {
+        "name": "Selected Video Feature",
+        "rules": [
+            {
+                "name": "Selected Video Feature",
+                "symbolizers": [
+                    {
+                        "kind": "Icon",
+                        "size": 32
+                    }
+                ]
+            }
+        ]
+    }
+};
+
+export const PROJECT_EXTENT_STYLE = {
+    "format": "geostyler",
+    "body": {
+        "name": "Project Extents",
+        "rules": [
+            {
+                "name": "Project Extents",
+                "symbolizers": [
+                    {
+                        kind: "Fill",
+                        outlineWidth: 2,
+                        outlineOpacity: 1,
+                        outlineColor: '#6a0ced'
+                    }
+                ]
+            }
+        ]
+    }
+};
+
+export const REGION_EXTENT_STYLE = {
+    "format": "geostyler",
+    "body": {
+        "name": "Region Extents",
+        "rules": [
+            {
+                "name": "Region Extents",
+                "symbolizers": [
+                    {
+                        kind: "Fill",
+                        outlineWidth: 3,
+                        outlineOpacity: 1,
+                        outlineColor: '#007d4d'
+                    }
+                ]
+            }
+        ]
+    }
 };
 
 export const generateExtentLayer = (layerList) => {
