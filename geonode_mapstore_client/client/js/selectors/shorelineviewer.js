@@ -8,7 +8,7 @@ export const enabledSelector = createControlEnabledSelector("shorelineViewer");
  * @param {object} state
  * @returns {object} the selected media type (Photos or Videos)
  */
-export const shorelineViewerRegionsSelector = state => state?.shorelineViewer?.selectedMediaType;
+export const shorelineViewerMediaTypeSelector = state => state?.shorelineViewer?.selectedMediaType;
 
 /**
  * Gets the selected region.
@@ -62,7 +62,7 @@ export const shorelineSelectedVideo = state => state?.shorelineViewer?.selectedV
  * Gets the selected feature in the layer corresponding to the selected media (photo or video) depending on the region.
  * @memberof selectors.shorelineViewer
  * @param {object} state
- * @returns {object} the layers
+ * @returns {object} the layers features
  */
 export const selectedMediaDatasetFeatures = state => state?.shorelineViewer?.selectedMediaDatasetFeatures;
 

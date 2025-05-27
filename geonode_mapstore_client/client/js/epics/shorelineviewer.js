@@ -322,29 +322,37 @@ export const zoomToSelectedShorelineRegionEpic = (action$, store) =>
             }
         );
 
-export const selectShorelineFeatureEpic = (action$, store) => action$.ofType(CLICK_ON_MAP)
-    .filter(() => store.getState().controls?.shorelineViewer?.enabled)
-    .switchMap(({ point }) => {
-        const queryLayers = [];
-        store.getState().additionallayers.map(additionalLayer => {
-            if (additionalLayer.id === "shoreline-classification-layer") {
-                queryLayers.push(additionalLayer.options.name);
-            } else if (additionalLayer.id.includes("shoreline-media-layer-wms")) {
-                const layerList = additionalLayer.options.name.split(",");
-                layerList.map(layer => queryLayers.unshift(layer));
+/**
+ * This function is triggered when the user clicks on the map. It lists the selected layers
+ * that can be used to identify the features located at the point clicked by the user.
+ * @param {external:Observable} action$ manages `CLICK_ON_MAP`
+ * @returns {external:Observable} `SHORELINE_FEATURE_INFO_CLICK`
+ */
+export const selectShorelineFeatureEpic = (action$, store) =>
+    action$
+        .ofType(CLICK_ON_MAP)
+        .filter(() => store.getState().controls?.shorelineViewer?.enabled)
+        .switchMap(({ point }) => {
+            const queryLayers = [];
+            store.getState().additionallayers.map(additionalLayer => {
+                if (additionalLayer.id === "shoreline-classification-layer") {
+                    queryLayers.push(additionalLayer.options.name);
+                } else if (additionalLayer.id.includes("shoreline-media-layer-wms")) {
+                    const layerList = additionalLayer.options.name.split(",");
+                    layerList.map(layer => queryLayers.unshift(layer));
+                }
+            });
+
+            if (queryLayers) {
+                const projection = projectionSelector(store.getState());
+                const updatedPoint = updatePointWithGeometricFilter(point, projection);
+                return Rx.Observable.of(
+                    shorelineFeatureInfoClick(updatedPoint, queryLayers)
+                );
             }
+            return Rx.Observable.empty();
+
         });
-
-        if (queryLayers) {
-            const projection = projectionSelector(store.getState());
-            const updatedPoint = updatePointWithGeometricFilter(point, projection);
-            return Rx.Observable.of(
-                shorelineFeatureInfoClick(updatedPoint, queryLayers)
-            );
-        }
-        return Rx.Observable.empty();
-
-    });
 
 /**
  * This function is triggered when a user clicks on the map. A request GetFeatureInfo
@@ -358,7 +366,8 @@ export const selectShorelineFeatureEpic = (action$, store) => action$.ofType(CLI
  * @returns {external:Observable} `SHORELINE_SELECTED_FEATURE` & `LOAD_SELECTED_MEDIA_DATASET_FEATURES`
  */
 export const getShorelineFeatureInfoClickEpic = (action$, store) =>
-    action$.ofType(SHORELINE_FEATURE_INFO_CLICK)
+    action$
+        .ofType(SHORELINE_FEATURE_INFO_CLICK)
         .filter((action) => action.layers && action.layers.length > 0)
         .switchMap(({ point, layers }) => {
             const state = store.getState();
@@ -472,12 +481,15 @@ export const getShorelineFeatureInfoClickEpic = (action$, store) =>
         });
 
 /**
- *
+ * This function is triggered when an entity is selected, either by the user or automatically during
+ * video playback. Subsequent actions depend on the type of media selected and the action trigger
+ * (user action or video playback).
  * @param {external:Observable} action$ manages `SHORELINE_SELECTED_FEATURE`
- * @returns {external:Observable} ``
+ * @returns {external:Observable} `UPDATE_ADDITIONAL_LAYER`, `ZOOM_TO_EXTENT`, `LOAD_VIDEO`
  */
 export const selectMediaFeatureEpic = (action$, store) =>
-    action$.ofType(SHORELINE_SELECTED_FEATURE)
+    action$
+        .ofType(SHORELINE_SELECTED_FEATURE)
         .filter((action) => action.selectedFeature)
         .filter(() => store.getState().shorelineViewer?.selectedFeature)
         .switchMap((action) => {
@@ -617,7 +629,7 @@ export const selectMediaFeatureEpic = (action$, store) =>
         });
 
 /**
- * This action is triggered when the user selects a media type from the plugin interface.
+ * This function is triggered when the user selects a media type from the plugin interface.
  * There are three possible scenarios:
  *
  *     - First, the user selects a media type for the first time: Everything should
@@ -633,7 +645,8 @@ export const selectMediaFeatureEpic = (action$, store) =>
  *                                `LOAD_SELECTED_MEDIA_DATASET_FEATURES`
  */
 export const displayShorelineMediaLayerEpic = (action$, store) =>
-    action$.ofType(UPDATE_SHORELINE_SELECTED_MEDIA_TYPE)
+    action$
+        .ofType(UPDATE_SHORELINE_SELECTED_MEDIA_TYPE)
         .switchMap((action) => {
             if (action.selectedMediaType) {
                 const state = store.getState();
@@ -694,136 +707,193 @@ export const displayShorelineMediaLayerEpic = (action$, store) =>
             );
         });
 
-export const selectFirstMediaFeatureEpic = (action$, store) => action$.ofType(SELECT_FIRST_MEDIA_FEATURE)
-    .switchMap(() => {
-        const state = store.getState();
-        const firstMediaFeature = state.shorelineViewer?.selectedMediaDatasetFeatures?.features[0];
-        const selectedLayer = state.shorelineViewer.selectedLayer;
-        return Rx.Observable.of(
-            shorelineSelectedFeature({
-                selectedFeature: firstMediaFeature,
-                selectedLayer: selectedLayer,
-                selectedFeatureProjection: "EPSG:4269",
-                trigger: "SELECT_FIRST_MEDIA_FEATURE"
-            })
-        );
-    });
+/**
+ * This function is triggered when the user clicks on the button to go to the first point of a
+ * photo layer. The first photo is returned as the selected media.
+ * @param {external:Observable} action$ manages `SELECT_FIRST_MEDIA_FEATURE`
+ * @returns {external:Observable} `SHORELINE_SELECTED_FEATURE`
+ */
+export const selectFirstMediaFeatureEpic = (action$, store) =>
+    action$
+        .ofType(SELECT_FIRST_MEDIA_FEATURE)
+        .switchMap(() => {
+            const state = store.getState();
+            const firstMediaFeature = state.shorelineViewer?.selectedMediaDatasetFeatures?.features[0];
+            const selectedLayer = state.shorelineViewer.selectedLayer;
+            return Rx.Observable.of(
+                shorelineSelectedFeature({
+                    selectedFeature: firstMediaFeature,
+                    selectedLayer: selectedLayer,
+                    selectedFeatureProjection: "EPSG:4269",
+                    trigger: "SELECT_FIRST_MEDIA_FEATURE"
+                })
+            );
+        });
 
-export const selectPreviousMediaFeatureEpic = (action$, store) => action$.ofType(SELECT_PREVIOUS_MEDIA_FEATURE)
-    .switchMap((action) => {
-        const state = store.getState();
-        const mediaFeatures = state.shorelineViewer?.selectedMediaDatasetFeatures?.features;
-        const selectedFeatureName = action.selectedFeature.properties.name;
-        const selectedFeatureIndex = mediaFeatures.findIndex((x) => x.properties.name === selectedFeatureName);
-        const previousMediaFeature = store.getState().shorelineViewer?.selectedMediaDatasetFeatures?.features[selectedFeatureIndex - 1];
-        const selectedLayer = state.shorelineViewer.selectedLayer;
-        return Rx.Observable.of(
-            shorelineSelectedFeature({
-                selectedFeature: previousMediaFeature,
-                selectedLayer: selectedLayer,
-                selectedFeatureProjection: "EPSG:4269",
-                trigger: "SELECT_PREVIOUS_MEDIA_FEATURE"
-            })
-        );
-    });
+/**
+ * This function is triggered when the user clicks on the button to go to the previous point of a
+ * photo layer. The previous photo is returned as the selected media.
+ * @param {external:Observable} action$ manages `SELECT_FIRST_MEDIA_FEATURE`
+ * @returns {external:Observable} `SHORELINE_SELECTED_FEATURE`
+ */
+export const selectPreviousMediaFeatureEpic = (action$, store) =>
+    action$
+        .ofType(SELECT_PREVIOUS_MEDIA_FEATURE)
+        .switchMap((action) => {
+            const state = store.getState();
+            const mediaFeatures = state.shorelineViewer?.selectedMediaDatasetFeatures?.features;
+            const selectedFeatureName = action.selectedFeature.properties.name;
+            const selectedFeatureIndex = mediaFeatures.findIndex((x) => x.properties.name === selectedFeatureName);
+            const previousMediaFeature = store.getState().shorelineViewer?.selectedMediaDatasetFeatures?.features[selectedFeatureIndex - 1];
+            const selectedLayer = state.shorelineViewer.selectedLayer;
+            return Rx.Observable.of(
+                shorelineSelectedFeature({
+                    selectedFeature: previousMediaFeature,
+                    selectedLayer: selectedLayer,
+                    selectedFeatureProjection: "EPSG:4269",
+                    trigger: "SELECT_PREVIOUS_MEDIA_FEATURE"
+                })
+            );
+        });
 
-export const selectNextMediaFeatureEpic = (action$, store) => action$.ofType(SELECT_NEXT_MEDIA_FEATURE)
-    .switchMap((action) => {
-        const state = store.getState();
-        const mediaFeatures = state.shorelineViewer?.selectedMediaDatasetFeatures?.features;
-        const selectedFeatureName = action.selectedFeature.properties.name;
-        const selectedFeatureIndex = mediaFeatures.findIndex((x) => x.properties.name === selectedFeatureName);
-        const nextMediaFeature = store.getState().shorelineViewer?.selectedMediaDatasetFeatures?.features[selectedFeatureIndex + 1];
-        const selectedLayer = state.shorelineViewer.selectedLayer;
-        return Rx.Observable.of(
-            shorelineSelectedFeature({
-                selectedFeature: nextMediaFeature,
-                selectedLayer: selectedLayer,
-                selectedFeatureProjection: "EPSG:4269",
-                trigger: "SELECT_NEXT_MEDIA_FEATURE"
-            })
-        );
-    });
+/**
+ * This function is triggered when the user clicks on the button to go to the next point of a
+ * photo layer. The next photo is returned as the selected media.
+ * @param {external:Observable} action$ manages `SELECT_FIRST_MEDIA_FEATURE`
+ * @returns {external:Observable} `SHORELINE_SELECTED_FEATURE`
+ */
+export const selectNextMediaFeatureEpic = (action$, store) =>
+    action$
+        .ofType(SELECT_NEXT_MEDIA_FEATURE)
+        .switchMap((action) => {
+            const state = store.getState();
+            const mediaFeatures = state.shorelineViewer?.selectedMediaDatasetFeatures?.features;
+            const selectedFeatureName = action.selectedFeature.properties.name;
+            const selectedFeatureIndex = mediaFeatures.findIndex((x) => x.properties.name === selectedFeatureName);
+            const nextMediaFeature = store.getState().shorelineViewer?.selectedMediaDatasetFeatures?.features[selectedFeatureIndex + 1];
+            const selectedLayer = state.shorelineViewer.selectedLayer;
+            return Rx.Observable.of(
+                shorelineSelectedFeature({
+                    selectedFeature: nextMediaFeature,
+                    selectedLayer: selectedLayer,
+                    selectedFeatureProjection: "EPSG:4269",
+                    trigger: "SELECT_NEXT_MEDIA_FEATURE"
+                })
+            );
+        });
 
-export const selectLastMediaFeatureEpic = (action$, store) => action$.ofType(SELECT_LAST_MEDIA_FEATURE)
-    .switchMap(() => {
-        const state = store.getState();
-        const mediaFeatures = state.shorelineViewer?.selectedMediaDatasetFeatures?.features;
-        const lastMediaFeature = mediaFeatures[mediaFeatures.length - 1];
-        const selectedLayer = state.shorelineViewer.selectedLayer;
-        return Rx.Observable.of(
-            shorelineSelectedFeature({
-                selectedFeature: lastMediaFeature,
-                selectedLayer: selectedLayer,
-                selectedFeatureProjection: "EPSG:4269",
-                trigger: "SELECT_LAST_MEDIA_FEATURE"
-            })
-        );
-    });
+/**
+ * This function is triggered when the user clicks on the button to go to the last point of a
+ * photo layer. The last photo is returned as the selected media.
+ * @param {external:Observable} action$ manages `SELECT_FIRST_MEDIA_FEATURE`
+ * @returns {external:Observable} `SHORELINE_SELECTED_FEATURE`
+ */
+export const selectLastMediaFeatureEpic = (action$, store) =>
+    action$
+        .ofType(SELECT_LAST_MEDIA_FEATURE)
+        .switchMap(() => {
+            const state = store.getState();
+            const mediaFeatures = state.shorelineViewer?.selectedMediaDatasetFeatures?.features;
+            const lastMediaFeature = mediaFeatures[mediaFeatures.length - 1];
+            const selectedLayer = state.shorelineViewer.selectedLayer;
+            return Rx.Observable.of(
+                shorelineSelectedFeature({
+                    selectedFeature: lastMediaFeature,
+                    selectedLayer: selectedLayer,
+                    selectedFeatureProjection: "EPSG:4269",
+                    trigger: "SELECT_LAST_MEDIA_FEATURE"
+                })
+            );
+        });
 
-export const shorelineStartLoadingEpic = (action$, store) => action$.ofType(LAYER_LOADING)
-    .filter(() => store.getState().controls?.shorelineViewer?.enabled)
-    .filter((action) => !action.layerId)
-    .switchMap(() => {
-        const state = store.getState();
-        if (state.shorelineViewer.videoInformations && state.shorelineViewer.videoInformations.status === "play") {
+/**
+ * This function is triggered when the loading of a layer displayed from the shoreline viewer
+ * plugin begins. It displays a loader in the plugin panel.
+ * @param {external:Observable} action$ manages `LAYER_LOADING`
+ * @returns {external:Observable} `SET_SHORELINE_LOADING`
+ */
+export const shorelineStartLoadingEpic = (action$, store) =>
+    action$
+        .ofType(LAYER_LOADING)
+        .filter(() => store.getState().controls?.shorelineViewer?.enabled)
+        .filter((action) => !action.layerId)
+        .switchMap(() => {
+            const state = store.getState();
+            if (state.shorelineViewer.videoInformations && state.shorelineViewer.videoInformations.status === "play") {
+                return Rx.Observable.of(
+                    setShorelineLoading(false)
+                );
+            }
+            return Rx.Observable.of(
+                setShorelineLoading(true)
+            );
+
+        });
+
+/**
+ * This function is triggered when the loading of a layer displayed from the shoreline viewer
+ * plugin ends. It hides a loader in the plugin panel.
+ * @param {external:Observable} action$ manages `LAYER_LOADING`
+ * @returns {external:Observable} `SET_SHORELINE_LOADING`
+ */
+export const shorelineStopLoadingEpic = (action$, store) =>
+    action$
+        .ofType(LAYER_LOAD)
+        .filter(() => store.getState().controls?.shorelineViewer?.enabled)
+        .filter((action) => !action.layerId)
+        .switchMap(() => {
             return Rx.Observable.of(
                 setShorelineLoading(false)
             );
-        }
-        return Rx.Observable.of(
-            setShorelineLoading(true)
-        );
+        });
 
-    });
-
-export const shorelineStopLoadingEpic = (action$, store) => action$.ofType(LAYER_LOAD)
-    .filter(() => store.getState().controls?.shorelineViewer?.enabled)
-    .filter((action) => !action.layerId)
-    .switchMap(() => {
-        return Rx.Observable.of(
-            setShorelineLoading(false)
-        );
-    });
-
-export const changeShorelineThematicEpic = (action$, store) => action$.ofType(SET_SHORELINE_THEMATIC)
-    .filter(() => store.getState()?.controls?.shorelineViewer?.enabled)
-    .switchMap(
-        (action) => {
-            const state = store.getState();
-            const accessToken = state.security?.user?.info?.access_token;
-            const geoserverUrl = state.gnsettings?.geoserverUrl;
-            return Rx.Observable.of(
-                removeAdditionalLayer({ id: "shoreline-classification-layer" }),
-                updateAdditionalLayer(
-                    "shoreline-classification-layer",
-                    "ShorelineViewer",
-                    "overlay",
-                    {
-                        type: "wms",
-                        url: `${geoserverUrl}wms`,
-                        name: state.shorelineViewer.selectedRegion.shorelineClassificationDataset,
-                        format: "image/png8",
-                        singleTile: true,
-                        params: {
-                            access_token: accessToken,
-                            STYLES: action.selectedThematic.thematicName
+/**
+ * This function is triggered when the user selects a new theme for the shoreline classification
+ * layer. The new symbology is then applied to the layer.
+ * @param {external:Observable} action$ manages `SET_SHORELINE_THEMATIC`
+ * @returns {external:Observable} `REMOVE_ADDITIONAL_LAYER`, `UPDATE_ADDITIONAL_LAYER`
+ */
+export const changeShorelineThematicEpic = (action$, store) =>
+    action$
+        .ofType(SET_SHORELINE_THEMATIC)
+        .filter(() => store.getState()?.controls?.shorelineViewer?.enabled)
+        .switchMap(
+            (action) => {
+                const state = store.getState();
+                const accessToken = state.security?.user?.info?.access_token;
+                const geoserverUrl = state.gnsettings?.geoserverUrl;
+                return Rx.Observable.of(
+                    removeAdditionalLayer({ id: "shoreline-classification-layer" }),
+                    updateAdditionalLayer(
+                        "shoreline-classification-layer",
+                        "ShorelineViewer",
+                        "overlay",
+                        {
+                            type: "wms",
+                            url: `${geoserverUrl}wms`,
+                            name: state.shorelineViewer.selectedRegion.shorelineClassificationDataset,
+                            format: "image/png8",
+                            singleTile: true,
+                            params: {
+                                access_token: accessToken,
+                                STYLES: action.selectedThematic.thematicName
+                            }
                         }
-                    }
-                )
-            );
-        }
-    );
+                    )
+                );
+            }
+        );
 
 /**
  * This function is triggered when a point in a video layer is selected. It loads the corresponding video
  * from the Vimeo API. Once loaded, it initiates the videoInformations state variable with the video's
  * initial information (file name, time in video and URI).
  * @param {external:Observable} action$ manages `LOAD_VIDEO`
- * @returns {external:Observable} `SET_VIDEO_INFORMATIONS`
+ * @returns {external:Observable} `SET_VIDEO_INFORMATIONS`, `ERROR`
  */
 export const loadVideoEpic = (action$, store) =>
-    action$.ofType(LOAD_VIDEO)
+    action$
+        .ofType(LOAD_VIDEO)
         .filter(() => store.getState()?.controls?.shorelineViewer?.enabled)
         .switchMap((action) => {
             const state = store.getState();
@@ -873,10 +943,11 @@ export const loadVideoEpic = (action$, store) =>
  * This function is triggered when a video setting is changed (video name, play time, etc.). The actions taken
  * depend on the parameter modified.
  * @param {external:Observable} action$ manages `UPDATE_VIDEO_INFORMATION`
- * @returns {external:Observable} `SET_PRINT_PROPERTIES`, `SET_PRINT_EXTENT`, `GET_COORDINATES_SYSTEMS`
+ * @returns {external:Observable} `SET_PRINT_PROPERTIES`, `SET_PRINT_EXTENT`, `GET_COORDINATES_SYSTEMS`, `ERROR`
  */
 export const updateVideoInformationEpic = (action$, store) =>
-    action$.ofType(UPDATE_VIDEO_INFORMATION)
+    action$
+        .ofType(UPDATE_VIDEO_INFORMATION)
         .filter(() => store.getState()?.controls?.shorelineViewer?.enabled)
         .switchMap((action) => {
             const state = store.getState();
@@ -932,7 +1003,8 @@ export const updateVideoInformationEpic = (action$, store) =>
  * @returns {external:Observable} `ERROR`
  */
 export const videoErrorEpic = (action$) =>
-    action$.ofType(VIDEO_ERROR)
+    action$
+        .ofType(VIDEO_ERROR)
         .switchMap((action) => {
             return Rx.Observable.of(
                 error({
