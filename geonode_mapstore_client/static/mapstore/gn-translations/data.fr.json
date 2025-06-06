@@ -537,7 +537,7 @@
             "loadPrintLayout": "Le gabarit d'impression sélectionné (<strong>{error}</strong>) ne figure pas dans la liste des gabarits disponibles. Il se peut que l'outil d'impression n'ait pas été complètement chargé lors de l'ouverture de la carte. Veuillez rafraîchir la page et réessayer. Veuillez contacter l'équipe technique du Géoportail du CNUE si le problème persiste."
         },
         "marineTraffic": {
-            "title": "Traffic maritime",
+            "title": "Trafic maritime",
             "searchTitle": "Recherche",
             "searchIdentityName": "Nom du navire",
             "searchMMSI": "MMSI",

@@ -404,6 +404,7 @@ export const addVesselExtractionToMapEpic = (action$) =>
         .ofType(MARINE_TRAFFIC_ADD_LAYER_TO_MAP)
         .filter((action) => action.extractionLayer)
         .switchMap((action) => {
+            const state = store.getState();
             const extentLayer = {
                 id: "marineTraffic:" + uuid(),
                 title: action.extractionLayer.layerTitle,
