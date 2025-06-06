@@ -399,7 +399,7 @@ export const extractHistoryEpic = (action$, store) =>
  * @param {external:Observable} action$ manages `MARINE_TRAFFIC_ADD_LAYER_TO_MAP`
  * @returns {external:Observable} `ADD_LAYER`
  */
-export const addVesselExtractionToMapEpic = (action$) =>
+export const addVesselExtractionToMapEpic = (action$, store) =>
     action$
         .ofType(MARINE_TRAFFIC_ADD_LAYER_TO_MAP)
         .filter((action) => action.extractionLayer)
