@@ -41,6 +41,7 @@
     "react-helmet": "6.1.0",
     "react-intl": "2.3.0",
     "react-router-dom": "4.1.1",
+    "react-world-flags": "^1.6.0",
     "video.js": "^8.22.0",
     "videojs-hls-quality-selector": "^2.0.0"
   },

@@ -1,5 +1,5 @@
 /**
- * This function extracts the bounding box of all the regions. It extracts all the geometry's 
+ * This function extracts the bounding box of all the regions. It extracts all the geometry's
  * coordinates and returns the bounding box in the format [xmin, ymin, xmax, ymax].
  */
 export const extractRegionsBbox = (regions) => {
@@ -21,7 +21,7 @@ export const extractRegionsBbox = (regions) => {
 };
 
 /**
- * This function extracts the bounding box of an entity. It extracts all the geometry's 
+ * This function extracts the bounding box of an entity. It extracts all the geometry's
  * coordinates and returns the bounding box in the format [xmin, ymin, xmax, ymax].
  */
 export const extractBboxFromGeometry = (geometry) => {

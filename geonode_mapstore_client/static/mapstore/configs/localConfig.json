@@ -102,6 +102,10 @@
         {
             "name": "shorelineViewerSelectedFeature",
             "path": "shorelineViewer.selectedFeature.selectedFeature.properties"
+        },
+        {
+            "name": "marineTrafficSelectedFeature",
+            "path": "marineTraffic.selectedFeature.properties"
         }
     ],
     "projectionDefs": [],
@@ -1484,6 +1488,103 @@
             },
             {
                 "name": "MapThumbnail"
+            },
+            {
+                "name": "MarineTraffic",
+                "cfg": {
+                    "disablePluginIf": "{!state('user').info.groups.includes('neec')}",
+                    "tabs": [
+                        {
+                            "type": "tab",
+                            "id": "vesselInformation",
+                            "labelId": "marineTraffic.properties.vesselInformation",
+                            "items": [
+                                {
+                                    "type": "text",
+                                    "labelId": "marineTraffic.properties.name",
+                                    "value": "{context.get(state('marineTrafficSelectedFeature'), 'identity_name')}"
+                                },
+                                {
+                                    "type": "text",
+                                    "labelId": "marineTraffic.properties.mmsi",
+                                    "value": "{context.get(state('marineTrafficSelectedFeature'), 'mmsi')}"
+                                },
+                                {
+                                    "type": "text",
+                                    "labelId": "marineTraffic.properties.imo",
+                                    "value": "{context.get(state('marineTrafficSelectedFeature'), 'imo')}"
+                                },
+                                {
+                                    "type": "text",
+                                    "labelId": "marineTraffic.properties.callSign",
+                                    "value": "{context.get(state('marineTrafficSelectedFeature'), 'call_sign')}"
+                                },
+                                {
+                                    "type": "text",
+                                    "labelId": "marineTraffic.properties.flag",
+                                    "value": "{context.get(state('marineTrafficSelectedFeature'), 'flag')}"
+                                },
+                                {
+                                    "type": "text",
+                                    "labelId": "marineTraffic.properties.category",
+                                    "value": "{context.get(state('marineTrafficSelectedFeature'), 'category_code')}"
+                                },
+                                {
+                                    "type": "text",
+                                    "labelId": "marineTraffic.properties.type",
+                                    "value": "{context.get(state('marineTrafficSelectedFeature'), 'registered_type')}"
+                                },
+                                {
+                                    "type": "text",
+                                    "labelId": "marineTraffic.properties.speed",
+                                    "value": "{context.get(state('marineTrafficSelectedFeature'), 'speed')}"
+                                },
+                                {
+                                    "type": "text",
+                                    "labelId": "marineTraffic.properties.heading",
+                                    "value": "{context.get(state('marineTrafficSelectedFeature'), 'heading')}"
+                                },
+                                {
+                                    "type": "text",
+                                    "labelId": "marineTraffic.properties.course",
+                                    "value": "{context.get(state('marineTrafficSelectedFeature'), 'course')}"
+                                },
+                                {
+                                    "type": "text",
+                                    "labelId": "marineTraffic.properties.lat",
+                                    "value": "{context.get(state('marineTrafficSelectedFeature'), 'lat')}"
+                                },
+                                {
+                                    "type": "text",
+                                    "labelId": "marineTraffic.properties.lon",
+                                    "value": "{context.get(state('marineTrafficSelectedFeature'), 'lon')}"
+                                },
+                                {
+                                    "type": "navStatus",
+                                    "labelId": "marineTraffic.properties.navStatus",
+                                    "value": "{context.get(state('marineTrafficSelectedFeature'), 'nav_status')}"
+                                },
+                                {
+                                    "type": "text",
+                                    "labelId": "marineTraffic.properties.destination",
+                                    "value": "{context.get(state('marineTrafficSelectedFeature'), 'destination')}"
+                                },
+                                {
+                                    "type": "date",
+                                    "format": "YYYY-MM-DD HH:mm",
+                                    "labelId": "marineTraffic.properties.eta",
+                                    "value": "{context.get(state('marineTrafficSelectedFeature'), 'destination_eta')}"
+                                }
+                            ]
+                        },
+                        {
+                            "type": "history",
+                            "id": "history",
+                            "labelId": "marineTraffic.properties.history",
+                            "items": "{({vessel: context.get(state('marineTrafficSelectedFeature'), '*')})}"
+                        }
+                    ]
+                }
             },
             {
                 "name": "ShorelineViewer",

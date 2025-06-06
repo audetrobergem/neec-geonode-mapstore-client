@@ -534,6 +534,68 @@
             "print": "Print",
             "getPrintStatus": "An error has occurred while processing the print request to the print server. Please contact the NEEC GeoPortal technical team with the following error message:<br>{error}",
             "loadPrintLayout": "The selected print template (<strong>{error}</strong>) is not in the list of available templates. The printing tool may not have loaded completely when the map was opened. Please refresh the page and try again. Contact the NEEC GeoPortal technical team if the problem persists."
+        },
+        "marineTraffic": {
+            "title": "Marine Traffic",
+            "searchTitle": "Search",
+            "searchIdentityName": "Vessel Name",
+            "searchMMSI": "MMSI",
+            "search": "Search",
+            "latestPosition": "Latest position received at: {currentTime} ({elapsedTime} minutes ago).",
+            "from": "From",
+            "to": "To",
+            "extract": "Extract",
+            "download": "Download extraction",
+            "addLayer": "Add the extraction to the map",
+            "navBarText": "Vessel {index} of {length}",
+            "historyTableHeader": "Showing {minIndex} to {maxIndex} of {length} items",
+            "navBarResultText": "Page {index} of {length}",
+            "previousVesselTooltip": "Display previous vessel information",
+            "nextVesselTooltip": "Display next vessel information",
+            "nothingToDisplay": "There's nothing to display. Please enter a start and end date and time and extract the tracking history.",
+            "date": "Date",
+            "source": "Source",
+            "speed": "Speed",
+            "course": "Course",
+            "navStatus": "Status",
+            "properties": {
+                "vesselInformation": "Vessel Information",
+                "history": "Track History",
+                "name": "Name",
+                "mmsi": "MMSI",
+                "imo": "IMO",
+                "callSign": "Call Sign",
+                "flag": "Flag",
+                "category": "Category",
+                "type": "Type",
+                "speed": "Speed",
+                "heading": "Heading",
+                "course": "Course",
+                "lat": "Latitude",
+                "lon": "Longitude",
+                "navStatus": "Nav Status",
+                "destination": "Destination",
+                "eta": "ETA"
+            },
+            "status": {
+                "aground": "Aground",
+                "atAnchor": "At anchor",
+                "constrainedByHerDraught": "Constrained by her draught",
+                "engagedInFishing": "Engaged in fishing",
+                "moored": "Moored",
+                "notUnderCommand": "Not under command",
+                "restrictedManoeuverability": "Restricted maneuverability",
+                "underWaySailing": "Under way sailing",
+                "underWayUsingEngine": "Under way using engine",
+                "unknown": "Unknown"
+            },
+            "notifications": {
+                "warning": "Warning",
+                "warningMessage": "The server returned no results for the request.",
+                "close": "Close",
+                "error": "Error",
+                "aisDataLoadingError": "The maritime traffic layer could not be loaded correctly. This may be a permission problem. In this case, you can disconnect and reconnect. It may also be a problem with the data source. Please contact the Geoportal technical team if the problem persists."
+            }
         }
     }
 }
