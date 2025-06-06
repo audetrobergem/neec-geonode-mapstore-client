@@ -293,6 +293,7 @@ export const selectedFeatureEpic = (action$, store) =>
         .ofType(MARINE_TRAFFIC_SELECTED_FEATURE)
         .filter(() => store.getState().controls?.marineTraffic?.enabled)
         .switchMap((action) => {
+            const state = store.getState();
             return Rx.Observable.of(
                 vesselHistory(null),
                 updateAdditionalLayer(
