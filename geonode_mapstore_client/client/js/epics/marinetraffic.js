@@ -135,7 +135,7 @@ export const openMarineTrafficPluginEpic = (action$, store) =>
                                     access_token: accessToken
                                 },
                                 title: {
-                                    default: "RESTRICTED Marine traffic (AIS)",
+                                    "default": "RESTRICTED Marine traffic (AIS)",
                                     en: "RESTRICTED Marine traffic (AIS)",
                                     fr: "Traffic maritime (SIA) RESTREINT"
                                 },
@@ -303,7 +303,6 @@ export const selectedFeatureEpic = (action$, store) =>
         .ofType(MARINE_TRAFFIC_SELECTED_FEATURE)
         .filter(() => store.getState().controls?.marineTraffic?.enabled)
         .switchMap((action) => {
-            const state = store.getState();
             return Rx.Observable.of(
                 vesselHistory(null),
                 updateAdditionalLayer(
@@ -409,12 +408,11 @@ export const extractHistoryEpic = (action$, store) =>
  * @param {external:Observable} action$ manages `MARINE_TRAFFIC_ADD_LAYER_TO_MAP`
  * @returns {external:Observable} `ADD_LAYER`
  */
-export const addVesselExtractionToMapEpic = (action$, store) =>
+export const addVesselExtractionToMapEpic = (action$) =>
     action$
         .ofType(MARINE_TRAFFIC_ADD_LAYER_TO_MAP)
         .filter((action) => action.extractionLayer)
         .switchMap((action) => {
-            const state = store.getState();
             const extentLayer = {
                 id: "marineTraffic:" + uuid(),
                 title: action.extractionLayer.layerTitle,
@@ -456,7 +454,7 @@ export const addVesselExtractionToMapEpic = (action$, store) =>
  * @param {external:Observable} action$ manages `LAYER_LOADING`
  * @returns {external:Observable} `SET_SHORELINE_LOADING`
  */
-export const marineTrafficStartLoadingEpic = (action$, store) =>
+export const marineTrafficStartLoadingEpic = (action$) =>
     action$
         .ofType(SET_CONTROL_PROPERTY)
         .filter((action) => action.control === "marineTraffic")

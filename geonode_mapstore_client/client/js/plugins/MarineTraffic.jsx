@@ -112,29 +112,24 @@ function MarineTraffic({
         };
     }, []);
 
-    const findSymbol = (registeredCategory => {
+    const findSymbol = registeredCategory => {
         if (registeredCategory === "BULK CARRIERS") {
-            return "../../../static/mapstore/img/marine_traffic_cargo.png"
+            return "../../../static/mapstore/img/marine_traffic_cargo.png";
+        } else if (["FISHING", "FISHING INDUSTRY"].includes(registeredCategory)) {
+            return "../../../static/mapstore/img/marine_traffic_fishing.png";
+        } else if (registeredCategory === "DRY CARGO/PASSENGER") {
+            return "../../../static/mapstore/img/marine_traffic_passenger.png";
+        } else if (registeredCategory === "PLEASURE / LEISURE") {
+            return "../../../static/mapstore/img/marine_traffic_pleasure.png";
+        } else if (registeredCategory === "TANKERS") {
+            return "../../../static/mapstore/img/marine_traffic_tankers.png";
+        } else if (["INLAND WATERWAYS", "MISCELLANEOUS", "NAVAL", "OFFSHORE", "RESCUE", "SERVICE VESSELS"].includes(registeredCategory)) {
+            return "../../../static/mapstore/img/marine_traffic_special.png";
         }
-        else if (["FISHING", "FISHING INDUSTRY"].includes(registeredCategory)) {
-            return "../../../static/mapstore/img/marine_traffic_fishing.png"
-        }
-        else if (registeredCategory === "DRY CARGO/PASSENGER") {
-            return "../../../static/mapstore/img/marine_traffic_passenger.png"
-        }
-        else if (registeredCategory === "PLEASURE / LEISURE") {
-            return "../../../static/mapstore/img/marine_traffic_pleasure.png"
-        }
-        else if (registeredCategory === "TANKERS") {
-            return "../../../static/mapstore/img/marine_traffic_tankers.png"
-        }
-        else if (["INLAND WATERWAYS", "MISCELLANEOUS", "NAVAL", "OFFSHORE", "RESCUE", "SERVICE VESSELS"].includes(registeredCategory)) {
-            return "../../../static/mapstore/img/marine_traffic_special.png"
-        }
-        else {
-            return "../../../static/mapstore/img/marine_traffic_other.png"
-        }
-    });
+
+        return "../../../static/mapstore/img/marine_traffic_other.png";
+
+    };
 
     return (
         <div
