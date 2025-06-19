@@ -13,10 +13,10 @@ import { mapLayoutValuesSelector } from '@mapstore/framework/selectors/maplayout
 import moment from 'moment';
 import FaIcon from '@js/components/FaIcon';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faShip } from '@fortawesome/free-solid-svg-icons';
+import { faShip, faXmark } from '@fortawesome/free-solid-svg-icons';
 import MarineTrafficEpics from '@js/epics/marinetraffic';
 import marineTraffic from '@js/reducers/marinetraffic';
-import { addLayerToMap, extractHistory, searchVessel, selectPreviousVessel, selectNextVessel } from '@js/actions/marinetraffic';
+import { addLayerToMap, extractHistory, searchVessel, selectPreviousVessel, selectNextVessel, clearSelection } from '@js/actions/marinetraffic';
 import MarineTrafficInfo from '@js/components/MarineTrafficInformation/MarineTrafficInfo';
 import MarineTrafficSearch from '@js/components/MarineTrafficInformation/MarineTrafficSearch';
 import Flag from 'react-world-flags';
@@ -101,7 +101,8 @@ function MarineTraffic({
     onClose,
     onSearchVessel,
     onExtractHistory,
-    onAddLayerToMap
+    onAddLayerToMap,
+    onClearSelection
 }) {
     const isMounted = useRef(false);
 
@@ -158,14 +159,23 @@ function MarineTraffic({
                     {selectedFeatures && selectedFeature &&
                         <div>
                             <ConnectedVesselNavigationButton />
-                            <div className="marine-traffic-vessel-name">
-                                <Flag code={selectedFeature.properties.flag} height="28" />
-                                <span className="marine-traffic-vessel-name-text">
-                                    {selectedFeature.properties.identity_name}
-                                </span>
-                                <span className="marine-traffic-vessel-name-type">
-                                    <img src={ findSymbol(selectedFeature.properties.registered_category) } height="28"/>
-                                </span>
+                            <div className="marine-traffic-vessel-name-container">
+                                <div className="marine-traffic-vessel-name">
+                                    <Flag code={selectedFeature.properties.flag} height="28" />
+                                    <span className="marine-traffic-vessel-name-text">
+                                        {selectedFeature.properties.identity_name}
+                                    </span>
+                                    <span className="marine-traffic-vessel-name-type">
+                                        <img src={ findSymbol(selectedFeature.properties.registered_category) } height="28"/>
+                                    </span>
+                                </div>
+                                <Button
+                                    className="marine-traffic-vessel-navbar-button"
+                                    tooltipId={<Message msgId="marineTraffic.firstPageTooltip" />}
+                                    onClick={ () => onClearSelection() }
+                                >
+                                    <FontAwesomeIcon icon={faXmark} size="m" />
+                                </Button>
                             </div>
                             <span className="marine-traffic-latest-position-text">
                                 <Message
@@ -197,14 +207,16 @@ MarineTraffic.propTypes = {
     onClose: PropTypes.func,
     onSearchVessel: PropTypes.func,
     onExtractHistory: PropTypes.func,
-    onAddLayerToMap: PropTypes.func
+    onAddLayerToMap: PropTypes.func,
+    onClearSelection: PropTypes.func
 };
 
 MarineTraffic.defaultProps = {
     onClose: () => { },
     onSearchVessel: () => { },
     onExtractHistory: () => { },
-    onAddLayerToMap: () => { }
+    onAddLayerToMap: () => { },
+    onClearSelection: () => { }
 };
 
 function MarineTrafficPlugin({ enabled, ...props }) {
@@ -232,7 +244,8 @@ const ConnectedMarineTrafficPlugin = connect(
         onClose: setControlProperty.bind(null, 'marineTraffic', 'enabled', false),
         onSearchVessel: searchVessel,
         onExtractHistory: extractHistory,
-        onAddLayerToMap: addLayerToMap
+        onAddLayerToMap: addLayerToMap,
+        onClearSelection: clearSelection
     }
 )(MarineTrafficPlugin);
 

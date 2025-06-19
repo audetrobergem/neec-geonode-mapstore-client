@@ -8,6 +8,7 @@ export const MARINE_TRAFFIC_ADD_LAYER_TO_MAP = "MARINETRAFFIC:MARINE_TRAFFIC_ADD
 export const MARINE_TRAFFIC_SET_LOADING = "MARINETRAFFIC:MARINE_TRAFFIC_SET_LOADING";
 export const MARINE_TRAFFIC_SELECT_PREVIOUS_VESSEL = "MARINETRAFFIC:MARINE_TRAFFIC_SELECT_PREVIOUS_VESSEL";
 export const MARINE_TRAFFIC_SELECT_NEXT_VESSEL = "MARINETRAFFIC:MARINE_TRAFFIC_SELECT_NEXT_VESSEL";
+export const MARINE_TRAFFIC_CLEAR_SELECTION = "MARINETRAFFIC:MARINE_TRAFFIC_CLEAR_SELECTION";
 
 /**
 * Load the marine traffic layer (AIS) in memory. This will enable the filtering of features and
@@ -98,4 +99,11 @@ export const selectPreviousVessel = (selectedFeature) => ({
 export const selectNextVessel = (selectedFeature) => ({
     type: MARINE_TRAFFIC_SELECT_NEXT_VESSEL,
     selectedFeature
+});
+
+/**
+* Clear the selected features
+*/
+export const clearSelection = () => ({
+    type: MARINE_TRAFFIC_CLEAR_SELECTION
 });

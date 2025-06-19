@@ -8,7 +8,8 @@ import {
     MARINE_TRAFFIC_SET_LOADING,
     MARINE_TRAFFIC_VESSEL_HISTORY,
     MARINE_TRAFFIC_SELECT_PREVIOUS_VESSEL,
-    MARINE_TRAFFIC_SELECT_NEXT_VESSEL
+    MARINE_TRAFFIC_SELECT_NEXT_VESSEL,
+    MARINE_TRAFFIC_CLEAR_SELECTION
 } from '@js/actions/marinetraffic';
 
 export const marineTraffic = (state = {}, action) => {
@@ -71,6 +72,11 @@ export const marineTraffic = (state = {}, action) => {
         return {
             ...state,
             selectedFeature: action.selectedFeature
+        };
+    }
+    case MARINE_TRAFFIC_CLEAR_SELECTION: {
+        return {
+            ...state
         };
     }
     default:

@@ -18,7 +18,7 @@ import { LayoutSections } from "@js/utils/LayoutUtils";
 import { hideMapinfoMarker, purgeMapInfoResults, toggleMapInfoState } from '@mapstore/framework/actions/mapInfo';
 import { getFeature } from '@mapstore/framework/api/WFS';
 import { removeAdditionalLayer, updateAdditionalLayer } from '@mapstore/framework/actions/additionallayers';
-import { addLayer, removeLayer, LAYER_LOAD } from '@mapstore/framework/actions/layers';
+import { addLayer, removeLayer, UPDATE_NODE } from '@mapstore/framework/actions/layers';
 import {
     addLayerToMap,
     loadAis,
@@ -33,7 +33,8 @@ import {
     vesselHistory,
     MARINE_TRAFFIC_SELECTED_FEATURES,
     MARINE_TRAFFIC_SELECT_NEXT_VESSEL,
-    MARINE_TRAFFIC_SELECT_PREVIOUS_VESSEL
+    MARINE_TRAFFIC_SELECT_PREVIOUS_VESSEL,
+    MARINE_TRAFFIC_CLEAR_SELECTION
 } from '@js/actions/marinetraffic';
 import { projectionSelector } from '@mapstore/framework/selectors/map';
 import { updatePointWithGeometricFilter } from "@mapstore/framework/utils/IdentifyUtils";
@@ -143,6 +144,7 @@ export const openMarineTrafficPluginEpic = (action$, store) =>
                                 enableInteractiveLegend: true,
                                 expanded: true,
                                 refresh: 60000,
+                                maxResolution: 2445.98490512564,
                                 localizedLayerStyles: true,
                                 style: "marine_traffic_plugin"
                             }
@@ -298,10 +300,10 @@ export const searchVesselEpic = (action$, store) =>
  * @param {external:Observable} action$ manages `MARINE_TRAFFIC_SELECTED_FEATURE`
  * @returns {external:Observable} `UPDATE_ADDITIONAL_FEATURE`
  */
-export const selectedFeatureEpic = (action$, store) =>
+export const selectedFeatureEpic = (action$) =>
     action$
         .ofType(MARINE_TRAFFIC_SELECTED_FEATURE)
-        .filter(() => store.getState().controls?.marineTraffic?.enabled)
+        .filter((action) => action.selectedFeature)
         .switchMap((action) => {
             return Rx.Observable.of(
                 vesselHistory(null),
@@ -472,9 +474,9 @@ export const marineTrafficStartLoadingEpic = (action$) =>
  */
 export const marineTrafficStopLoadingEpic = (action$, store) =>
     action$
-        .ofType(LAYER_LOAD)
+        .ofType(UPDATE_NODE)
         .filter(() => store.getState()?.controls?.marineTraffic?.enabled)
-        .filter((action) => action.layerId === "marine-traffic")
+        .filter((action) => action.node === "marine-traffic")
         .switchMap(() => {
             return Rx.Observable.of(
                 setMarineTrafficLoading(false)
@@ -511,6 +513,25 @@ export const selectedNextFeatureEpic = (action$, store) =>
             );
         });
 
+/**
+ *
+ * @param {external:Observable} action$ manages `MARINE_TRAFFIC_CLEAR_SELECTION`
+ * @returns {external:Observable} `MARINE_TRAFFIC_SELECTED_FEATURE`
+ */
+export const cleanSelectionEpic = (action$, store) =>
+    action$
+        .ofType(MARINE_TRAFFIC_CLEAR_SELECTION)
+        .filter(() => store.getState().controls?.marineTraffic?.enabled)
+        .switchMap(() => {
+            return Rx.Observable.of(
+                removeAdditionalLayer({ owner: "marineTraffic" }),
+                marineTrafficSelectedFeatures(null),
+                marineTrafficSelectedFeature(null),
+                vesselHistory(null),
+                addLayerToMap(null)
+            );
+        });
+
 export default {
     gnUpdateMarineTrafficMapLayoutEpic,
     openMarineTrafficPluginEpic,
@@ -524,5 +545,6 @@ export default {
     marineTrafficStartLoadingEpic,
     marineTrafficStopLoadingEpic,
     selectedPreviousFeatureEpic,
-    selectedNextFeatureEpic
+    selectedNextFeatureEpic,
+    cleanSelectionEpic
 };
