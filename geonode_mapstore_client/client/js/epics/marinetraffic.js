@@ -18,7 +18,7 @@ import { LayoutSections } from "@js/utils/LayoutUtils";
 import { hideMapinfoMarker, purgeMapInfoResults, toggleMapInfoState } from '@mapstore/framework/actions/mapInfo';
 import { getFeature } from '@mapstore/framework/api/WFS';
 import { removeAdditionalLayer, updateAdditionalLayer } from '@mapstore/framework/actions/additionallayers';
-import { addLayer, LAYER_LOAD } from '@mapstore/framework/actions/layers';
+import { addLayer, removeLayer, LAYER_LOAD } from '@mapstore/framework/actions/layers';
 import {
     addLayerToMap,
     loadAis,
@@ -123,11 +123,9 @@ export const openMarineTrafficPluginEpic = (action$, store) =>
                         hideMapinfoMarker(),
                         toggleMapInfoState(),
                         registerEventListener('click', 'marineTraffic'),
-                        updateAdditionalLayer(
-                            "marine-traffic-layer",
-                            "marineTraffic",
-                            'overlay',
+                        addLayer(
                             {
+                                id: "marine-traffic",
                                 type: "wms",
                                 url: `${geoserverUrl}wms`,
                                 name: "neec_geodb:marine_traffic_ca",
@@ -135,7 +133,18 @@ export const openMarineTrafficPluginEpic = (action$, store) =>
                                 singleTile: true,
                                 params: {
                                     access_token: accessToken
-                                }
+                                },
+                                title: {
+                                    default: "RESTRICTED Marine traffic (AIS)",
+                                    en: "RESTRICTED Marine traffic (AIS)",
+                                    fr: "Traffic maritime (SIA) RESTREINT"
+                                },
+                                visibility: true,
+                                enableInteractiveLegend: true,
+                                expanded: true,
+                                refresh: 60000,
+                                localizedLayerStyles: true,
+                                style: "marine_traffic_plugin"
                             }
                         ),
                         loadAis(resp.data)
@@ -159,6 +168,7 @@ export const closeMarineTrafficPluginEpic = (action$) =>
         .switchMap(() => {
             return Rx.Observable.of(
                 removeAdditionalLayer({ owner: "marineTraffic" }),
+                removeLayer("marine-traffic"),
                 loadAis(null),
                 extractHistory(null),
                 marineTrafficSelectedFeatures(null),
@@ -166,7 +176,7 @@ export const closeMarineTrafficPluginEpic = (action$) =>
                 vesselHistory(null),
                 addLayerToMap(null),
                 toggleMapInfoState(),
-                unRegisterEventListener('click', 'shorelineViewer')
+                unRegisterEventListener('click', 'marineTraffic')
             );
         });
 
@@ -188,8 +198,8 @@ export const clickOnMapEpic = (action$, store) =>
             const accessToken = state.security?.user?.info?.access_token;
             const mapExtent = state.map.present.bbox;
             const mapSize = state.map.present.size;
-            const url = state.additionallayers.filter(
-                (additionalLayer) => additionalLayer.id.includes("marine-traffic-layer"))[0].options.url;
+            const url = state.layers.flat.filter(
+                (layer) => layer.id.includes("marine-traffic"))[0].url;
             if (url) {
                 const mapBbox = [
                     mapExtent.bounds.minx,
@@ -326,7 +336,7 @@ export const selectedFeatureEpic = (action$, store) =>
                                             {
                                                 kind: "Icon",
                                                 size: 24,
-                                                image: `${state.gnsettings?.geonodeUrl}static/mapstore/symbols/ais-selected.png`,
+                                                image: "../../../static/mapstore/symbols/ais-selected.png",
                                                 rotate: action.selectedFeature.properties.course
                                             }
                                         ]
@@ -419,7 +429,7 @@ export const addVesselExtractionToMapEpic = (action$, store) =>
                                     {
                                         kind: "Icon",
                                         size: 15,
-                                        image: `${state.gnsettings?.geonodeUrl}static/mapstore/symbols/ais.png`,
+                                        image: "../../../static/mapstore/symbols/ais.png",
                                         rotate: {
                                             name: "property",
                                             args: [
@@ -441,15 +451,15 @@ export const addVesselExtractionToMapEpic = (action$, store) =>
         });
 
 /**
- * This function is triggered when the loading of a layer displayed from the shoreline viewer
- * plugin begins. It displays a loader in the plugin panel.
+ * This function is triggered when the loading of a the marine traffic layer begins.
+ * It displays a loader in the plugin panel.
  * @param {external:Observable} action$ manages `LAYER_LOADING`
  * @returns {external:Observable} `SET_SHORELINE_LOADING`
  */
 export const marineTrafficStartLoadingEpic = (action$, store) =>
     action$
-        .ofType(UPDATE_MAP_LAYOUT)
-        .filter(() => store.getState()?.controls?.marineTraffic?.enabled)
+        .ofType(SET_CONTROL_PROPERTY)
+        .filter((action) => action.control === "marineTraffic")
         .switchMap(() => {
             return Rx.Observable.of(
                 setMarineTrafficLoading(true)
@@ -457,8 +467,8 @@ export const marineTrafficStartLoadingEpic = (action$, store) =>
         });
 
 /**
- * This function is triggered when the loading of a layer displayed from the shoreline viewer
- * plugin ends. It hides a loader in the plugin panel.
+ * This function is triggered when the loading of a the marine traffic layer ends
+ * It hides a loader in the plugin panel.
  * @param {external:Observable} action$ manages `LAYER_LOADING`
  * @returns {external:Observable} `SET_SHORELINE_LOADING`
  */
@@ -466,7 +476,7 @@ export const marineTrafficStopLoadingEpic = (action$, store) =>
     action$
         .ofType(LAYER_LOAD)
         .filter(() => store.getState()?.controls?.marineTraffic?.enabled)
-        .filter((action) => !action.layerId)
+        .filter((action) => action.layerId === "marine-traffic")
         .switchMap(() => {
             return Rx.Observable.of(
                 setMarineTrafficLoading(false)
