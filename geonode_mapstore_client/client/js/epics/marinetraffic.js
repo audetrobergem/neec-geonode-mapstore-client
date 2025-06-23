@@ -439,7 +439,7 @@ export const addVesselExtractionToMapEpic = (action$, store) =>
                                     {
                                         kind: "Icon",
                                         size: 15,
-                                        image: `${state.gnsettings?.geonodeUrl}static/mapstore/symbols/ais-selected.png`,
+                                        image: `${state.gnsettings?.geonodeUrl}static/mapstore/symbols/ais.png`,
                                         rotate: {
                                             name: "property",
                                             args: [
