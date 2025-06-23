@@ -300,11 +300,12 @@ export const searchVesselEpic = (action$, store) =>
  * @param {external:Observable} action$ manages `MARINE_TRAFFIC_SELECTED_FEATURE`
  * @returns {external:Observable} `UPDATE_ADDITIONAL_FEATURE`
  */
-export const selectedFeatureEpic = (action$) =>
+export const selectedFeatureEpic = (action$, store) =>
     action$
         .ofType(MARINE_TRAFFIC_SELECTED_FEATURE)
         .filter((action) => action.selectedFeature)
         .switchMap((action) => {
+            const state = store.getState();
             return Rx.Observable.of(
                 vesselHistory(null),
                 updateAdditionalLayer(
@@ -337,7 +338,7 @@ export const selectedFeatureEpic = (action$) =>
                                             {
                                                 kind: "Icon",
                                                 size: 24,
-                                                image: "https://dev.geoportal.ueee.ca/static/mapstore/symbols/ais-selected.png",
+                                                image: `${state.gnsettings?.geonodeUrl}static/mapstore/symbols/ais-selected.png`,
                                                 rotate: action.selectedFeature.properties.course
                                             }
                                         ]
@@ -410,11 +411,12 @@ export const extractHistoryEpic = (action$, store) =>
  * @param {external:Observable} action$ manages `MARINE_TRAFFIC_ADD_LAYER_TO_MAP`
  * @returns {external:Observable} `ADD_LAYER`
  */
-export const addVesselExtractionToMapEpic = (action$) =>
+export const addVesselExtractionToMapEpic = (action$, store) =>
     action$
         .ofType(MARINE_TRAFFIC_ADD_LAYER_TO_MAP)
         .filter((action) => action.extractionLayer)
         .switchMap((action) => {
+            const state = store.getState();
             let geojsonFeatures = [];
             let geojsonId = 1;
             action.extractionLayer.features.map(feature => {
@@ -437,7 +439,7 @@ export const addVesselExtractionToMapEpic = (action$) =>
                                     {
                                         kind: "Icon",
                                         size: 15,
-                                        image: "https://dev.geoportal.ueee.ca/static/mapstore/symbols/ais.png",
+                                        image: `${state.gnsettings?.geonodeUrl}static/mapstore/symbols/ais-selected.png`,
                                         rotate: {
                                             name: "property",
                                             args: [
