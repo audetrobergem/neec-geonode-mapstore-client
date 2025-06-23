@@ -337,7 +337,7 @@ export const selectedFeatureEpic = (action$) =>
                                             {
                                                 kind: "Icon",
                                                 size: 24,
-                                                image: "../../../static/mapstore/symbols/ais-selected.png",
+                                                image: "https://dev.geoportal.ueee.ca/static/mapstore/symbols/ais-selected.png",
                                                 rotate: action.selectedFeature.properties.course
                                             }
                                         ]
@@ -415,11 +415,19 @@ export const addVesselExtractionToMapEpic = (action$) =>
         .ofType(MARINE_TRAFFIC_ADD_LAYER_TO_MAP)
         .filter((action) => action.extractionLayer)
         .switchMap((action) => {
+            let geojsonFeatures = [];
+            let geojsonId = 1;
+            action.extractionLayer.features.map(feature => {
+                feature.properties.id = geojsonId;
+                delete feature.properties.meta_data;
+                geojsonFeatures.push(feature);
+                geojsonId += 1;
+            });
             const extentLayer = {
                 id: "marineTraffic:" + uuid(),
                 title: action.extractionLayer.layerTitle,
                 type: "vector",
-                features: action.extractionLayer.features,
+                features: geojsonFeatures,
                 style: {
                     format: "geostyler",
                     body: {
@@ -429,7 +437,7 @@ export const addVesselExtractionToMapEpic = (action$) =>
                                     {
                                         kind: "Icon",
                                         size: 15,
-                                        image: "../../../static/mapstore/symbols/ais.png",
+                                        image: "https://dev.geoportal.ueee.ca/static/mapstore/symbols/ais.png",
                                         rotate: {
                                             name: "property",
                                             args: [

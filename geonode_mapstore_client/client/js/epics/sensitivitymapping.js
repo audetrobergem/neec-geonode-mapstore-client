@@ -974,6 +974,9 @@ export const createPrintConfigEpic = (action$, store) =>
                             const formattedLegend = formatLegend(layer, bbox, state);
                             if (formattedLegend && Object.keys(formattedLegend).length > 0) {
                                 legendClasses.push(formattedLegend);
+                                if (!("icons" in formattedLegend)) {
+                                    warningMessage.push(`${getLayerTitle(layer, mapLanguage)} (legend)`);
+                                }
                             } else {
                                 warningMessage.push(`${getLayerTitle(layer, mapLanguage)} (legend)`);
                             }
