@@ -429,12 +429,67 @@
             "nextPhotoTooltip": "Aller à la photo suivante",
             "lastPhotoTooltip": "Aller à la dernière photo",
             "shorelineViewerTitle": "Outil de visualisation du rivage",
-            "bayOfFundy": "Baie de Fundy",
-            "bcNorthCoast": "Côte Nord de la Colombie-Britannique",
-            "beaufortSea": "Mer de Beaufort",
-            "chedabuctoBay": "Baie de Chedabucto",
-            "nunavik": "Nunavik",
-            "stClairRiver": "Rivière Sainte-Claire"
+            "zoomToRegion": "Zoom sur la région sélectionnée",
+            "selectStyle": "Sélectionnez une thématique",
+            "regions": {
+                "arctic": "Arctique",
+                "atlantic": "Atlantique",
+                "britishColumbia": "Colombie-Britannique",
+                "greatLakes": "Grands lacs",
+                "stLawrence": "Fleuve Saint-Laurent"
+            },
+            "thematics": {
+                "shorelineClassification": {
+                    "label": "Type de rivage",
+                    "tooltip": "<strong>Type de rivage</strong> dominant dans la zone intertidale supérieure, basé sur le <strong>matériau</strong> principal (ex. sable, vase, végétation) et, en second lieu, sur la <strong>forme</strong>.<br><br><center><img src='../static/mapstore/img/shoreline_classification_legend_fr.png' width='450'/></center>"
+                },
+                "alongshoreAccess": {
+                    "label": "Accès au rivage",
+                    "tooltip": "Indique si la zone intertidale supérieure d'un segment peut être atteinte <strong>à pied</strong> via une zone adjacente (UI, SI ou MI).<br><br><center><img src='../static/mapstore/img/shoreline_alongshore_access_legend_fr.png'/></center>"
+                },
+                "backshoreAccess": {
+                    "label": "Accès au rivage par l'arrière-plage",
+                    "tooltip": "Indique si la zone intertidale supérieure d'un segment peut être atteinte <strong>à pied</strong> à partir de l'arrière-plage du même segment.<br><br><center><img src='../static/mapstore/img/shoreline_backshore_access_legend_fr.png'/></center>"
+                },
+                "shorelineFetch": {
+                    "label": "Exposition aux vagues",
+                    "tooltip": "Estimation de l'<strong>exposition aux vagues</strong> basée sur la distance d'eau libre où les vagues peuvent se former.<br><br><center><img src='../static/mapstore/img/shoreline_fetch_legend_fr.png'/></center>"
+                }
+            },
+            "segment": {
+                "name": "Nom",
+                "general": "Général",
+                "upperIntertidal": "Intertidal supérieure",
+                "lowerIntertidal": "Intertidal inférieure",
+                "supratidal": "Supratidal",
+                "backshore": "Arrière-plage",
+                "province": "Province",
+                "length": "Longueur (m)",
+                "width": "Largeur (m)",
+                "generalComments": "Commentaires généraux",
+                "transportationMode": "Mode de transport",
+                "alongshoreAccess": "Accès le long du rivage",
+                "backshoreAccess": "Accès par l'arrière-plage",
+                "fetch": "Fetch",
+                "shorelineProcesses": "Processus côtiers",
+                "datasource": "Source de la donnée",
+                "surveyYear": "Année d'acquisition de la donnée",
+                "scatClass": "SCAT Class",
+                "classeTerr": "Classe TERR",
+                "form": "Forme",
+                "slope": "Pente",
+                "height": "Hauteur",
+                "primarySubstrate": "Substrat ou couvert du sol principal",
+                "secondarySubstrate": "Substrat ou couvert du sol secondaire",
+                "tertiarySubstrate": "Substrat ou couvert du sol tertiaire",
+                "primaryLandCoverClass": "Type de rivage et d'arrière-plage principal",
+                "secondaryLandCoverClass": "Type de rivage et d'arrière-plage secondaire"
+            },
+            "notifications": {
+                "error": "Erreur",
+                "close": "Fermet",
+                "videoDurationError": "La vidéo demandée ne peut pas être lue car la durée de la vidéo ({heure}) correspondant au point sélectionné dépasse la durée totale de la vidéo ({durée}) sélectionnée."
+            }
         },
         "zoneIdentify": {
             "title": "Identification par zone",
@@ -480,6 +535,68 @@
             "print": "Imprimer",
             "getPrintStatus": "Une erreur s'est produite lors du traitement de la demande d'impression sur le serveur d'impression. Veuillez contacter l'équipe technique du Géoportail du CNUE avec le message d'erreur suivant :<br>{error}",
             "loadPrintLayout": "Le gabarit d'impression sélectionné (<strong>{error}</strong>) ne figure pas dans la liste des gabarits disponibles. Il se peut que l'outil d'impression n'ait pas été complètement chargé lors de l'ouverture de la carte. Veuillez rafraîchir la page et réessayer. Veuillez contacter l'équipe technique du Géoportail du CNUE si le problème persiste."
+        },
+        "marineTraffic": {
+            "title": "Trafic maritime",
+            "searchTitle": "Recherche",
+            "searchIdentityName": "Nom du navire",
+            "searchMMSI": "MMSI",
+            "search": "Rechercher",
+            "latestPosition": "Dernière position reçue à : {currentTime} (il y a {elapsedTime} minutes).",
+            "from": "De",
+            "to": "À",
+            "extract": "Extraire",
+            "download": "Télécharger l'extraction",
+            "addLayer": "Ajouter l'extraction à la carte",
+            "navBarText": "Navire {index} de {length}",
+            "historyTableHeader": "Affichage de {minIndex} à {maxIndex} sur {length} entrées",
+            "navBarResultText": "Page {index} de {length}",
+            "previousVesselTooltip": "Afficher les informations du navire précédent",
+            "nextVesselTooltip": "Afficher les informations du navire suivant",
+            "nothingToDisplay": "Il n'y a rien à afficher. Veuillez saisir une date et une heure de début et de fin et extraire l'historique de navigation.",
+            "date": "Date",
+            "source": "Source",
+            "speed": "Vitesse",
+            "course": "Cap",
+            "navStatus": "Condition",
+            "properties": {
+                "vesselInformation": "Information sur le navire",
+                "history": "Extraire l'historique",
+                "name": "Nom du navire",
+                "mmsi": "ISMM",
+                "imo": "OMI",
+                "callSign": "Signe d'appel",
+                "flag": "Drapeau",
+                "category": "Catégorie",
+                "type": "Type",
+                "speed": "Vitesse",
+                "heading": "Direction",
+                "course": "Cap",
+                "lat": "Latitude",
+                "lon": "Longitude",
+                "navStatus": "Conditions de navigation",
+                "destination": "Destination",
+                "eta": "Heure d'arrivée estimée"
+            },
+            "status": {
+                "aground": "Échoué",
+                "atAnchor": "À l'ancre",
+                "constrainedByHerDraught": "Limité par son tirant d'eau",
+                "engagedInFishing": "Pêche",
+                "moored": "Au mouillage",
+                "notUnderCommand": "Non manoeuvrable",
+                "restrictedManoeuverability": "Manoeuvrabilité réduite",
+                "underWaySailing": "Navigation à la voile",
+                "underWayUsingEngine": "En route au moteur",
+                "unknown": "Inconnu"
+            },
+            "notifications": {
+                "warning": "Avertissement",
+                "warningMessage": "Le serveur n'a renvoyé aucun résultat pour cette requête.",
+                "close": "Fermer",
+                "error": "Erreur",
+                "aisDataLoadingError": "La couche de trafic maritime n'a pas pu être chargée correctement. Il peut s'agir d'un problème d'autorisation. Dans ce cas, vous pouvez vous déconnecter et vous reconnecter. Il peut également s'agir d'un problème de source de données. Veuillez contacter l'équipe technique du Géoportail si le problème persiste."
+            }
         }
     }
 }

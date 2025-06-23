@@ -1,3 +1,7 @@
+/**
+ * This function extracts the bounding box of all the regions. It extracts all the geometry's
+ * coordinates and returns the bounding box in the format [xmin, ymin, xmax, ymax].
+ */
 export const extractRegionsBbox = (regions) => {
     let extents = regions.map((region) => region.extent);
     var minxList = extents.map(function(x) {
@@ -16,6 +20,10 @@ export const extractRegionsBbox = (regions) => {
     return ([Math.min(...minxList), Math.min(...minyList), Math.max(...maxxList), Math.max(...maxyList)]);
 };
 
+/**
+ * This function extracts the bounding box of an entity. It extracts all the geometry's
+ * coordinates and returns the bounding box in the format [xmin, ymin, xmax, ymax].
+ */
 export const extractBboxFromGeometry = (geometry) => {
     var xList = geometry.map(function(x) {
         return x.x;
@@ -27,19 +35,26 @@ export const extractBboxFromGeometry = (geometry) => {
     return ([Math.min(...xList), Math.min(...yList), Math.max(...xList), Math.max(...yList)]);
 };
 
-export const DEFAULT_POINT_STYLE = {
-    radius: 10,
-    weight: 3,
-    color: '#33eeff',
-    opacity: 0.9,
-    fillColor: '#33eeff',
-    fillOpacity: 0
-};
-
-export const DEFAULT_LINE_STYLE = {
-    weight: 8,
-    color: '#33eeff',
-    opacity: 0.8,
-    fillColor: '#33eeff',
-    fillOpacity: 0.8
+/**
+ * This function creates the json structure of an additional layer to be added to the map.
+ */
+export const generateExtentLayer = (layerList) => {
+    const jsonLayer = layerList.map(layer => ({
+        type: "Feature",
+        properties: {
+            datasetName: layer.datasetName,
+            type: "project"
+        },
+        geometry: {
+            type: "Polygon",
+            coordinates: [[
+                [layer.extent[0], layer.extent[1]],
+                [layer.extent[0], layer.extent[3]],
+                [layer.extent[2], layer.extent[3]],
+                [layer.extent[2], layer.extent[1]],
+                [layer.extent[0], layer.extent[1]]
+            ]]
+        }
+    }));
+    return jsonLayer;
 };

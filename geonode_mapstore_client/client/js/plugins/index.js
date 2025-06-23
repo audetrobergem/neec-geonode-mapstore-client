@@ -470,6 +470,10 @@ export const plugins = {
     SensitivityMappingPlugin: toModulePlugin(
         'SensitivityMapping',
         () => import(/* webpackChunkName: 'plugins/sensitivity-mapping' */ '@js/plugins/SensitivityMapping')
+    ),
+    MarineTrafficPlugin: toModulePlugin(
+        'MarineTraffic',
+        () => import(/* webpackChunkName: 'plugins/marine-traffic' */ '@js/plugins/MarineTraffic')
     )
 };
 

@@ -47,6 +47,32 @@
         flex: 1;
         padding: 0.5rem;
     }
+    .shoreline-viewer-body-regions {
+        display: flex;
+    }
+    .shoreline-viewer-body-regions-left {
+        width: 100%;
+        align-content: center;
+    }
+    .shoreline-viewer-body-regions-right {
+        flex: 1;
+    }
+    .shoreline-viewer-body-thematics {
+        display: flex;
+        padding: 0.5rem;
+    }
+    .shoreline-viewer-body-thematics-left {
+        flex: 0 1 auto;
+        padding: 6px;
+    }
+    .shoreline-viewer-body-thematics-right {
+        width: 20px;
+        align-content: center;
+        padding-left: 7px;
+    }
+    .shoreline-viewer-body-thematics-center {
+        flex: 1;
+    }
     .shoreline-viewer-body-content {
         min-height: 100px;
     }
@@ -81,6 +107,7 @@
     .shoreline-viewer-dropdown {
         align-items: center;
         position: relative;
+        height: 31px;
     }
     .shoreline-viewer-alert {
         width: 100%;
@@ -89,34 +116,6 @@
         text-align: center;
         font-style: italic;
         position: relative;
-    }
-    .shoreline-viewer-info-fields {
-        padding: 0.5rem 0;
-        font-size: @font-size-small;
-        position: relative;
-        * {
-            position: relative;
-        }
-        .shoreline-viewer-info-row {
-            display: flex;
-            border-bottom: 1px solid transparent;
-            word-break: break-word;
-            .shoreline-viewer-info-label {
-                width: 250px; // similar to thumbnail
-                padding: 0.25rem;
-                font-weight: lighter;
-            }
-            .shoreline-viewer-info-value {
-                padding: 0.25rem;
-                flex: 1;
-                padding-left: 1rem;
-                max-width: calc(100% - 250px);
-            }
-        }
-        
-    }
-    .shoreline-viewer-list {
-        padding-left: 0.7rem;
     }
     .shoreline-viewer-spinner-container {
         position: absolute;
@@ -132,5 +131,81 @@
         left: 0;
         font-size: 2rem;
     }
+    // The following section is extracted from geonode's css and modified according to the tool's needs.
+    .shoreline-viewer-info {
+        padding: 1rem;
+    }
+    .shoreline-viewer-info > .nav {
+        position: sticky;
+        top: 40px;
+        z-index: 1;
+    }
+    .shoreline-viewer-info .tab-content {
+        margin-top: 0.5rem;
+    }
+    .shoreline-viewer-info .tab-content .linked-resources > span {
+        font-size: 0.765625rem;
+    }
+    .shoreline-viewer-info-fields {
+        padding: 0.5rem 0;
+        font-size: 0.765625rem;
+        position: relative;
+    }
+    .shoreline-viewer-info-fields * {
+        position: relative;
+    }
+    .shoreline-viewer-info-fields .shoreline-viewer-info-row {
+        display: flex;
+        border-bottom: 1px solid transparent;
+        word-break: break-word;
+    }
+    .shoreline-viewer-info-fields .shoreline-viewer-info-row .shoreline-viewer-info-label {
+        width: 200px;
+        padding: 0.25rem;
+        font-weight: lighter;
+    }
+    .shoreline-viewer-info-fields .shoreline-viewer-info-row .shoreline-viewer-info-value {
+        padding: 0.25rem;
+        flex: 1;
+        padding-left: 1rem;
+        max-width: calc(100% - 200px);
+    }
+    .shoreline-viewer-info-fields .shoreline-viewer-info-row .shoreline-viewer-info-value .shoreline-viewer-info-html.collapsed {
+        display: flex;
+        width: 100%;
+    }
+    .shoreline-viewer-info-fields .shoreline-viewer-info-row .shoreline-viewer-info-value .shoreline-viewer-info-html.collapsed .shoreline-viewer-info-html-value {
+        overflow: hidden;
+        white-space: nowrap;
+        text-overflow: ellipsis;
+    }
+    .shoreline-viewer-info-fields .shoreline-viewer-info-row .shoreline-viewer-info-value .shoreline-viewer-info-html .btn {
+        padding: 0;
+        border: none;
+        border-bottom: 1px solid transparent;
+    }
+    .shoreline-viewer-info-fields .shoreline-viewer-info-row .shoreline-viewer-info-value > a {
+        margin-right: 0.5rem;
+        white-space: nowrap;
+    }
+    .shoreline-viewer-info-fields .shoreline-viewer-info-row.linked-resources {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+    .shoreline-viewer-info-fields .shoreline-viewer-info-row.link {
+        border-bottom: none;
+    }
+    .shoreline-viewer-info-fields .shoreline-viewer-info-row.link .shoreline-viewer-info-label {
+        padding: 0.25rem;
+        font-weight: bold;
+    }
+    .shoreline-viewer-info-fields .shoreline-viewer-info-list {
+        padding-left: 0;
+        list-style: none;
+    }
+    .shoreline-viewer-info-fields .shoreline-viewer-info-list-indent {
+        padding-left: 15px;
+        list-style: none;
+    }
 }
-

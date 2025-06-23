@@ -562,6 +562,21 @@ export const formatLegend = (layer, bbox, state) => {
                 })
             ]
         };
+    } else if (layer.type === "vector") {
+        if (layer.features[0].geometry.type === "Point") {
+            if (layer.style.body.rules[0].symbolizers[0].image && typeof(layer.style.body.rules[0].symbolizers[0].image) === "string") {
+                return {
+                    "name": layer.title,
+                    "dpi": 100,
+                    "icons": [layer.style.body.rules[0].symbolizers[0].image]
+                };
+            }
+        }
+        if (layer.title) {
+            return {
+                "name": layer.title
+            };
+        }
     }
     return {};
 };

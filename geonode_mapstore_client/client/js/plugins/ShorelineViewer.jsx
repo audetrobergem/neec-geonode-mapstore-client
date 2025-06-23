@@ -16,7 +16,7 @@ import Message from '@mapstore/framework/components/I18N/Message';
 import GNButton from '@js/components/Button';
 import FaIcon from '@js/components/FaIcon';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faRoute } from '@fortawesome/free-solid-svg-icons';
+import { faRoute, faGlobe } from '@fortawesome/free-solid-svg-icons';
 import { DropdownList } from 'react-widgets';
 import Spinner from '@js/components/Spinner';
 import { setControlProperty } from '@mapstore/framework/actions/controls';
@@ -26,7 +26,12 @@ import {
     selectFirstMediaFeature,
     selectPreviousMediaFeature,
     selectNextMediaFeature,
-    selectLastMediaFeature
+    selectLastMediaFeature,
+    setShorelineThematic,
+    zoomToRegion,
+    updateVideoInformation,
+    videoError,
+    setVideoInformations
 } from '@js/actions/shorelineviewer';
 import ShorelineViewerEpics from '@js/epics/shorelineviewer';
 import shorelineViewer from '@js/reducers/shorelineviewer';
@@ -34,6 +39,10 @@ import { mapLayoutValuesSelector } from '@mapstore/framework/selectors/maplayout
 import { updateAdditionalLayer } from '@mapstore/framework/actions/additionallayers';
 import tooltip from '@mapstore/framework/components/misc/enhancers/tooltip';
 import { getMessageById } from '@mapstore/framework/utils/LocaleUtils';
+import InfoPopover from '@mapstore/framework/components/widgets/widget/InfoPopover';
+import parse from 'html-react-parser';
+import ShorelineInformation from '@js/components/ShorelineInformation/ShorelineInformation';
+import VideoPlayer from '@js/components/VideoPlayer/VideoPlayer';
 
 const Button = tooltip(GNButton);
 
@@ -47,14 +56,23 @@ function ShorelineTypeButton({
             name: "Photos",
             icon: "camera",
             tooltip: "shorelineviewer.displayPhotoTracklogsTooltip",
-            datasetName: "photoDataset"
+            datasetName: selectedRegion.photoDatasets
         }, {
             name: "Videos",
             icon: "video-camera",
             tooltip: "shorelineviewer.displayVideoTracklogsTooltip",
-            datasetName: "videoDataset"
+            datasetName: selectedRegion.videoDatasets
         }
     ];
+
+    const toggleMediaType = mediaType => {
+        if (selectedMediaType && mediaType.name === selectedMediaType.name) {
+            return onSelectMediaType(undefined);
+        }
+
+        return onSelectMediaType(mediaType);
+
+    };
 
     return (
         <div className="text-center col-xs-12">
@@ -62,10 +80,10 @@ function ShorelineTypeButton({
                 <Button
                     className="btn-primary"
                     tooltipId={<Message msgId={mediaType.tooltip} />}
-                    disabled={!(mediaType.datasetName in selectedRegion)}
+                    disabled={mediaType.datasetName.length === 0}
                     key={mediaType.name}
-                    active={selectedMediaType === mediaType}
-                    onClick={() => { onSelectMediaType(mediaType); }}
+                    active={selectedMediaType?.mediaType === mediaType}
+                    onClick={() => { toggleMediaType(mediaType); }}
                 >
                     <FaIcon name={mediaType.icon} />
                 </Button>
@@ -147,7 +165,7 @@ function PhotoNavigationButton({
 
 const ConnectedPhotoNavigationButton = connect(
     createSelector([
-        state => state?.shorelineViewer?.selectedFeature,
+        state => state?.shorelineViewer?.selectedFeature.selectedFeature,
         state => state?.shorelineViewer?.selectedMediaDatasetFeatures
     ], (selectedFeature, selectedMediaDatasetFeatures) => ({
         selectedFeature, selectedMediaDatasetFeatures
@@ -165,23 +183,67 @@ const ConnectedPhotoNavigationButton = connect(
 */
 
 /**
- * render a panel for detail information about a resource inside the viewer pages
+ * render a panel for detail information about the shoreline information
  * @name ShorelineViewer
  * @prop {array} regions list of regions where shoreline videos are available
+ * @prop {array} tabs list of attributes organized by categories for the shoreline classification layer
  * @example
  */
 
 function ShorelineViewer({
     style,
     selectedRegion,
+    selectedMediaType,
+    selectedThematic,
     selectedFeature,
+    videoInformations,
     loading,
     messages,
     onClose,
     regions,
-    onSelectRegion
+    tabs,
+    onSelectRegion,
+    onZoomToSelectedRegion,
+    onSelectThematic,
+    onUpdateVideoInformation,
+    onVideoError,
+    onSetVideoInformations
 }) {
     const isMounted = useRef(false);
+    const playerRef = useRef();
+
+    const handlePlayerReady = (player) => {
+        playerRef.current = player;
+
+        player.on('loadedmetadata', () => {
+            if (videoInformations.time > player.duration()) {
+                onVideoError(
+                    "shorelineViewerVideoError",
+                    "shorelineViewer.notifications.error",
+                    "shorelineViewer.notifications.videoDurationError",
+                    {time: videoInformations.time, duration: player.duration()}
+                );
+                onSetVideoInformations(null);
+            } else {
+                player.currentTime(videoInformations.time);
+                onUpdateVideoInformation({"name": "duration", "value": player.duration()});
+            }
+        });
+
+        player.on('playing', () => {
+            onUpdateVideoInformation({"name": "status", "value": "play"});
+        });
+
+        player.on('pause', () => {
+            onUpdateVideoInformation({"name": "status", "value": "pause"});
+        });
+
+        player.on('timeupdate', () => {
+            if (Math.floor(player.currentTime()) !== videoInformations.time) {
+                onUpdateVideoInformation({"name": "time", "value": Math.floor(player.currentTime())});
+            }
+        });
+    };
 
     useEffect(() => {
         isMounted.current = true;
@@ -193,6 +255,11 @@ function ShorelineViewer({
     const localizedRegions = regions.map((region) => {
         region.labelId = getMessageById(messages, region.labelId);
         return region;
+    });
+
+    const localizedThematics = selectedRegion?.thematics?.map((thematic) => {
+        thematic.labelId = getMessageById(messages, thematic.labelId);
+        return thematic;
     });
 
     return (
@@ -209,18 +276,62 @@ function ShorelineViewer({
                 </Button>
             </div>
             <div className="shoreline-viewer-body">
-                <DropdownList
-                    className="shoreline-viewer-dropdown"
-                    defaultValue={getMessageById(messages, "shorelineviewer.defaultRegionSelect")}
-                    onChange={(value) => {
-                        onSelectRegion(value);
-                    }}
-                    data={localizedRegions}
-                    textField="labelId"
-                    valueField="id"
-                />
+                <div className="shoreline-viewer-body-regions">
+                    <div className="shoreline-viewer-body-regions-left">
+                        <DropdownList
+                            className="shoreline-viewer-dropdown"
+                            defaultValue={getMessageById(messages, "shorelineviewer.defaultRegionSelect")}
+                            onChange={(value) => {
+                                onSelectRegion(value);
+                            }}
+                            data={localizedRegions}
+                            textField="labelId"
+                            valueField="id"
+                        />
+                    </div>
+                    <div className="shoreline-viewer-body-regions-right">
+                        <Button
+                            className="btn-primary"
+                            onClick={() => onZoomToSelectedRegion()}
+                            tooltipId={<Message msgId="shorelineviewer.zoomToRegion" />}
+                        >
+                            <FontAwesomeIcon icon={faGlobe} size="1x" />
+                        </Button>
+                    </div>
+                </div>
+                <div className="shoreline-viewer-body-thematics">
+                    {selectedRegion && selectedRegion.thematics &&
+                    <div className="shoreline-viewer-body-thematics-left">
+                        <Message msgId="shorelineviewer.selectStyle" />
+                    </div>
+                    }
+                    {selectedRegion && selectedRegion.thematics &&
+                    <div className="shoreline-viewer-body-thematics-center">
+                        <DropdownList
+                            className="shoreline-viewer-dropdown"
+                            defaultValue={getMessageById(messages, `shorelineviewer.thematics.${selectedThematic.id}.label`)}
+                            onChange={(value) => {
+                                onSelectThematic(value);
+                            }}
+                            data={localizedThematics}
+                            textField="labelId"
+                            valueField="id"
+                        />
+                    </div>
+                    }
+                    {selectedRegion && selectedRegion.thematics &&
+                    <div className="shoreline-viewer-body-thematics-right">
+                        <InfoPopover
+                            text={parse(getMessageById(messages, `shorelineviewer.thematics.${selectedThematic.id}.tooltip`))}
+                            placement="left"
+                            title={getMessageById(messages, `shorelineviewer.thematics.${selectedThematic.id}.label`)}
+                            popoverStyle={{ maxWidth: 500 }}
+                        />
+                    </div>
+                    }
+                </div>
                 <div className="shoreline-viewer-body">
-                    {selectedRegion != null &&
+                    {selectedRegion &&
                     <ConnectedShorelineTypeButton />
                     }
                 </div>
@@ -229,74 +340,52 @@ function ShorelineViewer({
                         className="shoreline-viewer-spinner-container">
                         <Spinner />
                     </div>}
-                    {selectedFeature != null && selectedFeature.id.includes("shoreline_classification") &&
-                    <div className="shoreline-viewer-info-table">
-                        <div className="shoreline-viewer-info-fields">
-                            {selectedFeature.properties.upper_intertidal_scat_class &&
-                                <div className="shoreline-viewer-info-row">
-                                    <div className="shoreline-viewer-info-label">Upper Intertidal SCAT Class</div>
-                                    <div className="shoreline-viewer-info-value">{selectedFeature.properties.upper_intertidal_scat_class}</div>
-                                </div>
-                            }
-                            {selectedFeature.properties.shoreline_processes &&
-                                <div className="shoreline-viewer-info-row">
-                                    <div className="shoreline-viewer-info-label">Shoreline Processes</div>
-                                    <div className="shoreline-viewer-info-value">
-                                        <ul className="shoreline-viewer-list">
-                                            {selectedFeature.properties.shoreline_processes
-                                                .replace('[', '').replace(']', '').replace(/"/g, '').split(',').map(process => <li>{process}</li>)
-                                            }
-                                        </ul>
-                                    </div>
-                                </div>
-                            }
-                            {selectedFeature.properties.transportation_mode &&
-                                <div className="shoreline-viewer-info-row">
-                                    <div className="shoreline-viewer-info-label">Transportation Mode</div>
-                                    <div className="shoreline-viewer-info-value">
-                                        <ul className="shoreline-viewer-list">
-                                            {selectedFeature.properties.transportation_mode
-                                                .replace('[', '').replace(']', '').replace(/"/g, '').split(',').map(mode => <li>{mode}</li>)
-                                            }
-                                        </ul>
-                                    </div>
-                                </div>
-                            }
-                            {selectedFeature.properties.backshore_access &&
-                                <div className="shoreline-viewer-info-row">
-                                    <div className="shoreline-viewer-info-label">Backshore Access</div>
-                                    <div className="shoreline-viewer-info-value">{selectedFeature.properties.backshore_access}</div>
-                                </div>
-                            }
-                            {selectedFeature.properties.alongshore_access &&
-                                <div className="shoreline-viewer-info-row">
-                                    <div className="shoreline-viewer-info-label">Alongshore Access</div>
-                                    <div className="shoreline-viewer-info-value">{selectedFeature.properties.alongshore_access}</div>
-                                </div>
-                            }
-                            {selectedFeature.properties.length_m &&
-                                <div className="shoreline-viewer-info-row">
-                                    <div className="shoreline-viewer-info-label">Length (m)</div>
-                                    <div className="shoreline-viewer-info-value">{selectedFeature.properties.length_m}</div>
-                                </div>
-                            }
-                            {selectedFeature.properties.name &&
-                                <div className="shoreline-viewer-info-row">
-                                    <div className="shoreline-viewer-info-label">Name</div>
-                                    <div className="shoreline-viewer-info-value">{selectedFeature.properties.name}</div>
-                                </div>
-                            }
-                            {selectedFeature.properties.survey_year &&
-                                <div className="shoreline-viewer-info-row">
-                                    <div className="shoreline-viewer-info-label">Survey Year</div>
-                                    <div className="shoreline-viewer-info-value">{selectedFeature.properties.survey_year}</div>
-                                </div>
-                            }
-                        </div>
-                    </div>
+                    {selectedFeature && selectedFeature.id?.includes("shoreline_classification") &&
+                        <ShorelineInformation segmentProperties={selectedFeature.properties} tabs={tabs}/>
                     }
 
-                    {selectedFeature != null && selectedFeature.id.includes("shoreline_photos") &&
+                    {selectedFeature && selectedMediaType && selectedMediaType.name === "Videos" && videoInformations && videoInformations.videoUri &&
+                        <div className="shoreline-viewer-body">
+                            <div>
+                                <VideoPlayer
+                                    options={
+                                        {
+                                            autoplay: true,
+                                            width: '518',
+                                            controls: true,
+                                            responsive: true,
+                                            fluid: true,
+                                            muted: true,
+                                            sources: [{
+                                                src: videoInformations.videoUri,
+                                                type: 'application/x-mpegURL'
+                                            }]
+                                        }
+                                    }
+                                    onReady={handlePlayerReady}
+                                    videoInformations={videoInformations}
+                                />
+                            </div>
+                            <div className="shoreline-viewer-info-table">
+                                <div className="shoreline-viewer-info-fields">
+                                    <div className="shoreline-viewer-info-row">
+                                        <div className="shoreline-viewer-info-label">FileName</div>
+                                        <div className="shoreline-viewer-info-value">{selectedFeature.properties.filename}</div>
+                                    </div>
+                                    <div className="shoreline-viewer-info-row">
+                                        <div className="shoreline-viewer-info-label">Time</div>
+                                        <div className="shoreline-viewer-info-value">{selectedFeature.properties.time} / {Math.floor(videoInformations.duration)}</div>
+                                    </div>
+                                    <div className="shoreline-viewer-info-row">
+                                        <div className="shoreline-viewer-info-label">Date</div>
+                                        <div className="shoreline-viewer-info-value">{selectedFeature.properties.datetime}</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    }
+
+                    {selectedFeature && selectedMediaType && selectedMediaType.name === "Photos" && !selectedFeature.id?.includes("shoreline_classification") &&
                     <div className="shoreline-viewer-body">
                         <a href={"javascript:window.open('" + selectedFeature.properties.photo + "', 'popup', 'width=800,height=600'); void(0)"}>
                             <img className="img-responsive" src={selectedFeature.properties.photo} />
@@ -335,13 +424,23 @@ function ShorelineViewer({
 ShorelineViewer.propTypes = {
     onClose: PropTypes.func,
     onSelectRegion: PropTypes.func,
-    addMarkers: PropTypes.func
+    onZoomToSelectedRegion: PropTypes.func,
+    onSelectThematic: PropTypes.func,
+    addMarkers: PropTypes.func,
+    onUpdateVideoInformation: PropTypes.func,
+    onVideoError: PropTypes.func,
+    onSetVideoInformations: PropTypes.func
 };
 
 ShorelineViewer.defaultProps = {
     onClose: () => { },
     onSelectRegion: () => { },
-    addMarkers: () => { }
+    onZoomToSelectedRegion: () => { },
+    onSelectThematic: () => { },
+    addMarkers: () => { },
+    onUpdateVideoInformation: () => { },
+    onVideoError: () => { },
+    onSetVideoInformations: () => { }
 };
 
 function ShorelineViewerPlugin({ enabled, ...props }) {
@@ -354,21 +453,30 @@ const ConnectedShorelineViewerPlugin = connect(
         state => state?.controls?.shorelineViewer?.enabled,
         state => state?.shorelineViewer?.selectedMediaType,
         state => state?.shorelineViewer?.selectedRegion,
-        state => state?.shorelineViewer?.selectedFeature,
+        state => state?.shorelineViewer?.selectedThematic,
+        state => state?.shorelineViewer?.selectedFeature?.selectedFeature,
+        state => state?.shorelineViewer?.videoInformations,
         state => state?.shorelineViewer?.loading || false,
         state => state?.locale?.messages
-    ], (style, enabled, selectedMediaType, selectedRegion, selectedFeature, loading, messages) => ({
+    ], (style, enabled, selectedMediaType, selectedRegion, selectedThematic, selectedFeature, videoInformations, loading, messages) => ({
         style,
         enabled,
         selectedMediaType,
         selectedRegion,
+        selectedThematic,
         selectedFeature,
+        videoInformations,
         loading,
         messages
     })), {
         onClose: setControlProperty.bind(null, 'shorelineViewer', 'enabled', false),
         onSelectRegion: setShorelineRegion,
-        addMarkers: updateAdditionalLayer
+        onZoomToSelectedRegion: zoomToRegion,
+        onSelectThematic: setShorelineThematic,
+        addMarkers: updateAdditionalLayer,
+        onUpdateVideoInformation: updateVideoInformation,
+        onVideoError: videoError,
+        onSetVideoInformations: setVideoInformations
     }
 )(ShorelineViewerPlugin);
 
@@ -380,7 +488,6 @@ export default createPlugin('ShorelineViewer', {
             position: 5,
             tooltip: "shorelineviewer.shorelineViewer",
             icon: <FontAwesomeIcon icon={faRoute} size="2x" />,
-            // icon: <Glyphicon glyph="point-coordinates" />,
             action: setControlProperty.bind(null, 'shorelineViewer', 'enabled', 'true'),
             doNotHide: true,
             priority: 2
