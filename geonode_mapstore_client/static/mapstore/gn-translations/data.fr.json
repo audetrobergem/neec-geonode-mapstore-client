@@ -454,6 +454,10 @@
                 "shorelineFetch": {
                     "label": "Exposition aux vagues",
                     "tooltip": "Estimation de l'<strong>exposition aux vagues</strong> basée sur la distance d'eau libre où les vagues peuvent se former.<br><br><center><img src='../static/mapstore/img/shoreline_fetch_legend_fr.png'/></center>"
+                },
+                "shorelineProcesses": {
+                    "label": "Processus",
+                    "tooltip": "Processus qui affectent/influencent la zone intertidale d'un segment ou qui pourraient affecter une personne se trouvant sur la rive.<br><br><center><img src='../static/mapstore/img/shoreline_processes_legend_fr.png'/></center>"
                 }
             },
             "segment": {

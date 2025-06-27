@@ -463,6 +463,10 @@
                 "shorelineFetch": {
                     "label": "Wave Exposure (Fetch)",
                     "tooltip": "Estimate of <strong>wave exposure</strong> based on the open water distance where waves can form.<br><br><center><img src='../static/mapstore/img/shoreline_fetch_legend_en.png'/></center>"
+                },
+                "shorelineProcesses": {
+                    "label": "Processes",
+                    "tooltip": "Processes which affect/influence a segment's intertidal zone or which could affect someone standing on the shoreline.<br><br><center><img src='../static/mapstore/img/shoreline_processes_legend_en.png'/></center>"
                 }
             },
             "segment": {

@@ -1765,6 +1765,11 @@
                                     "id": "shorelineFetch",
                                     "labelId": "shorelineviewer.thematics.shorelineFetch.label",
                                     "thematicName": "shoreline_fetch_int"
+                                },
+                                {
+                                    "id": "shorelineProcesses",
+                                    "labelId": "shorelineviewer.thematics.shorelineProcesses.label",
+                                    "thematicName": "shoreline_processes_bc"
                                 }
                             ],
                             "extent": [-133.20208740234375, 49.26633834838867, -122.83486938476562, 54.25862121582031]
