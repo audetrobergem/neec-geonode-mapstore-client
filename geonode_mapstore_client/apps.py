@@ -146,7 +146,7 @@ def run_setup_hooks(*args, **kwargs):
             "ptype",
             "extent",
             "is_approved",
-            "is_published"
+            "is_published",
             "date_type",
             "last_updated"
         ],
@@ -178,7 +178,7 @@ def run_setup_hooks(*args, **kwargs):
             "subtype",
             "title",
             "executions",
-            "thumbnail_url"
+            "thumbnail_url",
             "date_type",
             "last_updated"
         ],
@@ -196,7 +196,7 @@ def run_setup_hooks(*args, **kwargs):
             "thumbnail_url",
             "alternate",
             "attribution",
-            "href"
+            "href",
             "date_type",
             "last_updated"
         ],
