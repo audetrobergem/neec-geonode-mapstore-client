@@ -1658,6 +1658,11 @@
                                     "id": "shorelineFetch",
                                     "labelId": "shorelineviewer.thematics.shorelineFetch.label",
                                     "thematicName": "shoreline_fetch_int"
+                                },
+                                {
+                                    "id": "shorelineProcesses",
+                                    "labelId": "shorelineviewer.thematics.shorelineProcesses.label",
+                                    "thematicName": "shoreline_processes_arctic"
                                 }
                             ],
                             "extent": [-141.00006103515625, 51.1119499206543, -75.17058563232422, 74.9911880493164]
