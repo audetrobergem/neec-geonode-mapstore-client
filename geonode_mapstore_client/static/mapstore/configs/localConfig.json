@@ -2540,7 +2540,15 @@
             {
                 "name": "TOC",
                 "cfg": {
-                    "activateMetadataTool": false
+                    "activateMetadataTool": false,
+                    "layerOptions": {
+                        "legendOptions": {
+                            "scaleDependent": true,
+                            "WMSLegendOptions": "forceLabels:on;fontAntialiasing:true;fontName:Montserrat Regular;wrap:true;wrap_limit:600",
+                            "legendWidth": 24,
+                            "legendHeight": 24
+                        }
+                    }
                 }
             },
             {
