@@ -1462,7 +1462,8 @@
                 "cfg": {
                     "tools": [
                         "draw",
-                        "box"
+                        "box",
+                        "scalebar"
                     ],
                     "mapOptions": {
                         "openlayers": {
@@ -1473,6 +1474,11 @@
                                 "pinchRotate": false,
                                 "altShiftDragRotate": false
                             }
+                        }
+                    },
+                    "toolsOptions": {
+                        "scalebar": {
+                            "container": "#footer-scalebar-container"
                         }
                     }
                 }
@@ -2900,6 +2906,12 @@
                         }
                     ],
                     "disablePluginIf": "{state('sensitivityMappingLoadingError')}"
+                }
+            },
+            {
+                "name": "MapImport",
+                "cfg": {
+                    "disablePluginIf": "{!(state('user').info.groups.includes('geomatics-and-technology'))}"
                 }
             }
         ],
