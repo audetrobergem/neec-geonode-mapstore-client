@@ -1,5 +1,5 @@
 {
-  "locale": "en",
+  "locale": "en-US",
   "messages": {
     "Language": "Language",
     "msgId0": "{name} took {numPhotos, plural, =0 {no photos} =1 {one photo} other {# photos}} on {takenDate, date, long}.",
@@ -3618,18 +3618,6 @@
       "MarineTraffic": {
         "description": "This plugin allows you to display ships from an AIS data source and extract their navigation history.",
         "title": "Marine Traffic"
-      },
-      "SensitivityMapping": {
-        "description": "This plugin allows you to print maps in PDF format from various print templates. It replaces the default print tool.",
-        "title": "Sensitivity Mapping"
-      },
-      "ShorelineViewer": {
-        "description": "This plugin allows you to view data related to ECCC's shoreline.",
-        "title": "Shoreline Viewer"
-      },
-      "ZoneIdentify": {
-        "description": "This plugin allows you to query multiple layers and display the attributes of selected features.",
-        "title": "Zone Identify"
       }
     },
     "contextCreator": {
