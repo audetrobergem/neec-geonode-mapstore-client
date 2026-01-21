@@ -1,0 +1,300 @@
+
+// **************
+// Theme
+// **************
+
+#marine-traffic-theme(@theme-vars) {
+    .marine-traffic {
+        .color-var(@theme-vars[main-color]);
+        .background-color-var(@theme-vars[main-bg]);
+        .marine-traffic-info-fields {
+            .marine-traffic-info-row {
+                .border-bottom-color-var(@theme-vars[main-border-color]);
+            }
+        }
+    }
+    .marine-traffic-spinner-container {
+        .background-color-var(@theme-vars[main-bg]);
+    }
+}
+
+// **************
+// Layout
+// **************
+
+.marine-traffic {
+    position: absolute;
+    top: 0;
+    right: 0;
+    z-index: 2000;
+    width: 550px;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    .shadow-soft();
+    .marine-traffic-head {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        .marine-traffic-title {
+            padding: 0 0.5rem;
+            font-size: @font-size-lg;
+        }
+    }
+    .marine-traffic-body {
+        //position: relative;
+        overflow: auto;
+        flex: 1;
+        padding: 0.5rem;
+    }
+    .marine-traffic-vessel-name-container {
+        display: flex;
+        justify-content: space-between;
+        .marine-traffic-vessel-name {
+            display: flex;
+            .marine-traffic-vessel-name-text {
+                font-size: 1.2rem;
+                padding-left: 0.5rem;    
+                margin: 0 0 0.5rem;
+            }
+            .marine-traffic-vessel-name-type {
+                padding-left: 1em;  
+            }
+        }
+    }
+    .marine-traffic-latest-position-text {
+        font-size: 0.75rem;
+    }
+    .marine-traffic-body-content {
+        height: 100%;
+    }
+    .marine-traffic-history-date-form {
+        display: flex;
+    }
+    .marine-traffic-history-date-col {
+        width: 50%;
+    }
+    .marine-traffic-history-date-picker {
+        margin: 0 0.2rem 0 0;
+        margin-right: 0rem;
+        width: 100%;
+    }
+    .marine-traffic-buttons {
+        &:extend(.btn-primary, .btn-primary.active);
+        margin: 0.2rem 0 0.5rem 0;
+        background-color: #ffffff !important;
+        text-align: right;
+    }
+    .marine-traffic-history-title {
+        align-items: center;
+        display: flex;
+    }
+    .marine-traffic-history-title-text {
+        flex: 1;
+    }
+    .marine-traffic-history-title-tools {
+        align-items: center;
+        display: flex;
+        justify-content: flex-end;
+    }
+    .marine-traffic-vessel-navbar {
+        display: flex;
+        justify-content: center;
+        margin: 0.5rem 0;
+    }
+    .marine-traffic-vessel-navbar-button {
+        width: 30px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        outline: 0;
+        padding: 0;
+        margin: 0;
+        border: 1px solid transparent;
+    }
+    .marine-traffic-history-table {
+        margin: 0.5rem 0;
+    }
+    .marine-traffic-button {
+        border: 1px solid black;
+        padding: 2px;
+    }
+    .marine-traffic-vessel-navbar-text {
+        font-size: 0.9rem;
+    }
+    .marine-traffic-page-navigation {
+        flex: 1;
+    }
+    .marine-traffic-dropdown {
+        align-items: center;
+        position: relative;
+        height: 31px;
+    }
+    .marine-traffic-alert {
+        width: 100%;
+        padding: 0.25rem;
+        padding-top: 1rem;
+        text-align: center;
+        font-style: italic;
+        position: relative;
+    }
+    .marine-traffic-spinner-container {
+        position: absolute;
+        margin-top: 45px;
+        width: 100%;
+        height: 100%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        opacity: 0.7;
+        top: 0;
+        left: 0;
+        font-size: 5rem;
+    }
+    // The following section is extracted from geonode's css and modified according to the tool's needs.
+    .marine-traffic-info {
+        padding: 1rem;
+    }
+    .marine-traffic-info > .nav {
+        position: sticky;
+        top: 40px;
+        z-index: 1;
+    }
+    .marine-traffic-info .tab-content {
+        margin-top: 0.5rem;
+    }
+    .marine-traffic-info .tab-content .linked-resources > span {
+        font-size: 0.765625rem;
+    }
+    .marine-traffic-info-fields {
+        padding: 0.5rem 0;
+        font-size: 0.765625rem;
+        position: relative;
+    }
+    .marine-traffic-info-fields * {
+        position: relative;
+    }
+    .marine-traffic-info-fields .marine-traffic-info-row {
+        display: flex;
+        border-bottom: 1px solid transparent;
+        word-break: break-word;
+    }
+    .marine-traffic-info-fields .marine-traffic-info-row .marine-traffic-info-label {
+        width: 200px;
+        padding: 0.25rem;
+        font-weight: lighter;
+    }
+    .marine-traffic-info-fields .marine-traffic-info-row .marine-traffic-info-value {
+        padding: 0.25rem;
+        flex: 1;
+        padding-left: 1rem;
+        max-width: calc(100% - 200px);
+    }
+    .marine-traffic-info-fields .marine-traffic-info-row .marine-traffic-info-value .marine-traffic-info-html.collapsed {
+        display: flex;
+        width: 100%;
+    }
+    .marine-traffic-info-fields .marine-traffic-info-row .marine-traffic-info-value .marine-traffic-info-html.collapsed .marine-traffic-info-html-value {
+        overflow: hidden;
+        white-space: nowrap;
+        text-overflow: ellipsis;
+    }
+    .marine-traffic-info-fields .marine-traffic-info-row .marine-traffic-info-value .marine-traffic-info-html .btn {
+        padding: 0;
+        border: none;
+        border-bottom: 1px solid transparent;
+    }
+    .marine-traffic-info-fields .marine-traffic-info-row .marine-traffic-info-value > a {
+        margin-right: 0.5rem;
+        white-space: nowrap;
+    }
+    .marine-traffic-info-fields .marine-traffic-info-row.linked-resources {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+    .marine-traffic-info-fields .marine-traffic-info-row.link {
+        border-bottom: none;
+    }
+    .marine-traffic-info-fields .marine-traffic-info-row.link .marine-traffic-info-label {
+        padding: 0.25rem;
+        font-weight: bold;
+    }
+    .marine-traffic-info-fields .marine-traffic-info-list {
+        padding-left: 0;
+        list-style: none;
+    }
+    .marine-traffic-info-fields .marine-traffic-info-list-indent {
+        padding-left: 15px;
+        list-style: none;
+    }
+    .marine-traffic-history-map {
+        height: 300px;
+        position: relative;
+        display: flex;
+        width: 100%;
+    }
+    .marine-traffic-history-map .gn-location-info {
+        font-size: 0.765625rem;
+        width: 250px;
+        padding-right: 10px;
+    }
+    .marine-traffic-history-map .gn-location-info .title,
+    .marine-traffic-history-map .gn-location-info .bounds-row,
+    .marine-traffic-history-map .gn-location-info .center-row {
+        display: flex;
+        justify-content: space-between;
+    }
+    .marine-traffic-history-map .gn-location-info .title {
+        align-items: center;
+        font-weight: lighter;
+    }
+    .marine-traffic-history-map .gn-location-info .bounds {
+        padding-bottom: 4px;
+    }
+    .marine-traffic-history-map .gn-location-info .center.title {
+        padding-top: 5px;
+    }
+    .marine-traffic-history-map .gn-location-info .bounds-row:last-child,
+    .marine-traffic-history-map .gn-location-info .center-row:last-child {
+        border-bottom: none;
+    }
+    .marine-traffic-history-map .gn-location-info .bounds-row,
+    .marine-traffic-history-map .gn-location-info .center-row {
+        padding: 4px 0;
+        border-bottom-width: 1px;
+        border-bottom-style: solid;
+    }
+    .marine-traffic-history-map .map-wrapper {
+        position: relative;
+        flex: 1;
+        height: 100%;
+    }
+    .marine-traffic-history-map .map-wrapper > span {
+        font-weight: lighter;
+        font-size: 0.765625rem;
+    }
+    .autocomplete-wrapper {
+        position: relative;
+        width: 100%;
+    }
+    .suggestions-list {
+        position: absolute;
+        top: 100%;
+        left: 0;
+        right: 0;
+        border: 1px solid #ccc;
+        background: white;
+        list-style: none;
+        padding: 0;
+        margin: 0;
+        z-index: 10;
+    }
+    .suggestions-list li {
+        padding: 8px;
+        cursor: pointer;
+    }
+    .suggestions-list li:hover {
+        background-color: #e9e9e9;
+    }
+}

@@ -24,7 +24,8 @@ const OverlayContainer = forwardRef(({
             className={className ? className : "gn-overlay-container"}
             style={{
                 position: 'relative',
-                height: '100%'
+                height: '100%',
+                'overflow-y': 'scroll'
             }}
         >
             {children}

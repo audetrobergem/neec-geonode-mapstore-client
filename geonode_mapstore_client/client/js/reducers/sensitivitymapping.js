@@ -1,0 +1,150 @@
+/*
+ * Copyright 2025, National Environmental Emergencies Centre, ECCC
+ * All rights reserved.
+ *
+ * This source code is licensed under the BSD-style license found in the
+ * LICENSE file in the root directory of this source tree.
+ */
+
+import {
+    SET_PRINT_APPLICATION,
+    SET_INITIAL_MAP_PROPERTIES,
+    SET_PRINT_CAPABILITIES,
+    SET_PRINT_PROPERTIES,
+    UPDATE_PRINT_PROPERTY,
+    GET_COORDINATES_SYSTEMS,
+    LOAD_PRINT_LAYOUT,
+    SET_PRINT_EXTENT,
+    CREATE_PRINT_CONFIG,
+    SEND_PRINT_REQUEST,
+    DOWNLOAD_MAP,
+    GET_PRINT_STATUS,
+    LOAD_SELECTED_STYLES,
+    LOAD_FEATURES,
+    INIT_SENSITIVITY_MAPPING_PRINT,
+    START_MANAGEMENT_COMMAND,
+    PRINT_ERROR,
+    CHANGE_PRINT_STATUS
+} from "@js/actions/sensitivitymapping";
+
+export const sensitivityMapping = (state = {}, action) => {
+    switch (action.type) {
+    case INIT_SENSITIVITY_MAPPING_PRINT: {
+        return {
+            ...state,
+            mapfishPrintApps: action.mapfishPrintApps
+        };
+    }
+    case CHANGE_PRINT_STATUS: {
+        return {
+            ...state,
+            loading: action.loading,
+            error: action.error
+        };
+    }
+    case SET_PRINT_APPLICATION: {
+        return {
+            ...state,
+            selectedPrintApplication: action.selectedPrintApplication
+        };
+    }
+    case SET_INITIAL_MAP_PROPERTIES: {
+        return {
+            ...state,
+            initialMapProperties: action.initialMapProperties
+        };
+    }
+    case SET_PRINT_CAPABILITIES: {
+        return {
+            ...state,
+            selectedPrintCapabilities: action.selectedPrintCapabilities
+        };
+    }
+    case SET_PRINT_PROPERTIES: {
+        return {
+            ...state,
+            printProperties: action.printProperties
+        };
+    }
+    case UPDATE_PRINT_PROPERTY: {
+        return {
+            ...state,
+            printProperty: action.printProperty
+        };
+    }
+    case GET_COORDINATES_SYSTEMS: {
+        return {
+            ...state,
+            projections: action.projections
+        };
+    }
+    case LOAD_PRINT_LAYOUT: {
+        return {
+            ...state,
+            printLayout: action.printLayout
+        };
+    }
+    case SET_PRINT_EXTENT: {
+        return {
+            ...state,
+            printExtent: action.printExtent
+        };
+    }
+    case CREATE_PRINT_CONFIG: {
+        return {
+            ...state
+        };
+    }
+    case SEND_PRINT_REQUEST: {
+        return {
+            ...state,
+            printConfig: action.printConfig
+        };
+    }
+    case DOWNLOAD_MAP: {
+        return {
+            ...state,
+            downloadUrl: action.downloadUrl
+        };
+    }
+    case GET_PRINT_STATUS: {
+        return {
+            ...state,
+            printStatus: action.printStatus,
+            statusUrl: action.statusUrl
+        };
+    }
+    case LOAD_SELECTED_STYLES: {
+        return {
+            ...state,
+            layers: action.layers
+        };
+    }
+    case LOAD_FEATURES: {
+        return {
+            ...state,
+            layers: action.layers
+        };
+    }
+    case START_MANAGEMENT_COMMAND: {
+        return {
+            ...state,
+            command: action.command,
+            jobId: action.jobId
+        };
+    }
+    case PRINT_ERROR: {
+        return {
+            ...state,
+            uid: action.uid,
+            title: action.title,
+            message: action.message,
+            values: action.values
+        };
+    }
+    default:
+        return state;
+    }
+};
+
+export default sensitivityMapping;

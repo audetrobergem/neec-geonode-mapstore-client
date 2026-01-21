@@ -1,0 +1,183 @@
+export const SET_SHORELINE_REGION = "SHORELINE:SET_SHORELINE_REGION";
+export const ZOOM_TO_REGION = "SHORELINE:ZOOM_TO_REGION";
+export const UPDATE_SHORELINE_SELECTED_MEDIA_TYPE = "SHORELINE:UPDATE_SHORELINE_SELECTED_MEDIA_TYPE";
+export const SHORELINE_FEATURE_INFO_CLICK = "SHORELINE:SHORELINE_FEATURE_INFO_CLICK";
+export const SHORELINE_SELECTED_FEATURE = "SHORELINE:SHORELINE_SELECTED_FEATURE";
+export const SHORELINE_SELECTED_VIDEO = "SHORELINE:SHORELINE_SELECTED_VIDEO";
+export const LOAD_SELECTED_MEDIA_DATASET_FEATURES = "SHORELINE:LOAD_SELECTED_MEDIA_DATASET_FEATURES";
+export const SELECT_FIRST_MEDIA_FEATURE = "SHORELINE:SELECT_FIRST_MEDIA_FEATURE";
+export const SELECT_PREVIOUS_MEDIA_FEATURE = "SHORELINE:SELECT_PREVIOUS_MEDIA_FEATURE";
+export const SELECT_NEXT_MEDIA_FEATURE = "SHORELINE:SELECT_NEXT_MEDIA_FEATURE";
+export const SELECT_LAST_MEDIA_FEATURE = "SHORELINE:SELECT_LAST_MEDIA_FEATURE";
+export const SET_SHORELINE_LOADING = "SHORELINE:SET_SHORELINE_LOADING";
+export const SET_SHORELINE_THEMATIC = "SHORELINE:SET_SHORELINE_THEMATIC";
+export const UPDATE_VIDEO_TIME = "SHORELINE:UPDATE_VIDEO_TIME";
+export const SET_VIDEO_INFORMATIONS = "SHORELINE:SET_VIDEO_INFORMATIONS";
+export const UPDATE_VIDEO_INFORMATION = "SHORELINE:UPDATE_VIDEO_INFORMATION";
+export const LOAD_VIDEO = "SHORELINE:LOAD_VIDEO";
+export const VIDEO_ERROR = "SHORELINE:VIDEO_ERROR";
+
+
+/**
+* edit the selected region name for the shoreline viewer plugin in the state
+* @param {string} selectedRegion
+*/
+export const setShorelineRegion = (selectedRegion) => ({
+    type: SET_SHORELINE_REGION,
+    selectedRegion
+});
+
+/**
+* zoom to the selected region. Zoom to all regions if no region is selected
+* @param {string} zoomToRegion
+*/
+export const zoomToRegion = () => ({
+    type: ZOOM_TO_REGION
+});
+
+/**
+* edit the selected media type (photo or video) to display on the map
+* @param {string} selectedMediaType
+*/
+export const updateShorelineSelectedMediaType = (selectedMediaType) => ({
+    type: UPDATE_SHORELINE_SELECTED_MEDIA_TYPE,
+    selectedMediaType
+});
+
+/**
+* Carries data needed for Get Feature Info request for the shoreline media layers
+* @param {object} point point clicked in this shape {latlng: {lat:1, lng:2}, pixel:{x:33 y:33}, modifiers:{} }
+* @param {array} layers the list of layers to query with the namespace
+*/
+export const shorelineFeatureInfoClick = (point, layers) => ({
+    type: SHORELINE_FEATURE_INFO_CLICK,
+    point,
+    layers
+});
+
+/**
+* Update the state with the selected feature when it is selected
+* @param {object} selectedFeature json object received from the getFeatureInfo() function & other info
+*/
+export const shorelineSelectedFeature = (selectedFeature) => ({
+    type: SHORELINE_SELECTED_FEATURE,
+    selectedFeature
+});
+
+/**
+* Update the state with the selected video
+* @param {string} selectedVideo URI of the selected video
+*/
+export const shorelineSelectedVideo = (selectedVideo) => ({
+    type: SHORELINE_SELECTED_VIDEO,
+    selectedVideo
+});
+
+/**
+* Load the features from a media dataset into the state.
+* @param {object} selectedMediaDatasetFeatures dict object containing the dataset objects of the selected media layer
+*/
+export const loadSelectedMediaDatasetFeatures = (selectedMediaDatasetFeatures) => ({
+    type: LOAD_SELECTED_MEDIA_DATASET_FEATURES,
+    selectedMediaDatasetFeatures
+});
+
+/**
+* Change the selected media feature for the first in the dataset
+*/
+export const selectFirstMediaFeature = (selectedFeature) => ({
+    type: SELECT_FIRST_MEDIA_FEATURE,
+    selectedFeature
+});
+
+/**
+* Change the selected media feature for the last in the dataset
+*/
+export const selectLastMediaFeature = (selectedFeature) => ({
+    type: SELECT_LAST_MEDIA_FEATURE,
+    selectedFeature
+});
+
+/**
+* Change the selected media feature for the previous in the dataset
+*/
+export const selectPreviousMediaFeature = (selectedFeature) => ({
+    type: SELECT_PREVIOUS_MEDIA_FEATURE,
+    selectedFeature
+});
+
+/**
+* Change the selected media feature for the next in the dataset
+*/
+export const selectNextMediaFeature = (selectedFeature) => ({
+    type: SELECT_NEXT_MEDIA_FEATURE,
+    selectedFeature
+});
+
+/**
+* Change the loading status
+*/
+export const setShorelineLoading = (loading) => ({
+    type: SET_SHORELINE_LOADING,
+    loading
+});
+
+/**
+* edit the selected shoreline classification style for the shoreline viewer plugin in the state
+* @param {string} selectedThematic
+*/
+export const setShorelineThematic = (selectedThematic) => ({
+    type: SET_SHORELINE_THEMATIC,
+    selectedThematic
+});
+
+/**
+* change the current video time to select the point feature according to the time.
+* @param {int} videoTime
+*/
+export const updateVideoTime = (videoTime) => ({
+    type: UPDATE_VIDEO_TIME,
+    videoTime
+});
+
+/**
+ * Edit the current video informations
+ * @param {object} videoInformations
+ */
+export const setVideoInformations = (videoInformations) => ({
+    type: SET_VIDEO_INFORMATIONS,
+    videoInformations
+});
+
+/**
+ * Update a specific video property following a modification in the video state (new video, play time, etc.)
+ * @param {object} videoInformation
+ */
+export const updateVideoInformation = (videoInformation) => ({
+    type: UPDATE_VIDEO_INFORMATION,
+    videoInformation
+});
+
+/**
+ * Update a specific video property following a modification in the video state (new video, play time, etc.)
+ * @param {object} fileName
+ */
+export const loadVideo = (fileName) => ({
+    type: LOAD_VIDEO,
+    fileName
+});
+
+/**
+ * Display a message when an error occured during the video display process
+ * @param {string} uid
+ * @param {string} title
+ * @param {string} message
+ * @param {object} values
+ */
+export const videoError = (uid, title, message, values) => ({
+    type: VIDEO_ERROR,
+    uid,
+    title,
+    message,
+    values
+});

@@ -104,7 +104,8 @@
       "autoEnableChildren": [
         "LayerDownload"
       ],
-      "defaultConfig": {}
+      "defaultConfig": {
+      }
     },
     {
       "name": "MapFooter",
@@ -273,73 +274,73 @@
     {
       "name": "PrintScale",
       "override": {
-          "Print": {
-              "position": 4
-          }
+        "Print": {
+          "position": 4
+        }
       },
       "hidden": true
     },
     {
       "name": "PrintGraticule",
       "override": {
-          "Print": {
-              "position": 5
-          }
+        "Print": {
+          "position": 5
+        }
       },
       "defaultConfig": {
-          "frame": 0.07,
-          "style": {
-              "color": "#000000",
-              "weight": 1,
-              "lineDash": [
-                  0.5,
-                  4
-              ],
-              "opacity": 0.5
-          },
-          "frameStyle": {
-              "color": "#000000",
-              "weight": 1,
-              "fillColor": "#FFFFFF"
-          },
-          "labelXStyle": {
-              "color": "#000000",
-              "font": "sans-serif",
-              "fontWeight": "bold",
-              "fontSize": "20",
-              "labelOutlineColor": "#FFFFFF",
-              "labelOutlineWidth": 2
-          },
-          "labelYStyle": {
-              "color": "#000000",
-              "font": "sans-serif",
-              "fontWeight": "bold",
-              "fontSize": "20",
-              "labelOutlineColor": "#FFFFFF",
-              "labelOutlineWidth": 2,
-              "rotation": 90,
-              "verticalAlign": "top",
-              "textAlign": "center"
-          }
+        "frame": 0.07,
+        "style": {
+          "color": "#000000",
+          "weight": 1,
+          "lineDash": [
+            0.5,
+            4
+          ],
+          "opacity": 0.5
+        },
+        "frameStyle": {
+          "color": "#000000",
+          "weight": 1,
+          "fillColor": "#FFFFFF"
+        },
+        "labelXStyle": {
+          "color": "#000000",
+          "font": "sans-serif",
+          "fontWeight": "bold",
+          "fontSize": "20",
+          "labelOutlineColor": "#FFFFFF",
+          "labelOutlineWidth": 2
+        },
+        "labelYStyle": {
+          "color": "#000000",
+          "font": "sans-serif",
+          "fontWeight": "bold",
+          "fontSize": "20",
+          "labelOutlineColor": "#FFFFFF",
+          "labelOutlineWidth": 2,
+          "rotation": 90,
+          "verticalAlign": "top",
+          "textAlign": "center"
+        }
       }
     },
     {
       "name": "PrintAuthor",
       "override": {
-          "Print": {
-              "position": 6
-          }
+        "Print": {
+          "position": 6
+        }
       },
       "hidden": true
     },
     {
-        "name": "PrintCopyright",
-        "override": {
-            "Print": {
-                "position": 7
-            }
-        },
-        "hidden": true
+      "name": "PrintCopyright",
+      "override": {
+        "Print": {
+          "position": 7
+        }
+      },
+      "hidden": true
     },
     {
       "name": "MousePosition",
@@ -357,7 +358,8 @@
           "EPSG:4326",
           "EPSG:3857"
         ],
-        "additionalCRS": {}
+        "additionalCRS": {
+        }
       }
     },
     {
@@ -520,7 +522,9 @@
       "glyph": "1-line",
       "title": "plugins.LongitudinalProfileTool.title",
       "description": "plugins.LongitudinalProfileTool.description",
-      "dependencies": ["SidebarMenu"]
+      "dependencies": [
+        "SidebarMenu"
+      ]
     },
     {
       "name": "GeoProcessing",
@@ -578,7 +582,8 @@
         "MapFooter"
       ],
       "defaultConfig": {
-        "additionalCRS": {},
+        "additionalCRS": {
+        },
         "filterAllowedCRS": [
           "EPSG:4326",
           "EPSG:3857"
@@ -606,14 +611,926 @@
       "glyph": "route",
       "title": "plugins.Itinerary.title",
       "description": "plugins.Itinerary.description",
-      "dependencies": ["SidebarMenu"]
+      "dependencies": [
+        "SidebarMenu"
+      ]
     },
     {
       "name": "Isochrone",
       "glyph": "1-point-dashed",
       "title": "plugins.Isochrone.title",
       "description": "plugins.Isochrone.description",
-      "dependencies": ["SidebarMenu"]
+      "dependencies": [
+        "SidebarMenu"
+      ]
+    },
+    {
+      "name": "SensitivityMapping",
+      "glyph": "print",
+      "title": "plugins.SensitivityMapping.title",
+      "description": "plugins.SensitivityMapping.description",
+      "dependencies": [
+        "SidebarMenu"
+      ],
+      "defaultConfig": {
+        "mapfishUrl": "print",
+        "defaultApplication": "neec-geoportal",
+        "applications": [
+          {
+            "name": "neec-geoportal",
+            "labelId": "sensitivitymapping.apps.neecGeoportal",
+            "properties": [
+              {
+                "name": "orientation",
+                "options": [
+                  "Landscape",
+                  "Portrait"
+                ],
+                "default": "Landscape"
+              },
+              {
+                "name": "legend2Pages",
+                "default": false
+              },
+              {
+                "name": "filterLegend",
+                "default": true
+              },
+              {
+                "name": "gridLayer",
+                "default": false
+              }
+            ],
+            "coordinatesSystems": [
+              {
+                "code": "3857",
+                "name": "Pseudo-Mercator"
+              },
+              {
+                "code": "3978",
+                "name": "NAD83 / Canada Atlas Lambert"
+              }
+            ],
+            "resolutions": [
+              "150",
+              "300"
+            ],
+            "utmEnabled": true
+          },
+          {
+            "name": "sensitivity-mapping",
+            "labelId": "sensitivitymapping.apps.sensitivityMapping",
+            "properties": [
+              {
+                "name": "orientation",
+                "options": [
+                  "Landscape",
+                  "Portrait"
+                ],
+                "default": "Landscape"
+              },
+              {
+                "name": "legend2Pages",
+                "default": false
+              },
+              {
+                "name": "filterLegend",
+                "default": true
+              },
+              {
+                "name": "gridLayer",
+                "default": false
+              }
+            ],
+            "coordinatesSystems": [
+              {
+                "code": "3857",
+                "name": "Pseudo-Mercator"
+              },
+              {
+                "code": "3978",
+                "name": "NAD83 / Canada Atlas Lambert"
+              }
+            ],
+            "resolutions": [
+              "150",
+              "300"
+            ],
+            "utmEnabled": true,
+            "restrictions": [
+              "neec"
+            ],
+            "report": {
+              "id": "sensitivity-mapping",
+              "command": "create_sensitivity_map_email"
+            }
+          },
+          {
+            "name": "ics-232",
+            "labelId": "sensitivitymapping.apps.ics232",
+            "properties": [
+              {
+                "name": "orientation",
+                "options": [
+                  "Landscape"
+                ],
+                "default": "Landscape"
+              },
+              {
+                "name": "filterLegend",
+                "default": true
+              },
+              {
+                "name": "gridLayer",
+                "default": false
+              }
+            ],
+            "coordinatesSystems": [
+              {
+                "code": "3857",
+                "name": "Pseudo-Mercator"
+              },
+              {
+                "code": "3978",
+                "name": "NAD83 / Canada Atlas Lambert"
+              }
+            ],
+            "resolutions": [
+              "150",
+              "300"
+            ],
+            "utmEnabled": true,
+            "restrictions": [
+              "neec"
+            ]
+          }
+        ],
+        "disablePluginIf": "{state('sensitivityMappingLoadingError')}"
+      }
+    },
+    {
+      "name": "ShorelineViewer",
+      "glyph": "route",
+      "title": "plugins.ShorelineViewer.title",
+      "description": "plugins.ShorelineViewer.description",
+      "dependencies": [
+        "SidebarMenu"
+      ],
+      "defaultConfig": {
+        "regions": [
+          {
+            "id": "arctic",
+            "labelId": "shorelineviewer.regions.arctic",
+            "photoDatasets": [
+              {
+                "datasetName": "neec_geodb:shoreline_photos_beaufort",
+                "extent": [
+                  -138.266952514648,
+                  68.3479385375977,
+                  -128.848434448242,
+                  69.9564514160156
+                ]
+              },
+              {
+                "datasetName": "neec_geodb:shoreline_photos_nunavik",
+                "extent": [
+                  -75.9960021972656,
+                  57.9367904663086,
+                  -65.7783050537109,
+                  62.5143775939941
+                ]
+              }
+            ],
+            "videoDatasets": [
+              {
+                "datasetName": "shoreline_videos_baffin_island",
+                "extent": [
+                  -81.1288475687647,
+                  71.8933949491088,
+                  -75.1378392085262,
+                  73.2574916830725
+                ]
+              },
+              {
+                "datasetName": "shoreline_videos_beaufort_sea",
+                "extent": [
+                  -141.1285650702,
+                  68.3308472250026,
+                  -115.160507011362,
+                  74.5872188097516
+                ]
+              },
+              {
+                "datasetName": "shoreline_videos_coronation_gulf_2014",
+                "extent": [
+                  -115.578708708731,
+                  67.7209184113087,
+                  -104.550379426486,
+                  69.5045808586041
+                ]
+              },
+              {
+                "datasetName": "shoreline_videos_coronation_gulf_2023",
+                "extent": [
+                  -108.742834823778,
+                  67.2759890759493,
+                  -101.630028303036,
+                  69.508112732163
+                ]
+              },
+              {
+                "datasetName": "shoreline_videos_james_bay",
+                "extent": [
+                  -82.2893361685545,
+                  51.1477882180969,
+                  -78.506261012542,
+                  54.0450112559073
+                ]
+              },
+              {
+                "datasetName": "shoreline_videos_lancaster_sound",
+                "extent": [
+                  -97.7942130566933,
+                  72.9026847383865,
+                  -76.0030156418145,
+                  74.6628177635247
+                ]
+              },
+              {
+                "datasetName": "shoreline_videos_nunavik",
+                "extent": [
+                  -78.6638883954464,
+                  55.2460341961073,
+                  -65.7666950129669,
+                  62.6167130326056
+                ]
+              },
+              {
+                "datasetName": "shoreline_videos_resolute_bay",
+                "extent": [
+                  -96.3016532289758,
+                  74.4538010800746,
+                  -81.0967238142046,
+                  74.9861108198916
+                ]
+              }
+            ],
+            "shorelineClassificationDataset": "neec_geodb:shoreline_classification_arctic",
+            "thematics": [
+              {
+                "id": "shorelineClassification",
+                "labelId": "shorelineviewer.thematics.shorelineClassification.label",
+                "thematicName": "shoreline_classification_arctic_int"
+              },
+              {
+                "id": "alongshoreAccess",
+                "labelId": "shorelineviewer.thematics.alongshoreAccess.label",
+                "thematicName": "shoreline_alongshore_access_int"
+              },
+              {
+                "id": "backshoreAccess",
+                "labelId": "shorelineviewer.thematics.backshoreAccess.label",
+                "thematicName": "shoreline_backshore_access_int"
+              },
+              {
+                "id": "shorelineFetch",
+                "labelId": "shorelineviewer.thematics.shorelineFetch.label",
+                "thematicName": "shoreline_fetch_int"
+              }
+            ],
+            "extent": [
+              -141.000061035156,
+              51.1119499206543,
+              -75.1705856323242,
+              74.9911880493164
+            ]
+          },
+          {
+            "id": "atlantic",
+            "labelId": "shorelineviewer.regions.atlantic",
+            "photoDatasets": [
+              {
+                "datasetName": "neec_geodb:shoreline_photos_bay_of_fundy",
+                "extent": [
+                  -67.159553527832,
+                  44.2517204284668,
+                  -64.3863296508789,
+                  45.6351776123047
+                ]
+              },
+              {
+                "datasetName": "neec_geodb:shoreline_photos_chedabucto_bay",
+                "extent": [
+                  -61.5226364135742,
+                  45.2031860351562,
+                  -60.6877937316895,
+                  45.660327911377
+                ]
+              }
+            ],
+            "videoDatasets": [
+              {
+                "datasetName": "shoreline_videos_bay_of_fundy",
+                "extent": [
+                  -67.1629823916852,
+                  44.2515821274357,
+                  -64.3862943400482,
+                  45.6349660435914
+                ]
+              },
+              {
+                "datasetName": "shoreline_videos_chedabucto_bay",
+                "extent": [
+                  -61.5227616583189,
+                  45.2034684003102,
+                  -60.685931563821,
+                  45.6553199248265
+                ]
+              },
+              {
+                "datasetName": "shoreline_videos_labrador",
+                "extent": [
+                  -62.2404302303785,
+                  53.244521597338,
+                  -58.0955675768396,
+                  56.6134614036471
+                ]
+              }
+            ],
+            "shorelineClassificationDataset": "neec_geodb:shoreline_classification_ar",
+            "thematics": [
+              {
+                "id": "shorelineClassification",
+                "labelId": "shorelineviewer.thematics.shorelineClassification.label",
+                "thematicName": "shoreline_classification_ar_int"
+              },
+              {
+                "id": "alongshoreAccess",
+                "labelId": "shorelineviewer.thematics.alongshoreAccess.label",
+                "thematicName": "shoreline_alongshore_access_int"
+              },
+              {
+                "id": "backshoreAccess",
+                "labelId": "shorelineviewer.thematics.backshoreAccess.label",
+                "thematicName": "shoreline_backshore_access_int"
+              }
+            ],
+            "extent": [
+              -67.2578582763672,
+              43.3896560668945,
+              -52.6193542480469,
+              56.6020469665527
+            ]
+          },
+          {
+            "id": "britishColumbia",
+            "labelId": "shorelineviewer.regions.britishColumbia",
+            "photoDatasets": [
+              {
+                "datasetName": "neec_geodb:shoreline_photos_northern_bc",
+                "extent": [
+                  -133.226501464844,
+                  51.8906669616699,
+                  -128.588836669922,
+                  54.4982299804688
+                ]
+              }
+            ],
+            "videoDatasets": [
+              {
+                "datasetName": "shoreline_videos_bc_central_coast",
+                "extent": [
+                  -129.46157853671,
+                  51.3575160659568,
+                  -126.495871474565,
+                  53.3547684590185
+                ]
+              },
+              {
+                "datasetName": "shoreline_videos_bc_north_coast",
+                "extent": [
+                  -130.655529380834,
+                  52.6310274745872,
+                  -127.867967222682,
+                  54.0407387287248
+                ]
+              },
+              {
+                "datasetName": "shoreline_videos_burrard_inlet",
+                "extent": [
+                  -123.2703626491,
+                  49.2685607376644,
+                  -122.835066011874,
+                  49.4720307240729
+                ]
+              },
+              {
+                "datasetName": "shoreline_videos_haida_gwaii",
+                "extent": [
+                  -133.214847591596,
+                  51.8915804534153,
+                  -130.921565452226,
+                  54.2707354385672
+                ]
+              },
+              {
+                "datasetName": "shoreline_videos_north_vancouver_island",
+                "extent": [
+                  -129.123632326825,
+                  49.9653313216016,
+                  -124.780969630876,
+                  51.5033882480019
+                ]
+              },
+              {
+                "datasetName": "shoreline_videos_victoria_harbor",
+                "extent": [
+                  -123.472438672263,
+                  48.4000837845403,
+                  -123.283792462598,
+                  48.6830990296986
+                ]
+              }
+            ],
+            "shorelineClassificationDataset": "neec_geodb:shoreline_classification_bc_eccc",
+            "thematics": [
+              {
+                "id": "shorelineClassification",
+                "labelId": "shorelineviewer.thematics.shorelineClassification.label",
+                "thematicName": "shoreline_classification_bc_eccc_en"
+              },
+              {
+                "id": "alongshoreAccess",
+                "labelId": "shorelineviewer.thematics.alongshoreAccess.label",
+                "thematicName": "shoreline_alongshore_access_int"
+              },
+              {
+                "id": "backshoreAccess",
+                "labelId": "shorelineviewer.thematics.backshoreAccess.label",
+                "thematicName": "shoreline_backshore_access_int"
+              },
+              {
+                "id": "shorelineFetch",
+                "labelId": "shorelineviewer.thematics.shorelineFetch.label",
+                "thematicName": "shoreline_fetch_int"
+              },
+              {
+                "id": "shorelineProcesses",
+                "labelId": "shorelineviewer.thematics.shorelineProcesses.label",
+                "thematicName": "shoreline_processes_bc"
+              }
+            ],
+            "extent": [
+              -133.202087402344,
+              49.2663383483887,
+              -122.834869384766,
+              54.2586212158203
+            ]
+          },
+          {
+            "id": "greatLakes",
+            "labelId": "shorelineviewer.regions.greatLakes",
+            "photoDatasets": [
+              {
+                "datasetName": "neec_geodb:shoreline_photos_st_clair_river",
+                "extent": [
+                  -82.6831817626953,
+                  42.4727363586426,
+                  -82.3044509887695,
+                  43.0080299377441
+                ]
+              }
+            ],
+            "videoDatasets": [
+            ],
+            "shorelineClassificationDataset": "neec_geodb:shoreline_classification_on",
+            "thematics": [
+              {
+                "id": "shorelineClassification",
+                "labelId": "shorelineviewer.thematics.shorelineClassification.label",
+                "thematicName": "shoreline_classification_on_int"
+              },
+              {
+                "id": "alongshoreAccess",
+                "labelId": "shorelineviewer.thematics.alongshoreAccess.label",
+                "thematicName": "shoreline_alongshore_access_int"
+              },
+              {
+                "id": "backshoreAccess",
+                "labelId": "shorelineviewer.thematics.backshoreAccess.label",
+                "thematicName": "shoreline_backshore_access_int"
+              },
+              {
+                "id": "shorelineFetch",
+                "labelId": "shorelineviewer.thematics.shorelineFetch.label",
+                "thematicName": "shoreline_fetch_int"
+              }
+            ],
+            "extent": [
+              -89.580432896,
+              41.681420922,
+              -74.344020278,
+              49.0189440720001
+            ]
+          },
+          {
+            "id": "stLawrence",
+            "labelId": "shorelineviewer.regions.stLawrence",
+            "photoDatasets": [
+            ],
+            "videoDatasets": [
+            ],
+            "shorelineClassificationDataset": "neec_geodb:shoreline_classification_qc",
+            "thematics": [
+              {
+                "id": "shorelineClassification",
+                "labelId": "shorelineviewer.thematics.shorelineClassification.label",
+                "thematicName": "shoreline_classification_qc_int"
+              },
+              {
+                "id": "alongshoreAccess",
+                "labelId": "shorelineviewer.thematics.alongshoreAccess.label",
+                "thematicName": "shoreline_alongshore_access_int"
+              },
+              {
+                "id": "backshoreAccess",
+                "labelId": "shorelineviewer.thematics.backshoreAccess.label",
+                "thematicName": "shoreline_backshore_access_int"
+              },
+              {
+                "id": "shorelineFetch",
+                "labelId": "shorelineviewer.thematics.shorelineFetch.label",
+                "thematicName": "shoreline_fetch_int"
+              }
+            ],
+            "extent": [
+              -74.790208842,
+              45.000024013,
+              -56.999995836,
+              51.750075494
+            ]
+          }
+        ],
+        "tabs": [
+          {
+            "type": "tab",
+            "id": "general",
+            "labelId": "shorelineviewer.segment.general",
+            "items": [
+              {
+                "type": "text",
+                "labelId": "shorelineviewer.segment.name",
+                "value": "{context.get(state('shorelineViewerSelectedFeature'), 'name')}"
+              },
+              {
+                "type": "text",
+                "labelId": "shorelineviewer.segment.province",
+                "value": "{context.get(state('shorelineViewerSelectedFeature'), 'provinceextent')}"
+              },
+              {
+                "type": "text",
+                "labelId": "shorelineviewer.segment.length",
+                "value": "{context.get(state('shorelineViewerSelectedFeature'), 'length_m')}"
+              },
+              {
+                "type": "text",
+                "labelId": "shorelineviewer.segment.width",
+                "value": "{context.get(state('shorelineViewerSelectedFeature'), 'width_m')}"
+              },
+              {
+                "type": "generalComment",
+                "labelId": "shorelineviewer.segment.generalComments",
+                "value": "{context.get(state('shorelineViewerSelectedFeature'), 'general_comments')}"
+              },
+              {
+                "type": "list",
+                "labelId": "shorelineviewer.segment.transportationMode",
+                "value": "{context.get(state('shorelineViewerSelectedFeature'), 'transportation_mode')}"
+              },
+              {
+                "type": "text",
+                "labelId": "shorelineviewer.segment.alongshoreAccess",
+                "value": "{context.get(state('shorelineViewerSelectedFeature'), 'alongshore_access')}"
+              },
+              {
+                "type": "text",
+                "labelId": "shorelineviewer.segment.backshoreAccess",
+                "value": "{context.get(state('shorelineViewerSelectedFeature'), 'backshore_access')}"
+              },
+              {
+                "type": "text",
+                "labelId": "shorelineviewer.segment.fetch",
+                "value": "{context.get(state('shorelineViewerSelectedFeature'), 'fetch')}"
+              },
+              {
+                "type": "list",
+                "labelId": "shorelineviewer.segment.shorelineProcesses",
+                "value": "{context.get(state('shorelineViewerSelectedFeature'), 'shoreline_processes')}"
+              },
+              {
+                "type": "text",
+                "labelId": "shorelineviewer.segment.datasource",
+                "value": "{context.get(state('shorelineViewerSelectedFeature'), 'datasource')}"
+              },
+              {
+                "type": "text",
+                "labelId": "shorelineviewer.segment.surveyYear",
+                "value": "{context.get(state('shorelineViewerSelectedFeature'), 'survey_year')}"
+              }
+            ]
+          },
+          {
+            "type": "tab",
+            "id": "upperIntertidal",
+            "labelId": "shorelineviewer.segment.upperIntertidal",
+            "items": [
+              {
+                "type": "text",
+                "labelId": "shorelineviewer.segment.scatClass",
+                "value": "{context.get(state('shorelineViewerSelectedFeature'), 'upper_intertidal_scat_class')}"
+              },
+              {
+                "type": "text",
+                "labelId": "shorelineviewer.segment.classeTerr",
+                "value": "{context.get(state('shorelineViewerSelectedFeature'), 'classe_terr_intertidale_sup')}"
+              },
+              {
+                "type": "text",
+                "labelId": "shorelineviewer.segment.form",
+                "value": "{context.get(state('shorelineViewerSelectedFeature'), 'upper_intertidal_form')}"
+              },
+              {
+                "type": "text",
+                "labelId": "shorelineviewer.segment.slope",
+                "value": "{context.get(state('shorelineViewerSelectedFeature'), 'upper_intertidal_slope')}"
+              },
+              {
+                "type": "text",
+                "labelId": "shorelineviewer.segment.height",
+                "value": "{context.get(state('shorelineViewerSelectedFeature'), 'upper_intertidal_height')}"
+              },
+              {
+                "type": "text",
+                "labelId": "shorelineviewer.segment.primarySubstrate",
+                "value": "{context.get(state('shorelineViewerSelectedFeature'), 'upper_intertidal_primary_substrate')}"
+              },
+              {
+                "type": "text",
+                "labelId": "shorelineviewer.segment.secondarySubstrate",
+                "value": "{context.get(state('shorelineViewerSelectedFeature'), 'upper_intertidal_secondary_substrate')}"
+              },
+              {
+                "type": "text",
+                "labelId": "shorelineviewer.segment.tertiarySubstrate",
+                "value": "{context.get(state('shorelineViewerSelectedFeature'), 'upper_intertidal_tertiary_substrate')}"
+              }
+            ]
+          },
+          {
+            "type": "tab",
+            "id": "lowerIntertidal",
+            "labelId": "shorelineviewer.segment.lowerIntertidal",
+            "items": [
+              {
+                "type": "text",
+                "labelId": "shorelineviewer.segment.scatClass",
+                "value": "{context.get(state('shorelineViewerSelectedFeature'), 'lower_intertidal_scat_class')}"
+              },
+              {
+                "type": "text",
+                "labelId": "shorelineviewer.segment.form",
+                "value": "{context.get(state('shorelineViewerSelectedFeature'), 'lower_intertidal_form')}"
+              },
+              {
+                "type": "text",
+                "labelId": "shorelineviewer.segment.slope",
+                "value": "{context.get(state('shorelineViewerSelectedFeature'), 'lower_intertidal_slope')}"
+              },
+              {
+                "type": "text",
+                "labelId": "shorelineviewer.segment.height",
+                "value": "{context.get(state('shorelineViewerSelectedFeature'), 'lower_intertidal_height')}"
+              },
+              {
+                "type": "text",
+                "labelId": "shorelineviewer.segment.primarySubstrate",
+                "value": "{context.get(state('shorelineViewerSelectedFeature'), 'lower_intertidal_primary_substrate')}"
+              },
+              {
+                "type": "text",
+                "labelId": "shorelineviewer.segment.secondarySubstrate",
+                "value": "{context.get(state('shorelineViewerSelectedFeature'), 'lower_intertidal_secondary_substrate')}"
+              },
+              {
+                "type": "text",
+                "labelId": "shorelineviewer.segment.tertiarySubstrate",
+                "value": "{context.get(state('shorelineViewerSelectedFeature'), 'lower_intertidal_tertiary_substrate')}"
+              }
+            ]
+          },
+          {
+            "type": "tab",
+            "id": "supratidal",
+            "labelId": "shorelineviewer.segment.supratidal",
+            "items": [
+              {
+                "type": "text",
+                "labelId": "shorelineviewer.segment.scatClass",
+                "value": "{context.get(state('shorelineViewerSelectedFeature'), 'supratidal_scat_class')}"
+              },
+              {
+                "type": "text",
+                "labelId": "shorelineviewer.segment.form",
+                "value": "{context.get(state('shorelineViewerSelectedFeature'), 'supratidal_form')}"
+              },
+              {
+                "type": "text",
+                "labelId": "shorelineviewer.segment.slope",
+                "value": "{context.get(state('shorelineViewerSelectedFeature'), 'supratidal_slope')}"
+              },
+              {
+                "type": "text",
+                "labelId": "shorelineviewer.segment.height",
+                "value": "{context.get(state('shorelineViewerSelectedFeature'), 'supratidal_height')}"
+              },
+              {
+                "type": "text",
+                "labelId": "shorelineviewer.segment.primarySubstrate",
+                "value": "{context.get(state('shorelineViewerSelectedFeature'), 'supratidal_primary_substrate')}"
+              },
+              {
+                "type": "text",
+                "labelId": "shorelineviewer.segment.secondarySubstrate",
+                "value": "{context.get(state('shorelineViewerSelectedFeature'), 'supratidal_secondary_substrate')}"
+              },
+              {
+                "type": "text",
+                "labelId": "shorelineviewer.segment.tertiarySubstrate",
+                "value": "{context.get(state('shorelineViewerSelectedFeature'), 'supratidal_tertiary_substrate')}"
+              }
+            ]
+          },
+          {
+            "type": "tab",
+            "id": "backshore",
+            "labelId": "shorelineviewer.segment.backshore",
+            "items": [
+              {
+                "type": "text",
+                "labelId": "shorelineviewer.segment.primaryLandCoverClass",
+                "value": "{context.get(state('shorelineViewerSelectedFeature'), 'backshore_primary_land_cover_class')}"
+              },
+              {
+                "type": "text",
+                "labelId": "shorelineviewer.segment.secondaryLandCoverClass",
+                "value": "{context.get(state('shorelineViewerSelectedFeature'), 'backshore_secondary_land_cover_class')}"
+              },
+              {
+                "type": "text",
+                "labelId": "shorelineviewer.segment.form",
+                "value": "{context.get(state('shorelineViewerSelectedFeature'), 'backshore_form')}"
+              },
+              {
+                "type": "text",
+                "labelId": "shorelineviewer.segment.slope",
+                "value": "{context.get(state('shorelineViewerSelectedFeature'), 'backshore_slope')}"
+              },
+              {
+                "type": "text",
+                "labelId": "shorelineviewer.segment.height",
+                "value": "{context.get(state('shorelineViewerSelectedFeature'), 'backshore_height')}"
+              },
+              {
+                "type": "text",
+                "labelId": "shorelineviewer.segment.primarySubstrate",
+                "value": "{context.get(state('shorelineViewerSelectedFeature'), 'backshore_primary_substrate')}"
+              },
+              {
+                "type": "text",
+                "labelId": "shorelineviewer.segment.secondarySubstrate",
+                "value": "{context.get(state('shorelineViewerSelectedFeature'), 'backshore_secondary_substrate')}"
+              },
+              {
+                "type": "text",
+                "labelId": "shorelineviewer.segment.tertiarySubstrate",
+                "value": "{context.get(state('shorelineViewerSelectedFeature'), 'backshore_tertiary_substrate')}"
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "name": "MarineTraffic",
+      "glyph": "1-mark",
+      "title": "plugins.MarineTraffic.title",
+      "description": "plugins.MarineTraffic.description",
+      "dependencies": [
+        "SidebarMenu"
+      ],
+      "defaultConfig": {
+        "disablePluginIf": "{!state('user').info.groups.includes('neec')}",
+        "tabs": [
+          {
+            "type": "tab",
+            "id": "vesselInformation",
+            "labelId": "marineTraffic.properties.vesselInformation",
+            "items": [
+              {
+                "type": "text",
+                "labelId": "marineTraffic.properties.name",
+                "value": "{context.get(state('marineTrafficSelectedFeature'), 'identity_name')}"
+              },
+              {
+                "type": "text",
+                "labelId": "marineTraffic.properties.mmsi",
+                "value": "{context.get(state('marineTrafficSelectedFeature'), 'mmsi')}"
+              },
+              {
+                "type": "text",
+                "labelId": "marineTraffic.properties.imo",
+                "value": "{context.get(state('marineTrafficSelectedFeature'), 'imo')}"
+              },
+              {
+                "type": "text",
+                "labelId": "marineTraffic.properties.callSign",
+                "value": "{context.get(state('marineTrafficSelectedFeature'), 'call_sign')}"
+              },
+              {
+                "type": "text",
+                "labelId": "marineTraffic.properties.flag",
+                "value": "{context.get(state('marineTrafficSelectedFeature'), 'flag')}"
+              },
+              {
+                "type": "text",
+                "labelId": "marineTraffic.properties.category",
+                "value": "{context.get(state('marineTrafficSelectedFeature'), 'category_code')}"
+              },
+              {
+                "type": "text",
+                "labelId": "marineTraffic.properties.type",
+                "value": "{context.get(state('marineTrafficSelectedFeature'), 'registered_type')}"
+              },
+              {
+                "type": "text",
+                "labelId": "marineTraffic.properties.speed",
+                "value": "{context.get(state('marineTrafficSelectedFeature'), 'speed')}"
+              },
+              {
+                "type": "text",
+                "labelId": "marineTraffic.properties.heading",
+                "value": "{context.get(state('marineTrafficSelectedFeature'), 'heading')}"
+              },
+              {
+                "type": "text",
+                "labelId": "marineTraffic.properties.course",
+                "value": "{context.get(state('marineTrafficSelectedFeature'), 'course')}"
+              },
+              {
+                "type": "text",
+                "labelId": "marineTraffic.properties.lat",
+                "value": "{context.get(state('marineTrafficSelectedFeature'), 'lat')}"
+              },
+              {
+                "type": "text",
+                "labelId": "marineTraffic.properties.lon",
+                "value": "{context.get(state('marineTrafficSelectedFeature'), 'lon')}"
+              },
+              {
+                "type": "navStatus",
+                "labelId": "marineTraffic.properties.navStatus",
+                "value": "{context.get(state('marineTrafficSelectedFeature'), 'nav_status')}"
+              },
+              {
+                "type": "text",
+                "labelId": "marineTraffic.properties.destination",
+                "value": "{context.get(state('marineTrafficSelectedFeature'), 'destination')}"
+              },
+              {
+                "type": "date",
+                "format": "YYYY-MM-DD HH:mm",
+                "labelId": "marineTraffic.properties.eta",
+                "value": "{context.get(state('marineTrafficSelectedFeature'), 'destination_eta')}"
+              }
+            ]
+          },
+          {
+            "type": "history",
+            "id": "history",
+            "labelId": "marineTraffic.properties.history",
+            "items": "{({vessel: context.get(state('marineTrafficSelectedFeature'), '*')})}"
+          }
+        ]
+      }
+    },
+    {
+      "name": "ZoneIdentify",
+      "glyph": "layer-info",
+      "title": "plugins.ZoneIdentify.title",
+      "description": "plugins.ZoneIdentify.description",
+      "dependencies": [
+        "SidebarMenu"
+      ]
     }
   ]
 }

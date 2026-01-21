@@ -478,6 +478,30 @@ export const plugins = {
     UploadResourcePlugin: toModulePlugin(
         'UploadResource',
         () => import(/* webpackChunkName: 'plugins/upload-operation' */ '@js/plugins/UploadResource')
+    ),
+    UndoPlugin: toModulePlugin(
+        'Undo',
+        () => import(/* webpackChunkName: 'plugins/undo' */ '@js/plugins/Undo')
+    ),
+    RedoPlugin: toModulePlugin(
+        'Redo',
+        () => import(/* webpackChunkName: 'plugins/redo' */ '@js/plugins/Redo')
+    ),
+    ShorelineViewerPlugin: toModulePlugin(
+        'ShorelineViewer',
+        () => import(/* webpackChunkName: 'plugins/shoreline-viewer' */ '@js/plugins/ShorelineViewer')
+    ),
+    ZoneIdentifyPlugin: toModulePlugin(
+        'ZoneIdentify',
+        () => import(/* webpackChunkName: 'plugins/zone-identify' */ '@js/plugins/ZoneIdentify')
+    ),
+    SensitivityMappingPlugin: toModulePlugin(
+        'SensitivityMapping',
+        () => import(/* webpackChunkName: 'plugins/sensitivity-mapping' */ '@js/plugins/SensitivityMapping')
+    ),
+    MarineTrafficPlugin: toModulePlugin(
+        'MarineTraffic',
+        () => import(/* webpackChunkName: 'plugins/marine-traffic' */ '@js/plugins/MarineTraffic')
     )
 };
 

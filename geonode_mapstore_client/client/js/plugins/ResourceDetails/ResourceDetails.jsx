@@ -157,6 +157,15 @@ function ResourceDetailsPanel({
                     }
                 },
                 {
+                    "type": "query",
+                    "labelId": "gnviewer.group",
+                    "value": "{context.get(state('gnResourceData'), 'group.name')}",
+                    "pathname": "/",
+                    "query": {
+                        "filter{group.pk.in}": "{context.get(state('gnResourceData'), 'group.pk')}"
+                    }
+                },
+                {
                     "type": "link",
                     "labelId": "gnviewer.pointOfContact",
                     "value": "{context.getUserResourceNames(context.get(state('gnResourceData'), 'poc'))}",
