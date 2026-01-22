@@ -563,7 +563,7 @@
                                 {
                                     "type": "plugin",
                                     "name": "SaveAs",
-                                    "disableIf": "{!state('isNewResource') && !context.resourceHasPermission(state('gnResourceData'), 'change_resourcebase') && !context.canCopyResource(state('gnResourceData'), state('user')) || (!state('selectedLayerPermissions').includes('download_resourcebase') || !context.resourceHasPermission(state('gnResourceData'), 'download_resourcebase'))}"
+                                    "disableIf": "{!state('isNewResource') && !context.resourceHasPermission(state('gnResourceData'), 'change_resourcebase') && !context.canCopyResource(state('gnResourceData'), state('user')) || (!(state('selectedLayerPermissions').includes('download_resourcebase')) || !context.resourceHasPermission(state('gnResourceData'), 'download_resourcebase'))}"
                                 },
                                 {
                                     "type": "divider",
@@ -794,104 +794,6 @@
                 "name": "Measure"
             },
             {
-                "name": "Print",
-                "cfg": {
-                    "useFixedScales": true,
-                    "outputFormatOptions": {
-                        "allowedFormats": [
-                            {
-                                "value": "pdf",
-                                "name": "PDF"
-                            },
-                            {
-                                "value": "png",
-                                "name": "PNG"
-                            },
-                            {
-                                "value": "jpg",
-                                "name": "JPEG"
-                            },
-                            {
-                                "value": "gif",
-                                "name": "GIF"
-                            },
-                            {
-                                "value": "tiff",
-                                "name": "TIFF"
-                            }
-                        ]
-                    }
-                }
-            },
-            {
-                "name": "PrintScale",
-                "override": {
-                    "Print": {
-                        "position": 4
-                    }
-                }
-            },
-            {
-                "name": "PrintGraticule",
-                "override": {
-                    "Print": {
-                        "position": 5
-                    }
-                },
-                "cfg": {
-                    "frame": 0.07,
-                    "style": {
-                        "color": "#000000",
-                        "weight": 1,
-                        "lineDash": [
-                            0.5,
-                            4
-                        ],
-                        "opacity": 0.5
-                    },
-                    "frameStyle": {
-                        "color": "#000000",
-                        "weight": 1,
-                        "fillColor": "#FFFFFF"
-                    },
-                    "labelXStyle": {
-                        "color": "#000000",
-                        "font": "sans-serif",
-                        "fontWeight": "bold",
-                        "fontSize": "20",
-                        "labelOutlineColor": "#FFFFFF",
-                        "labelOutlineWidth": 2
-                    },
-                    "labelYStyle": {
-                        "color": "#000000",
-                        "font": "sans-serif",
-                        "fontWeight": "bold",
-                        "fontSize": "20",
-                        "labelOutlineColor": "#FFFFFF",
-                        "labelOutlineWidth": 2,
-                        "rotation": 90,
-                        "verticalAlign": "top",
-                        "textAlign": "center"
-                    }
-                }
-            },
-            {
-                "name": "PrintAuthor",
-                "override": {
-                    "Print": {
-                        "position": 6
-                    }
-                }
-            },
-            {
-                "name": "PrintCopyright",
-                "override": {
-                    "Print": {
-                        "position": 7
-                    }
-                }
-            },
-            {
                 "name": "ZoomIn",
                 "override": {
                     "Toolbar": {
@@ -919,7 +821,7 @@
             {
                 "name": "LayerDownload",
                 "cfg": {
-                    "disablePluginIf": "{!state('selectedLayerPermissions').includes('download_resourcebase')}",
+                    "disablePluginIf": "{!(state('selectedLayerPermissions').includes('download_resourcebase'))}",
                     "hideServiceSelector": true,
                     "defaultSelectedService": "wps",
                     "formats": [
@@ -1260,6 +1162,42 @@
             },
             {
                 "name": "MetadataViewer"
+            },
+            {
+                "name": "SensitivityMapping",
+                "cfg": {
+                    "mapfishUrl": "print",
+                    "defaultApplication": "neec-geoportal",
+                    "applications": [
+                        {
+                            "name": "neec-geoportal",
+                            "labelId": "sensitivitymapping.apps.neecGeoportal",
+                            "properties": [
+                                {
+                                    "name": "orientation",
+                                    "options": ["Landscape", "Portrait"],
+                                    "default": "Landscape"
+                                }, {
+                                    "name": "legend2Pages",
+                                    "default": false
+                                }, {
+                                    "name": "filterLegend",
+                                    "default": true
+                                }, {
+                                    "name": "gridLayer",
+                                    "default": false
+                                }
+                            ],
+                            "coordinatesSystems": [
+                                {"code": "3857", "name": "Pseudo-Mercator"},
+                                {"code": "3978", "name": "NAD83 / Canada Atlas Lambert"}
+                            ],
+                            "resolutions": ["150", "300"],
+                            "utmEnabled": true
+                        }
+                    ],
+                    "disablePluginIf": "{state('sensitivityMappingLoadingError')}"
+                }
             }
         ],
         "dataset_edit_data_viewer": [
@@ -1849,7 +1787,7 @@
             {
                 "name": "WidgetsBuilder",
                 "cfg": {
-                    "disablePluginIf": "{!state('selectedLayerPermissions').includes('download_resourcebase')}"
+                    "disablePluginIf": "{!(state('selectedLayerPermissions').includes('download_resourcebase'))}"
                 }
             },
             {
@@ -2961,7 +2899,7 @@
                                 {
                                     "type": "plugin",
                                     "name": "SaveAs",
-                                    "disableIf": "{!state('isNewResource') && !context.resourceHasPermission(state('gnResourceData'), 'change_resourcebase') && !context.canCopyResource(state('gnResourceData'), state('user')) || (!state('selectedLayerPermissions').includes('download_resourcebase') || !context.resourceHasPermission(state('gnResourceData'), 'download_resourcebase'))}"
+                                    "disableIf": "{!state('isNewResource') && !context.resourceHasPermission(state('gnResourceData'), 'change_resourcebase') && !context.canCopyResource(state('gnResourceData'), state('user')) || (!(state('selectedLayerPermissions').includes('download_resourcebase')) || !context.resourceHasPermission(state('gnResourceData'), 'download_resourcebase'))}"
                                 },
                                 {
                                     "type": "divider",
