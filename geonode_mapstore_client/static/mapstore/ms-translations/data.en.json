@@ -1,5 +1,5 @@
 {
-  "locale": "en-US",
+  "locale": "en",
   "messages": {
     "Language": "Language",
     "msgId0": "{name} took {numPhotos, plural, =0 {no photos} =1 {one photo} other {# photos}} on {takenDate, date, long}.",
@@ -3614,10 +3614,6 @@
       "Isochrone": {
         "description": "This plugin allows to calculate isochrones and isodistances",
         "title": "Isochrone"
-      },
-      "MarineTraffic": {
-        "description": "This plugin allows you to display ships from an AIS data source and extract their navigation history.",
-        "title": "Marine Traffic"
       }
     },
     "contextCreator": {
