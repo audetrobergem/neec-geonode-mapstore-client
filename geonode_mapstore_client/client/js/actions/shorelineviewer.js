@@ -17,38 +17,36 @@ export const UPDATE_VIDEO_INFORMATION = "SHORELINE:UPDATE_VIDEO_INFORMATION";
 export const LOAD_VIDEO = "SHORELINE:LOAD_VIDEO";
 export const VIDEO_ERROR = "SHORELINE:VIDEO_ERROR";
 
-
 /**
-* edit the selected region name for the shoreline viewer plugin in the state
-* @param {string} selectedRegion
-*/
+ * Edit the selected region name for the shoreline viewer plugin in the state.
+ * @param {object|null} selectedRegion - the region object or null to clear
+ */
 export const setShorelineRegion = (selectedRegion) => ({
     type: SET_SHORELINE_REGION,
     selectedRegion
 });
 
 /**
-* zoom to the selected region. Zoom to all regions if no region is selected
-* @param {string} zoomToRegion
-*/
+ * Zoom to the selected region, or to all regions if none is selected.
+ */
 export const zoomToRegion = () => ({
     type: ZOOM_TO_REGION
 });
 
 /**
-* edit the selected media type (photo or video) to display on the map
-* @param {string} selectedMediaType
-*/
+ * Edit the selected media type (Photos or Videos) to display on the map.
+ * @param {object|null} selectedMediaType
+ */
 export const updateShorelineSelectedMediaType = (selectedMediaType) => ({
     type: UPDATE_SHORELINE_SELECTED_MEDIA_TYPE,
     selectedMediaType
 });
 
 /**
-* Carries data needed for Get Feature Info request for the shoreline media layers
-* @param {object} point point clicked in this shape {latlng: {lat:1, lng:2}, pixel:{x:33 y:33}, modifiers:{} }
-* @param {array} layers the list of layers to query with the namespace
-*/
+ * Carry data needed for a GetFeatureInfo request for the shoreline media layers.
+ * @param {object} point - { latlng: {lat, lng}, pixel: {x, y}, modifiers: {} }
+ * @param {string[]} layers - list of layer names to query
+ */
 export const shorelineFeatureInfoClick = (point, layers) => ({
     type: SHORELINE_FEATURE_INFO_CLICK,
     point,
@@ -56,93 +54,98 @@ export const shorelineFeatureInfoClick = (point, layers) => ({
 });
 
 /**
-* Update the state with the selected feature when it is selected
-* @param {object} selectedFeature json object received from the getFeatureInfo() function & other info
-*/
+ * Update the state with the selected feature.
+ * @param {object|null} selectedFeature - feature info object or null to clear
+ */
 export const shorelineSelectedFeature = (selectedFeature) => ({
     type: SHORELINE_SELECTED_FEATURE,
     selectedFeature
 });
 
 /**
-* Update the state with the selected video
-* @param {string} selectedVideo URI of the selected video
-*/
+ * Update the state with the selected video URI.
+ * @param {string|null} selectedVideo
+ */
 export const shorelineSelectedVideo = (selectedVideo) => ({
     type: SHORELINE_SELECTED_VIDEO,
     selectedVideo
 });
 
 /**
-* Load the features from a media dataset into the state.
-* @param {object} selectedMediaDatasetFeatures dict object containing the dataset objects of the selected media layer
-*/
+ * Load all features from a media dataset into the state.
+ * @param {object|null} selectedMediaDatasetFeatures - GeoJSON FeatureCollection or null
+ */
 export const loadSelectedMediaDatasetFeatures = (selectedMediaDatasetFeatures) => ({
     type: LOAD_SELECTED_MEDIA_DATASET_FEATURES,
     selectedMediaDatasetFeatures
 });
 
 /**
-* Change the selected media feature for the first in the dataset
-*/
+ * Navigate to the first feature in the media dataset.
+ * @param {object} selectedFeature - current feature (used to determine dataset)
+ */
 export const selectFirstMediaFeature = (selectedFeature) => ({
     type: SELECT_FIRST_MEDIA_FEATURE,
     selectedFeature
 });
 
 /**
-* Change the selected media feature for the last in the dataset
-*/
+ * Navigate to the last feature in the media dataset.
+ * @param {object} selectedFeature
+ */
 export const selectLastMediaFeature = (selectedFeature) => ({
     type: SELECT_LAST_MEDIA_FEATURE,
     selectedFeature
 });
 
 /**
-* Change the selected media feature for the previous in the dataset
-*/
+ * Navigate to the previous feature in the media dataset.
+ * @param {object} selectedFeature
+ */
 export const selectPreviousMediaFeature = (selectedFeature) => ({
     type: SELECT_PREVIOUS_MEDIA_FEATURE,
     selectedFeature
 });
 
 /**
-* Change the selected media feature for the next in the dataset
-*/
+ * Navigate to the next feature in the media dataset.
+ * @param {object} selectedFeature
+ */
 export const selectNextMediaFeature = (selectedFeature) => ({
     type: SELECT_NEXT_MEDIA_FEATURE,
     selectedFeature
 });
 
 /**
-* Change the loading status
-*/
+ * Set the loading state of the plugin panel.
+ * @param {boolean} loading
+ */
 export const setShorelineLoading = (loading) => ({
     type: SET_SHORELINE_LOADING,
     loading
 });
 
 /**
-* edit the selected shoreline classification style for the shoreline viewer plugin in the state
-* @param {string} selectedThematic
-*/
+ * Edit the selected shoreline classification style (thematic).
+ * @param {object|null} selectedThematic
+ */
 export const setShorelineThematic = (selectedThematic) => ({
     type: SET_SHORELINE_THEMATIC,
     selectedThematic
 });
 
 /**
-* change the current video time to select the point feature according to the time.
-* @param {int} videoTime
-*/
+ * Change the current video time to select the corresponding point feature.
+ * @param {number} videoTime - time in seconds
+ */
 export const updateVideoTime = (videoTime) => ({
     type: UPDATE_VIDEO_TIME,
     videoTime
 });
 
 /**
- * Edit the current video informations
- * @param {object} videoInformations
+ * Replace the entire video informations object in the state.
+ * @param {object|null} videoInformations
  */
 export const setVideoInformations = (videoInformations) => ({
     type: SET_VIDEO_INFORMATIONS,
@@ -150,8 +153,8 @@ export const setVideoInformations = (videoInformations) => ({
 });
 
 /**
- * Update a specific video property following a modification in the video state (new video, play time, etc.)
- * @param {object} videoInformation
+ * Update a single property of the video informations object.
+ * @param {{ name: string, value: any }} videoInformation
  */
 export const updateVideoInformation = (videoInformation) => ({
     type: UPDATE_VIDEO_INFORMATION,
@@ -159,8 +162,8 @@ export const updateVideoInformation = (videoInformation) => ({
 });
 
 /**
- * Update a specific video property following a modification in the video state (new video, play time, etc.)
- * @param {object} fileName
+ * Trigger loading of a video by file name.
+ * @param {string} fileName
  */
 export const loadVideo = (fileName) => ({
     type: LOAD_VIDEO,
@@ -168,11 +171,11 @@ export const loadVideo = (fileName) => ({
 });
 
 /**
- * Display a message when an error occured during the video display process
+ * Dispatch a video error notification.
  * @param {string} uid
  * @param {string} title
  * @param {string} message
- * @param {object} values
+ * @param {object} [values]
  */
 export const videoError = (uid, title, message, values) => ({
     type: VIDEO_ERROR,

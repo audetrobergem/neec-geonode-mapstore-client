@@ -1,91 +1,118 @@
+import { createSelector } from 'reselect';
 import { createControlEnabledSelector } from '@mapstore/framework/selectors/controls';
 
 export const enabledSelector = createControlEnabledSelector("shorelineViewer");
 
 /**
  * Gets the selected media type.
- * @memberof selectors.shorelineViewer
  * @param {object} state
- * @returns {object} the selected media type (Photos or Videos)
+ * @returns {object|null} the selected media type (Photos or Videos)
  */
-export const shorelineViewerMediaTypeSelector = state => state?.shorelineViewer?.selectedMediaType;
+export const shorelineViewerMediaTypeSelector = (state) =>
+    state?.shorelineViewer?.selectedMediaType;
 
 /**
  * Gets the selected region.
- * @memberof selectors.shorelineViewer
  * @param {object} state
- * @returns {object} the selected region
+ * @returns {object|null}
  */
-export const shorelineViewerRegionSelector = state => state?.shorelineViewer?.selectedRegion;
+export const shorelineViewerRegionSelector = (state) =>
+    state?.shorelineViewer?.selectedRegion;
 
 /**
  * Gets the selected thematic.
- * @memberof selectors.shorelineViewer
  * @param {object} state
- * @returns {object} the selected thematic
+ * @returns {object|null}
  */
-export const shorelineViewerThematicSelector = state => state?.shorelineViewer?.selectedThematic;
+export const shorelineViewerThematicSelector = (state) =>
+    state?.shorelineViewer?.selectedThematic;
 
 /**
- * Gets the coordinates of the click action.
- * @memberof selectors.shorelineViewer
+ * Gets the coordinates of the last click action.
  * @param {object} state
- * @returns {object} the coordinates
+ * @returns {object|null}
  */
-export const shorelineClickPointSelector = state => state && state.mapInfo && state.shorelineViewer.clickPoint;
+export const shorelineClickPointSelector = (state) =>
+    state?.shorelineViewer?.clickPoint ?? null;
 
 /**
  * Gets the layers that can be queried by the user.
- * @memberof selectors.shorelineViewer
  * @param {object} state
- * @returns {object} the layers
+ * @returns {string[]}
  */
-export const shorelineClickLayerSelector = state => state && state.mapInfo && state.shorelineViewer.clickLayers;
+export const shorelineClickLayerSelector = (state) =>
+    state?.shorelineViewer?.clickLayers ?? [];
 
 /**
- * Gets selected feature (shoreline segment or media feature).
- * @memberof selectors.shorelineViewer
+ * Gets the full selected feature context object
+ * (includes selectedFeature, selectedLayer, selectedFeatureProjection, trigger).
  * @param {object} state
- * @returns {object} the selected feature
+ * @returns {object|null}
  */
-export const shorelineSelectedFeature = state => state?.shorelineViewer?.selectedFeature;
+export const shorelineSelectedFeatureContextSelector = (state) =>
+    state?.shorelineViewer?.selectedFeature;
 
 /**
- * Gets selected video.
- * @memberof selectors.shorelineViewer
+ * Gets only the GeoJSON feature from the selected feature context.
  * @param {object} state
- * @returns {string} the selected video URL
+ * @returns {object|null}
  */
-export const shorelineSelectedVideo = state => state?.shorelineViewer?.selectedVideo;
+export const shorelineSelectedFeatureSelector = (state) =>
+    state?.shorelineViewer?.selectedFeature?.selectedFeature ?? null;
 
 /**
- * Gets the selected feature in the layer corresponding to the selected media (photo or video) depending on the region.
- * @memberof selectors.shorelineViewer
+ * Gets the selected layer name from the selected feature context.
  * @param {object} state
- * @returns {object} the layers features
+ * @returns {string|null}
  */
-export const selectedMediaDatasetFeatures = state => state?.shorelineViewer?.selectedMediaDatasetFeatures;
+export const shorelineSelectedLayerSelector = (state) =>
+    state?.shorelineViewer?.selectedLayer ?? null;
+
+/**
+ * Gets selected video URI.
+ * @param {object} state
+ * @returns {string|null}
+ */
+export const shorelineSelectedVideoSelector = (state) =>
+    state?.shorelineViewer?.selectedVideo ?? null;
+
+/**
+ * Gets the features of the currently loaded media dataset.
+ * @param {object} state
+ * @returns {object|null} GeoJSON FeatureCollection
+ */
+export const selectedMediaDatasetFeaturesSelector = (state) =>
+    state?.shorelineViewer?.selectedMediaDatasetFeatures ?? null;
 
 /**
  * Gets the loading status of the plugin.
- * @memberof selectors.shorelineViewer
  * @param {object} state
- * @returns {object} the loading status
+ * @returns {boolean}
  */
-export const shorelineLoading = state => state?.shorelineViewer?.loading;
+export const shorelineLoadingSelector = (state) =>
+    state?.shorelineViewer?.loading ?? false;
 
 /**
- * Update the video current time
- * @memberof selectors.shorelineViewer
+ * Gets the current video time in seconds.
  * @param {object} state
- * @returns {int} the video time
+ * @returns {number|null}
  */
-export const videoTime = state => state?.shorelineViewer?.videoTime;
+export const videoTimeSelector = (state) =>
+    state?.shorelineViewer?.videoTime ?? null;
 
 /**
- * Update the video informations
- * @memberof selectors.shorelineViewer
+ * Gets the full video informations object.
  * @param {object} state
- * @returns {object} the video information
+ * @returns {object|null}
  */
-export const videoInformations = state => state?.shorelineViewer?.videoInformations;
+export const videoInformationsSelector = (state) =>
+    state?.shorelineViewer?.videoInformations ?? null;
+
+/**
+ * Composed selector: true when plugin is enabled AND a region is selected.
+ */
+export const shorelineActiveSelector = createSelector(
+    enabledSelector,
+    shorelineViewerRegionSelector,
+    (enabled, selectedRegion) => enabled && !!selectedRegion
+);

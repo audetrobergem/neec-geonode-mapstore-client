@@ -14,7 +14,21 @@ import {
     VIDEO_ERROR
 } from '@js/actions/shorelineviewer';
 
-export const shorelineViewer = (state = {}, action) => {
+const defaultState = {
+    selectedRegion: null,
+    selectedMediaType: null,
+    selectedThematic: null,
+    selectedFeature: null,
+    selectedLayer: null,
+    selectedVideo: null,
+    selectedMediaDatasetFeatures: null,
+    loading: false,
+    videoInformations: null,
+    clickPoint: null,
+    clickLayers: []
+};
+
+export const shorelineViewer = (state = defaultState, action) => {
     switch (action.type) {
     case SET_SHORELINE_REGION: {
         return {
@@ -38,7 +52,12 @@ export const shorelineViewer = (state = {}, action) => {
     case SHORELINE_SELECTED_FEATURE: {
         return {
             ...state,
-            selectedFeature: action.selectedFeature
+            // Store the full context object AND expose selectedLayer at the top level
+            // so epics can access state.shorelineViewer.selectedLayer directly.
+            selectedFeature: action.selectedFeature,
+            selectedLayer: action.selectedFeature
+                ? action.selectedFeature.selectedLayer
+                : null
         };
     }
     case SHORELINE_SELECTED_VIDEO: {
@@ -78,9 +97,16 @@ export const shorelineViewer = (state = {}, action) => {
         };
     }
     case UPDATE_VIDEO_INFORMATION: {
+        // Fix: never mutate state directly. Spread existing videoInformations
+        // and overwrite only the named property.
         return {
             ...state,
-            videoInformation: action.videoInformation
+            videoInformations: state.videoInformations
+                ? {
+                    ...state.videoInformations,
+                    [action.videoInformation.name]: action.videoInformation.value
+                }
+                : state.videoInformations
         };
     }
     case LOAD_VIDEO: {
@@ -92,10 +118,10 @@ export const shorelineViewer = (state = {}, action) => {
     case VIDEO_ERROR: {
         return {
             ...state,
-            uid: action.uid,
-            title: action.title,
-            message: action.message,
-            values: action.values
+            errorUid: action.uid,
+            errorTitle: action.title,
+            errorMessage: action.message,
+            errorValues: action.values
         };
     }
     default:

@@ -628,7 +628,12 @@
             "notifications": {
                 "error": "Erreur",
                 "close": "Fermet",
-                "videoDurationError": "La vidéo demandée ne peut pas être lue car la durée de la vidéo ({heure}) correspondant au point sélectionné dépasse la durée totale de la vidéo ({durée}) sélectionnée."
+                "videoDurationError": "La vidéo demandée ne peut pas être lue car la durée de la vidéo ({heure}) correspondant au point sélectionné dépasse la durée totale de la vidéo ({durée}) sélectionnée.",
+                "videoUnauthorized": "Authentification requise pour charger la vidéo \"{fileName}\". Veuillez vous connecter et réessayer.",
+                "videoForbidden": "Accès refusé pour la vidéo \"{fileName}\" (HTTP {status}).",
+                "videoNotFound": "Le fichier vidéo \"{fileName}\" n’a pas été trouvé sur le serveur.",
+                "videoLoadError": "Impossible de charger la vidéo \"{fileName}\" (erreur : {status}).",
+                "emptyVideoResponse": "Le serveur a renvoyé une réponse vide pour la vidéo demandée."
             }
         },
         "zoneIdentify": {

@@ -628,7 +628,12 @@
             "notifications": {
                 "error": "Error",
                 "close": "Close",
-                "videoDurationError": "The requested video cannot be played because the video time ({time}) corresponding to the selected point exceeds the total video duration ({duration}) selected."
+                "videoDurationError": "The requested video cannot be played because the video time ({time}) corresponding to the selected point exceeds the total video duration ({duration}) selected.",
+                "videoUnauthorized": "Authentication required to load video \"{fileName}\". Please log in and try again.",
+                "videoForbidden": "Access denied for video \"{fileName}\" (HTTP {status}).",
+                "videoNotFound": "Video file \"{fileName}\" was not found on the server.",
+                "videoLoadError": "Could not load video \"{fileName}\" (error: {status}).",
+                "emptyVideoResponse": "The server returned an empty response for the requested video."
             }
         },
         "zoneIdentify": {

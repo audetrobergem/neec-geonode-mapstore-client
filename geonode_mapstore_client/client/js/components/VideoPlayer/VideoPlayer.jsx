@@ -1,64 +1,82 @@
-import React, { useRef, useEffect } from 'react';
+import React, { useRef, useEffect, useCallback } from 'react';
 import videojs from 'video.js';
 import 'video.js/dist/video-js.css';
-import * as hlsQualitySelector from 'videojs-hls-quality-selector';
+import 'videojs-hls-quality-selector';
 
-export const VideoPlayer = (props) => {
-    const videoRef = useRef(null);
+// ---------------------------------------------------------------------------
+// VideoPlayer
+// ---------------------------------------------------------------------------
+
+/**
+ * Thin wrapper around Video.js.
+ *
+ * Key behaviours:
+ * - The player is created once and reused when only the time changes.
+ * - The player is fully disposed and re-created when `videoInformations.videoUri`
+ *   changes (required for Video.js to correctly seek on load).
+ * - The player is always disposed on unmount.
+ *
+ * @param {object}   options          - Video.js constructor options
+ * @param {function} onReady          - called with the player instance once ready
+ * @param {object}   videoInformations - { videoUri, time, ... }
+ */
+const VideoPlayer = ({ options, onReady, videoInformations }) => {
+    const containerRef = useRef(null);
     const playerRef = useRef(null);
-    const { options, onReady, videoInformations } = props;
-
+    // Keep a ref to the latest onReady so the effect closure is always fresh
+    const onReadyRef = useRef(onReady);
     useEffect(() => {
+        onReadyRef.current = onReady;
+    });
 
-        // Make sure Video.js player is only initialized once
-        if (!playerRef.current) {
-            // The Video.js player needs to be _inside_ the component el for React 18 Strict Mode.
-            const videoElement = document.createElement("video-js");
+    /** Create a brand-new Video.js player inside the container div. */
+    const createPlayer = useCallback(() => {
+        if (!containerRef.current) return;
 
-            videoElement.classList.add('vjs-big-play-centered');
-            videoRef.current.appendChild(videoElement);
+        const videoElement = document.createElement('video-js');
+        videoElement.classList.add('vjs-big-play-centered');
+        containerRef.current.appendChild(videoElement);
 
-            const player = playerRef.current = videojs(videoElement, options, () => {
-                onReady && onReady(player);
-                player.hlsQualitySelector({ displayCurrentQuality: true });
-            });
+        const player = videojs(videoElement, options, () => {
+            player.hlsQualitySelector({ displayCurrentQuality: true });
+            onReadyRef.current?.(player);
+        });
 
+        playerRef.current = player;
+    }, [options]);
 
-        } else {
-            if (playerRef.current.src() !== videoInformations.videoUri) {
-                // We need to dispose of the current player when the video source changes,
-                // otherwise positioning at a given time won't work.
-                playerRef.current.dispose();
-                playerRef.current = null;
-
-                // We can recreate the player with the basic options. The new video source
-                // and time are adjusted in the onReady function.
-                const videoElement = document.createElement("video-js");
-                videoElement.classList.add('vjs-big-play-centered');
-                videoRef.current.appendChild(videoElement);
-                const player = playerRef.current = videojs(videoElement, options, () => {
-                    onReady && onReady(player);
-                    player.hlsQualitySelector({ displayCurrentQuality: true });
-                });
-            }
+    /** Dispose the current player if it exists and is not already disposed. */
+    const disposePlayer = useCallback(() => {
+        const player = playerRef.current;
+        if (player && !player.isDisposed()) {
+            player.dispose();
         }
-    }, [options, videoRef, videoInformations]);
+        playerRef.current = null;
+    }, []);
 
-    // Dispose the Video.js player when the functional component unmounts
+    // Initial mount: create the player
+    useEffect(() => {
+        createPlayer();
+        return disposePlayer;
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []);
+
+    // When the video URI changes: dispose and re-create so Video.js can seek
+    // correctly after 'loadedmetadata'.
     useEffect(() => {
         const player = playerRef.current;
+        if (!player) return;
 
-        return () => {
-            if (player && !player.isDisposed()) {
-                player.dispose();
-                playerRef.current = null;
-            }
-        };
-    }, [playerRef]);
+        const currentSrc = player.isDisposed() ? null : player.src();
+        if (currentSrc !== videoInformations?.videoUri) {
+            disposePlayer();
+            createPlayer();
+        }
+    }, [videoInformations?.videoUri, createPlayer, disposePlayer]);
 
     return (
         <div data-vjs-player>
-            <div ref={videoRef} />
+            <div ref={containerRef} />
         </div>
     );
 };
