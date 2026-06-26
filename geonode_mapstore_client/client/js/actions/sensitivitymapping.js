@@ -7,6 +7,8 @@
  */
 
 export const INIT_SENSITIVITY_MAPPING_PRINT = "SENSITIVITYMAPPING:INIT_SENSITIVITY_MAPPING_PRINT";
+export const SET_PRINT_APPLICATION_LIST = "SENSITIVITYMAPPING:SET_PRINT_APPLICATION_LIST";
+export const RESET_SENSITIVITY_MAPPING = "SENSITIVITYMAPPING:RESET_SENSITIVITY_MAPPING";
 export const SET_PRINT_APPLICATION = "SENSITIVITYMAPPING:SET_PRINT_APPLICATION";
 export const SET_INITIAL_MAP_PROPERTIES = "SENSITIVITYMAPPING:SET_INITIAL_MAP_PROPERTIES";
 export const SET_PRINT_CAPABILITIES = "SENSITIVITYMAPPING:SET_PRINT_CAPABILITIES";
@@ -15,6 +17,7 @@ export const UPDATE_PRINT_PROPERTY = "SENSITIVITYMAPPING:UPDATE_PRINT_PROPERTY";
 export const GET_COORDINATES_SYSTEMS = "SENSITIVITYMAPPING:GET_COORDINATES_SYSTEMS";
 export const LOAD_PRINT_LAYOUT = "SENSITIVITYMAPPING:LOAD_PRINT_LAYOUT";
 export const SET_PRINT_EXTENT = "SENSITIVITYMAPPING:SET_PRINT_EXTENT";
+export const SET_PRINT_BBOX = "SENSITIVITYMAPPING:SET_PRINT_BBOX";
 export const CREATE_PRINT_CONFIG = "SENSITIVITYMAPPING:CREATE_PRINT_CONFIG";
 export const SEND_PRINT_REQUEST = "SENSITIVITYMAPPING:SEND_PRINT_REQUEST";
 export const DOWNLOAD_MAP = "SENSITIVITYMAPPING:DOWNLOAD_MAP";
@@ -33,6 +36,24 @@ export const CHANGE_PRINT_STATUS = "SENSITIVITYMAPPING:CHANGE_PRINT_STATUS";
 export const initSensitivityMappingPrint = (mapfishPrintApps) => ({
     type: INIT_SENSITIVITY_MAPPING_PRINT,
     mapfishPrintApps
+});
+
+/**
+ * Set the loaded print applications list and error status into the store.
+ * @param {array} printApplications
+ * @param {boolean} hasError
+ */
+export const setPrintApplicationList = (printApplications, hasError = false) => ({
+    type: SET_PRINT_APPLICATION_LIST,
+    printApplications,
+    hasError
+});
+
+/**
+ * Reset sensitivity mapping state while preserving loaded applications.
+ */
+export const resetSensitivityMapping = () => ({
+    type: RESET_SENSITIVITY_MAPPING
 });
 
 /**
@@ -117,6 +138,15 @@ export const setPrintExtent = () => ({
 });
 
 /**
+ * Store the computed print bbox into the state.
+ * @param {array} bbox
+ */
+export const setPrintBbox = (bbox) => ({
+    type: SET_PRINT_BBOX,
+    bbox
+});
+
+/**
  * Create the print configuration to send to mapfish print.
  */
 export const createPrintConfig = () => ({
@@ -134,7 +164,7 @@ export const sendPrintRequest = (printConfig) => ({
 
 /**
  * Download the map from the download URL received from the print request
- * @param {object} printConfig
+ * @param {string} downloadUrl
  */
 export const downloadMap = (downloadUrl) => ({
     type: DOWNLOAD_MAP,
@@ -154,11 +184,13 @@ export const getPrintStatus = (printStatus, statusUrl) => ({
 
 /**
  * Add the selected dataset style to the selected layer in the Sensitivity Mapping state.
- * @param {array} layer
+ * @param {string} layerName
+ * @param {string} styleData
  */
-export const loadSelectedStyle = (layer) => ({
+export const loadSelectedStyle = (layerName, styleData) => ({
     type: LOAD_SELECTED_STYLE,
-    layer
+    layerName,
+    styleData
 });
 
 /**

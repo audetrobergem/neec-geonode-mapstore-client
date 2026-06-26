@@ -24,15 +24,39 @@ import {
     INIT_SENSITIVITY_MAPPING_PRINT,
     START_MANAGEMENT_COMMAND,
     PRINT_ERROR,
-    CHANGE_PRINT_STATUS
+    CHANGE_PRINT_STATUS,
+    SET_PRINT_APPLICATION_LIST,
+    SET_PRINT_BBOX,
+    RESET_SENSITIVITY_MAPPING
 } from "@js/actions/sensitivitymapping";
 
-export const sensitivityMapping = (state = {}, action) => {
+const DEFAULT_STATE = {
+    printApplications: [],
+    sensitivityMappingLoadingError: false,
+    loading: false,
+    error: false,
+    downloadUrl: undefined
+};
+
+export const sensitivityMapping = (state = DEFAULT_STATE, action) => {
     switch (action.type) {
     case INIT_SENSITIVITY_MAPPING_PRINT: {
         return {
             ...state,
             mapfishPrintApps: action.mapfishPrintApps
+        };
+    }
+    case SET_PRINT_APPLICATION_LIST: {
+        return {
+            ...state,
+            printApplications: action.printApplications,
+            sensitivityMappingLoadingError: action.hasError
+        };
+    }
+    case RESET_SENSITIVITY_MAPPING: {
+        return {
+            ...DEFAULT_STATE,
+            printApplications: state.printApplications
         };
     }
     case CHANGE_PRINT_STATUS: {
@@ -45,7 +69,9 @@ export const sensitivityMapping = (state = {}, action) => {
     case SET_PRINT_APPLICATION: {
         return {
             ...state,
-            selectedPrintApplication: action.selectedPrintApplication
+            selectedPrintApplication: action.selectedPrintApplication,
+            downloadUrl: undefined,
+            error: false
         };
     }
     case SET_INITIAL_MAP_PROPERTIES: {
@@ -69,7 +95,10 @@ export const sensitivityMapping = (state = {}, action) => {
     case UPDATE_PRINT_PROPERTY: {
         return {
             ...state,
-            printProperty: action.printProperty
+            printProperties: {
+                ...state.printProperties,
+                [action.printProperty.name]: action.printProperty.value
+            }
         };
     }
     case GET_COORDINATES_SYSTEMS: {
@@ -90,21 +119,34 @@ export const sensitivityMapping = (state = {}, action) => {
             printExtent: action.printExtent
         };
     }
+    case SET_PRINT_BBOX: {
+        return {
+            ...state,
+            printProperties: {
+                ...state.printProperties,
+                bbox: action.bbox
+            }
+        };
+    }
     case CREATE_PRINT_CONFIG: {
         return {
-            ...state
+            ...state,
+            error: false
         };
     }
     case SEND_PRINT_REQUEST: {
         return {
             ...state,
-            printConfig: action.printConfig
+            printConfig: action.printConfig,
+            loading: true,
+            downloadUrl: undefined
         };
     }
     case DOWNLOAD_MAP: {
         return {
             ...state,
-            downloadUrl: action.downloadUrl
+            downloadUrl: action.downloadUrl,
+            loading: false
         };
     }
     case GET_PRINT_STATUS: {
@@ -136,10 +178,8 @@ export const sensitivityMapping = (state = {}, action) => {
     case PRINT_ERROR: {
         return {
             ...state,
-            uid: action.uid,
-            title: action.title,
-            message: action.message,
-            values: action.values
+            loading: false,
+            error: true
         };
     }
     default:
