@@ -612,7 +612,7 @@ export const selectMediaFeatureEpic = (action$, store) =>
                 featureProperties = { geomType: 'line' };
 
             } else if (featureGeometry.type === 'Point') {
-                let x, y;
+                let x; let y;
                 if (needsReprojection) {
                     const projectedPoint = reproject(
                         featureCoordinates,

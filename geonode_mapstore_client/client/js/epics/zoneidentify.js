@@ -119,8 +119,8 @@ const resolveFeatureTitle = (properties, lang, featureId) => {
     return (
         properties[labelKey]   ||
         properties[nameKey]    ||
-        properties['label_en'] ||
-        properties['name_en']  ||
+        properties.label_en ||
+        properties.name_en  ||
         featureId
     );
 };

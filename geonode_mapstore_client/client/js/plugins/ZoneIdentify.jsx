@@ -137,7 +137,7 @@ function TreeNode({
 
     const nodeTitle =
         node.title && typeof node.title === 'object'
-            ? node.title[language] ?? node.title['en'] ?? ''
+            ? node.title[language] ?? node.title.en ?? ''
             : node.title ?? '';
 
     return (
@@ -255,7 +255,7 @@ function ZoneIdentify({
         layerName: layer.name,
         layerTitle:
             typeof layer.title === 'object'
-                ? layer.title[lang] ?? layer.title['en'] ?? layer.name
+                ? layer.title[lang] ?? layer.title.en ?? layer.name
                 : layer.title ?? layer.name
     }));
 

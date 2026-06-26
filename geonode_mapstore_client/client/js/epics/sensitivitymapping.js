@@ -79,7 +79,6 @@ import {
 import {
     enabledSelector,
     mapfishConfigSelector,
-    mapfishUrlSelector,
     sensitivityMappingLayersSelector,
     sensitivityMappingPrintLayoutSelector,
     sensitivityMappingProjectionsSelector,

@@ -58,7 +58,6 @@ const VideoPlayer = ({ options, onReady, videoInformations }) => {
     useEffect(() => {
         createPlayer();
         return disposePlayer;
-        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
     // When the video URI changes: dispose and re-create so Video.js can seek

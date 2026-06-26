@@ -88,7 +88,7 @@ const buildAisWmsLayer = ({ geoserverUrl, accessToken }) => ({
     singleTile: true,
     params: { access_token: accessToken },
     title: {
-        default: 'RESTRICTED Marine traffic (AIS)',
+        "default": 'RESTRICTED Marine traffic (AIS)',
         en: 'RESTRICTED Marine traffic (AIS)',
         fr: 'Traffic maritime (SIA) RESTREINT'
     },
