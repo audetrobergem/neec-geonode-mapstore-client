@@ -1,4 +1,4 @@
-import React, { useRef, useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import PropTypes from 'prop-types';
 import { createPlugin } from '@mapstore/framework/utils/PluginsUtils';
 import { connect } from 'react-redux';
@@ -9,29 +9,44 @@ import GNButton from '@mapstore/framework/components/layout/Button';
 import { createSelector } from 'reselect';
 import Message from '@mapstore/framework/components/I18N/Message';
 import { setControlProperty } from '@mapstore/framework/actions/controls';
-import { mapLayoutValuesSelector } from '@mapstore/framework/selectors/maplayout';
 import ZoneIdentifyEpics from '@js/epics/zoneidentify';
 import zoneIdentify from '@js/reducers/zoneidentify';
 import { changeDrawingStatus } from '@mapstore/framework/actions/draw';
-import { selectLayer, highlightSelectedFeature, zoomToSelectedFeature, addLayerToMap } from '@js/actions/zoneidentify';
+import {
+    selectLayer,
+    highlightSelectedFeature,
+    zoomToSelectedFeature,
+    addLayerToMap
+} from '@js/actions/zoneidentify';
 import Spinner from '@mapstore/framework/components/layout/Spinner';
 import { getMessageById } from '@mapstore/framework/utils/LocaleUtils';
+import {
+    enabledSelector,
+    zoneIdentifyStyleSelector,
+    zoneIdentifyFormattedFeaturesSelector,
+    zoneIdentifyLoadingSelector,
+    zoneIdentifyCurrentLanguageSelector,
+    zoneIdentifyMessagesSelector,
+    zoneIdentifyVisibleWmsLayersSelector
+} from '@js/selectors/zoneidentify';
 
 const Button = tooltip(GNButton);
 
-function DrawingButton({
-    extent,
-    selectedFeatures,
-    onchangeDrawingStatus,
-    onAddLayerToMap
-}) {
+// ---------------------------------------------------------------------------
+// DrawingButton
+// ---------------------------------------------------------------------------
 
+function DrawingButton({ extent, selectedFeatures, onChangeDrawingStatus, onAddLayerToMap }) {
     return (
         <div className="zone-identify-menu-buttons">
             <Button
                 className="btn-primary"
                 tooltipId={<Message msgId="zoneIdentify.drawPolygon" />}
-                onClick={() => {onchangeDrawingStatus("start", "BBOX", "zoneIdentify", [], { stopAfterDrawing: true });}}
+                onClick={() =>
+                    onChangeDrawingStatus("start", "BBOX", "zoneIdentify", [], {
+                        stopAfterDrawing: true
+                    })
+                }
             >
                 <Glyphicon glyph="polygon-plus" />
             </Button>
@@ -39,15 +54,17 @@ function DrawingButton({
                 className="btn-primary"
                 tooltipId={<Message msgId="zoneIdentify.removePolygon" />}
                 disabled={selectedFeatures === null}
-                onClick={() => {onchangeDrawingStatus("clean", "", "zoneIdentify", [], {});}}
+                onClick={() =>
+                    onChangeDrawingStatus("clean", "", "zoneIdentify", [], {})
+                }
             >
                 <Glyphicon glyph="polygon-trash" />
             </Button>
             <Button
                 className="btn-primary"
                 tooltipId={<Message msgId="zoneIdentify.addLayer" />}
-                disabled={selectedFeatures === null}
-                onClick={() => {onAddLayerToMap(extent);}}
+                disabled={selectedFeatures === null || !extent}
+                onClick={() => onAddLayerToMap(extent)}
             >
                 <Glyphicon glyph="add-layer" />
             </Button>
@@ -55,92 +72,28 @@ function DrawingButton({
     );
 }
 
+DrawingButton.propTypes = {
+    extent: PropTypes.object,
+    selectedFeatures: PropTypes.array,
+    onChangeDrawingStatus: PropTypes.func,
+    onAddLayerToMap: PropTypes.func
+};
+
 const ConnectedDrawingButton = connect(
-    createSelector([
-        state => state?.draw?.features[0],
-        state => state?.zoneIdentify?.selectedFeatures
-    ], (extent, selectedFeatures) => ({
-        extent,
-        selectedFeatures
-    })),
+    createSelector(
+        (state) => state?.draw?.features?.[0],
+        (state) => state?.zoneIdentify?.selectedFeatures,
+        (extent, selectedFeatures) => ({ extent, selectedFeatures })
+    ),
     {
-        onchangeDrawingStatus: changeDrawingStatus,
+        onChangeDrawingStatus: changeDrawingStatus,
         onAddLayerToMap: addLayerToMap
     }
-)((DrawingButton));
+)(DrawingButton);
 
-
-const TreeNode = ({
-    node,
-    language,
-    onHighlightSelectedFeature,
-    onZoomToSelectedFeature
-}) => {
-    const [isOpen, setIsOpen] = useState(false);
-    const toggleNode = () => setIsOpen(!isOpen);
-
-    let nodeTitle;
-    if (node.title) {
-        if (typeof node.title === "string") {
-            nodeTitle = node.title;
-        } else {
-            nodeTitle = node.title[language];
-        }
-    }
-
-    return (
-        <div className="zone-identify-tree-node">
-            <Button
-                onClick={toggleNode}
-                className="zone-identify-toggle-icon"
-                tooltipId={<Message msgId="zoneIdentify.expandFeature" />}
-            >
-                <Glyphicon glyph={isOpen ? "bottom" : 'next'} />
-            </Button>
-            <span className="zone-identify-layer-title">{nodeTitle}</span>
-            {!node.children &&
-                <div className="zone-identify-navigation-buttons">
-                    <Button
-                        onClick={() => onHighlightSelectedFeature(node.geometry)}
-                        className="zone-identify-navigation-icon"
-                        tooltipId={<Message msgId="zoneIdentify.highlightFeature" />}
-                    >
-                        <Glyphicon glyph="map-filter" />
-                    </Button>
-                    <Button
-                        onClick={() => onZoomToSelectedFeature(node.geometry)}
-                        className="zone-identify-navigation-icon"
-                        tooltipId={<Message msgId="zoneIdentify.zoomToFeature" />}
-                    >
-                        <Glyphicon glyph="zoom-to" />
-                    </Button>
-                </div>
-            }
-            {node.children && isOpen && <TreeView data={node?.children} />}
-            {!node.children && isOpen && <AttributeTable data={node} />}
-        </div>
-    );
-};
-
-const ConnectedTreeNode = connect(
-    createSelector([
-    ], () => ({
-    })),
-    {
-        onHighlightSelectedFeature: highlightSelectedFeature,
-        onZoomToSelectedFeature: zoomToSelectedFeature
-    }
-)((TreeNode));
-
-const TreeView = ({ data, language }) => {
-    return (
-        <div className="zone-identify-tree-view">
-            {data.map((node) => (
-                <ConnectedTreeNode key={node.id} node={node} language={language} />
-            ))}
-        </div>
-    );
-};
+// ---------------------------------------------------------------------------
+// AttributeTable
+// ---------------------------------------------------------------------------
 
 const AttributeTable = ({ data }) => {
     const rows = Object.entries(data.properties);
@@ -148,32 +101,142 @@ const AttributeTable = ({ data }) => {
         <div className="zone-identify-attribute-table">
             <div className="zone-identify-info-table">
                 <div className="zone-identify-info-fields">
-                    {
-                        rows.map((row) => {
-                            return (
-                                <div className="zone-identify-info-row">
-                                    <div className="zone-identify-info-label">{row[0]}</div>
-                                    <div className="zone-identify-info-value">{row[1]}</div>
-                                </div>
-                            );
-                        })
-                    }
+                    {rows.map(([key, value]) => (
+                        <div key={key} className="zone-identify-info-row">
+                            <div className="zone-identify-info-label">{key}</div>
+                            <div className="zone-identify-info-value">
+                                {value !== null && value !== undefined
+                                    ? String(value)
+                                    : '—'}
+                            </div>
+                        </div>
+                    ))}
                 </div>
             </div>
         </div>
     );
 };
 
-/**
-* @module ZoneIdentify
-*/
+AttributeTable.propTypes = {
+    data: PropTypes.shape({
+        properties: PropTypes.object.isRequired
+    }).isRequired
+};
 
-/**
- * render a panel for detail information about a resource inside the viewer pages
- * @name ZoneIdentify
- * @prop {array} regions list of regions where shoreline videos are available
- * @example
- */
+// ---------------------------------------------------------------------------
+// TreeNode
+// ---------------------------------------------------------------------------
+
+function TreeNode({
+    node,
+    language,
+    onHighlightSelectedFeature,
+    onZoomToSelectedFeature
+}) {
+    const [isOpen, setIsOpen] = useState(false);
+
+    const nodeTitle =
+        node.title && typeof node.title === 'object'
+            ? node.title[language] ?? node.title['en'] ?? ''
+            : node.title ?? '';
+
+    return (
+        <div className="zone-identify-tree-node">
+            {/* Title row — always rendered, always a single line */}
+            <div className="zone-identify-tree-node-header">
+                <Button
+                    onClick={() => setIsOpen((prev) => !prev)}
+                    className="zone-identify-toggle-icon"
+                    tooltipId={<Message msgId="zoneIdentify.expandFeature" />}
+                >
+                    <Glyphicon glyph={isOpen ? "bottom" : "next"} />
+                </Button>
+
+                <span className="zone-identify-layer-title">{nodeTitle}</span>
+
+                {/* Navigation buttons only on leaf nodes (features, not layer groups) */}
+                {!node.children && (
+                    <div className="zone-identify-navigation-buttons">
+                        <Button
+                            onClick={() => onHighlightSelectedFeature(node.geometry)}
+                            className="zone-identify-navigation-icon"
+                            tooltipId={<Message msgId="zoneIdentify.highlightFeature" />}
+                        >
+                            <Glyphicon glyph="map-filter" />
+                        </Button>
+                        <Button
+                            onClick={() => onZoomToSelectedFeature(node.geometry)}
+                            className="zone-identify-navigation-icon"
+                            tooltipId={<Message msgId="zoneIdentify.zoomToFeature" />}
+                        >
+                            <Glyphicon glyph="zoom-to" />
+                        </Button>
+                    </div>
+                )}
+            </div>
+
+            {/* Expanded content — rendered below the header row, never affects it */}
+            {isOpen && (
+                <div className="zone-identify-tree-node-content">
+                    {node.children
+                        ? <TreeView data={node.children} language={language} />
+                        : <AttributeTable data={node} />
+                    }
+                </div>
+            )}
+        </div>
+    );
+}
+
+TreeNode.propTypes = {
+    node: PropTypes.shape({
+        id: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
+        title: PropTypes.oneOfType([PropTypes.string, PropTypes.object]),
+        geometry: PropTypes.object,
+        properties: PropTypes.object,
+        children: PropTypes.array
+    }).isRequired,
+    language: PropTypes.string,
+    onHighlightSelectedFeature: PropTypes.func,
+    onZoomToSelectedFeature: PropTypes.func
+};
+
+TreeNode.defaultProps = {
+    language: 'en',
+    onHighlightSelectedFeature: () => {},
+    onZoomToSelectedFeature: () => {}
+};
+
+// Connect only the action dispatchers — no state mapping needed here
+const ConnectedTreeNode = connect(null, {
+    onHighlightSelectedFeature: highlightSelectedFeature,
+    onZoomToSelectedFeature: zoomToSelectedFeature
+})(TreeNode);
+
+// ---------------------------------------------------------------------------
+// TreeView
+// ---------------------------------------------------------------------------
+
+const TreeView = ({ data, language }) => (
+    <div className="zone-identify-tree-view">
+        {data.map((node) => (
+            <ConnectedTreeNode key={node.id} node={node} language={language} />
+        ))}
+    </div>
+);
+
+TreeView.propTypes = {
+    data: PropTypes.array.isRequired,
+    language: PropTypes.string
+};
+
+TreeView.defaultProps = {
+    language: 'en'
+};
+
+// ---------------------------------------------------------------------------
+// ZoneIdentify (main panel)
+// ---------------------------------------------------------------------------
 
 function ZoneIdentify({
     style,
@@ -185,76 +248,61 @@ function ZoneIdentify({
     onClose,
     onSelectLayer
 }) {
-    const isMounted = useRef(false);
+    const lang = (currentLanguage ?? 'en').slice(0, 2);
 
-    useEffect(() => {
-        isMounted.current = true;
-        return () => {
-            isMounted.current = false;
-        };
-    }, []);
+    // Build dropdown items: first entry is always "all visible layers"
+    const visibleLayerItems = layers.map((layer) => ({
+        layerName: layer.name,
+        layerTitle:
+            typeof layer.title === 'object'
+                ? layer.title[lang] ?? layer.title['en'] ?? layer.name
+                : layer.title ?? layer.name
+    }));
 
-    const layerList = layers.filter((layer) =>
-        layer.visibility === true &&
-        layer.type === "wms" &&
-        layer.group !== "background" &&
-        layer.name.includes("neec_geodb") &&
-        layer.loadingError !== "Error"
-    );
     const dropdownItems = [
         {
             layerName: "visible_layers",
             layerTitle: getMessageById(messages, "zoneIdentify.visibleLayers")
-        }
+        },
+        ...visibleLayerItems
     ];
-    layerList.forEach((layer) => {
-        let layerTitle;
-        if (typeof layer.title === "string") {
-            layerTitle = layer.title;
-        } else {
-            layerTitle = layer.title[currentLanguage.slice(0, 2)];
-        }
-        dropdownItems.push({
-            layerName: layer.name,
-            layerTitle: layerTitle
-        });
-    });
 
     return (
-        <div
-            className="zone-identify"
-            style={style}
-        >
+        <div className="zone-identify" style={style}>
             <div className="zone-identify-head">
                 <div className="zone-identify-title">
                     <Message msgId="zoneIdentify.title" />
                 </div>
-                <Button className="ms-close square-button-md _border-transparent btn btn-default" onClick={() => onClose()}>
+                <Button
+                    className="ms-close square-button-md _border-transparent btn btn-default"
+                    onClick={onClose}
+                >
                     <Glyphicon glyph="1-close" />
                 </Button>
             </div>
+
             <div className="zone-identify-body">
                 <div className="zone-identify-menu">
                     <DropdownList
                         className="zone-identify-menu-dropdown"
-                        defaultValue="visible_layers"
-                        onChange={(value) => {
-                            onSelectLayer(value.layerName);
-                        }}
+                        defaultValue={dropdownItems[0]}
+                        onChange={(value) => onSelectLayer(value.layerName)}
                         data={dropdownItems}
                         textField="layerTitle"
                         valueField="layerName"
                     />
                     <ConnectedDrawingButton />
                 </div>
+
                 <div className="zone-identify-body-content">
-                    {loading && <div
-                        className="zone-identify-spinner-container">
-                        <Spinner />
-                    </div>}
-                    {formattedFeatures &&
-                        <TreeView data={formattedFeatures} language={currentLanguage.slice(0, 2)} />
-                    }
+                    {loading && (
+                        <div className="zone-identify-spinner-container">
+                            <Spinner />
+                        </div>
+                    )}
+                    {formattedFeatures && (
+                        <TreeView data={formattedFeatures} language={lang} />
+                    )}
                 </div>
             </div>
         </div>
@@ -262,41 +310,71 @@ function ZoneIdentify({
 }
 
 ZoneIdentify.propTypes = {
+    style: PropTypes.object,
+    formattedFeatures: PropTypes.array,
+    layers: PropTypes.array,
+    loading: PropTypes.bool,
+    currentLanguage: PropTypes.string,
+    messages: PropTypes.object,
     onClose: PropTypes.func,
     onSelectLayer: PropTypes.func
 };
 
 ZoneIdentify.defaultProps = {
-    onClose: () => { },
-    onSelectLayer: () => { }
+    style: {},
+    formattedFeatures: null,
+    layers: [],
+    loading: false,
+    currentLanguage: 'en',
+    messages: {},
+    onClose: () => {},
+    onSelectLayer: () => {}
 };
+
+// ---------------------------------------------------------------------------
+// ZoneIdentifyPlugin (gate component)
+// ---------------------------------------------------------------------------
 
 function ZoneIdentifyPlugin({ enabled, ...props }) {
     return enabled ? <ZoneIdentify {...props} /> : null;
 }
 
+ZoneIdentifyPlugin.propTypes = {
+    enabled: PropTypes.bool
+};
+
+ZoneIdentifyPlugin.defaultProps = {
+    enabled: false
+};
+
 const ConnectedZoneIdentifyPlugin = connect(
-    createSelector([
-        state => mapLayoutValuesSelector(state, { height: true }),
-        state => state?.controls?.zoneIdentify?.enabled,
-        state => state?.zoneIdentify?.formattedFeatures,
-        state => state?.layers?.flat,
-        state => state?.zoneIdentify?.loading || false,
-        state => state?.locale?.current,
-        state => state?.locale?.messages
-    ], (style, enabled, formattedFeatures, layers, loading, currentLanguage, messages) => ({
-        style,
-        enabled,
-        formattedFeatures,
-        layers,
-        loading,
-        currentLanguage,
-        messages
-    })), {
+    createSelector(
+        zoneIdentifyStyleSelector,
+        enabledSelector,
+        zoneIdentifyFormattedFeaturesSelector,
+        zoneIdentifyVisibleWmsLayersSelector,
+        zoneIdentifyLoadingSelector,
+        zoneIdentifyCurrentLanguageSelector,
+        zoneIdentifyMessagesSelector,
+        (style, enabled, formattedFeatures, layers, loading, currentLanguage, messages) => ({
+            style,
+            enabled,
+            formattedFeatures,
+            layers,
+            loading,
+            currentLanguage,
+            messages
+        })
+    ),
+    {
         onClose: setControlProperty.bind(null, 'zoneIdentify', 'enabled', false),
         onSelectLayer: selectLayer
     }
 )(ZoneIdentifyPlugin);
+
+// ---------------------------------------------------------------------------
+// Plugin registration
+// ---------------------------------------------------------------------------
 
 export default createPlugin('ZoneIdentify', {
     component: ConnectedZoneIdentifyPlugin,

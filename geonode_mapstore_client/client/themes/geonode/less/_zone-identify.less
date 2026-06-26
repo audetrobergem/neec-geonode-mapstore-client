@@ -116,12 +116,30 @@
         background-color: transparent;
         border: transparent;
     }
-    .zone-identify-layer-title {
-        width: 450px;
-        display: inline-block;
+    .zone-identify-tree-node-header {
+        display: flex;
+        flex-direction: row;
+        align-items: center;
+        flex-wrap: nowrap;
+        width: 100%;
     }
+    .zone-identify-layer-title {
+        flex: 1;          /* takes all remaining space, pushing buttons to the right */
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
     .zone-identify-navigation-buttons {
-        display: inline-block;
+        display: flex;
+        flex-direction: row;
+        align-items: center;
+        flex-shrink: 0;   /* prevent buttons from being squeezed */
+        margin-left: auto;
+    }
+    .zone-identify-tree-node-content {
+        /* indent the expanded content under the title */
+        padding-left: 1.5rem;
     }
     .zone-identify-navigation-icon {
         background-color: transparent;
