@@ -134,8 +134,7 @@ const buildVideoStyle = (geonodeUrl, cog) => ({
                     {
                         kind: 'Icon',
                         size: 32,
-                        // image: `${geonodeUrl}static/mapstore/symbols/video-position.png`,
-                        image: `https://localhost:8081/static/mapstore/symbols/video-position.png`,
+                        image: `${geonodeUrl}static/mapstore/symbols/video-position.png`,
                         ...(cog !== undefined && cog !== null ? { rotate: cog } : {})
                     }
                 ]
