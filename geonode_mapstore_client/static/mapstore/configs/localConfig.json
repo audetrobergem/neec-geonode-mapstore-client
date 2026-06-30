@@ -606,7 +606,7 @@
                                 },
                                 {
                                     "type": "link",
-                                    "href": "{'../data-management/datasets/' + (state('gnResourceData') || {}).store + ':' + (state('gnResourceData') || {}).alternate + '/edit_fields'}",
+                                    "href": "{'../dataset/' + (state('gnResourceData') || {}).store + ':' + (state('gnResourceData') || {}).alternate + '/edit-fields'}",
                                     "labelId": "gnviewer.editFields",
                                     "disableIf": "{!state('user').info.groups.includes('geomatics-and-technology') && !context.resourceHasPermission(state('gnResourceData'), 'change_dataset_data')}"
                                 },
