@@ -27,7 +27,10 @@ import {
     CHANGE_PRINT_STATUS,
     SET_PRINT_APPLICATION_LIST,
     SET_PRINT_BBOX,
-    RESET_SENSITIVITY_MAPPING
+    RESET_SENSITIVITY_MAPPING,
+    ADD_PROGRESS_MESSAGE,
+    CLEAR_PROGRESS_MESSAGES,
+    DISMISS_PROGRESS_CARD
 } from "@js/actions/sensitivitymapping";
 
 const DEFAULT_STATE = {
@@ -35,8 +38,19 @@ const DEFAULT_STATE = {
     sensitivityMappingLoadingError: false,
     loading: false,
     error: false,
-    downloadUrl: undefined
+    downloadUrl: undefined,
+    // Progress card
+    progressCardVisible: false,
+    progressMessages: [],
+    progressCurrentStep: 0,
+    progressTotalSteps: 0
 };
+
+// ---------------------------------------------------------------------------
+// Total number of steps in the print workflow so the progress bar can be
+// rendered accurately. Update this value whenever new steps are added.
+// ---------------------------------------------------------------------------
+const TOTAL_PRINT_STEPS = 5;
 
 export const sensitivityMapping = (state = DEFAULT_STATE, action) => {
     switch (action.type) {
@@ -131,7 +145,12 @@ export const sensitivityMapping = (state = DEFAULT_STATE, action) => {
     case CREATE_PRINT_CONFIG: {
         return {
             ...state,
-            error: false
+            error: false,
+            // Show the card and reset progress state when a new print starts
+            progressCardVisible: true,
+            progressMessages: [],
+            progressCurrentStep: 0,
+            progressTotalSteps: TOTAL_PRINT_STEPS
         };
     }
     case SEND_PRINT_REQUEST: {
@@ -182,6 +201,31 @@ export const sensitivityMapping = (state = DEFAULT_STATE, action) => {
             error: true
         };
     }
+
+    // ---- Progress card ----
+    case ADD_PROGRESS_MESSAGE: {
+        return {
+            ...state,
+            progressMessages: [...state.progressMessages, action.message],
+            progressCurrentStep: state.progressCurrentStep + 1
+        };
+    }
+    case CLEAR_PROGRESS_MESSAGES: {
+        return {
+            ...state,
+            progressMessages: [],
+            progressCurrentStep: 0,
+            progressTotalSteps: 0,
+            progressCardVisible: false
+        };
+    }
+    case DISMISS_PROGRESS_CARD: {
+        return {
+            ...state,
+            progressCardVisible: false
+        };
+    }
+
     default:
         return state;
     }

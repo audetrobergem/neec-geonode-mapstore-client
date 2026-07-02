@@ -665,6 +665,21 @@
                 "loadPrintLayoutError": "The selected print template ({printLayoutName}) is not in the list of available templates. The printing tool may not have loaded completely when the map was opened. Please refresh the page and try again. Contact the NEEC GeoPortal technical team if the problem persists.",
                 "initSensitivityMappingPrintError": "The mapfish print application does not seem to be available at the moment. Please wait a few moments, then refresh the page. Please contact the NEEC GeoPortal technical team if the problem persists.\nMessage from the print server: {message}"
             },
+            "progressCard": {
+                "title": "Print progress",
+                "processing": "Processing…",
+                "download": "Download",
+                "error": "An error occurred. Please close and try again.",
+                "step": {
+                "layersExtracted": "Step 1: Visible layers extracted",
+                "layerWarning": "Warning: some layers could not be included ({layers})",
+                "sendingRequest": "Step 2: Sending print request",
+                "waitingForMap": "Step 3: Waiting for map generation",
+                "generatingReport": "Step 2: Generating sensitivity report",
+                "commandStarted": "Step 3: Report generation started",
+                "ready": "Map is ready — click Download to save your file"
+                }
+            },
             "mapTitle": "Map Title",
             "mapLanguage": "Language",
             "mapFormat": "Format",

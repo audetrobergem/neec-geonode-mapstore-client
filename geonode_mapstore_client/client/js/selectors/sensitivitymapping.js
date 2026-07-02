@@ -62,3 +62,15 @@ export const mapfishUrlSelector = createSelector(
 
 export const printExtentAdditionalLayerSelector = state =>
     state?.additionallayers?.find(l => l.id === "sensitivity-mapping-print-extent");
+
+export const progressCardVisibleSelector = state =>
+    state?.sensitivityMapping?.progressCardVisible ?? false;
+
+export const progressMessagesSelector = state =>
+    state?.sensitivityMapping?.progressMessages ?? [];
+
+export const progressCurrentStepSelector = state =>
+    state?.sensitivityMapping?.progressCurrentStep ?? 0;
+
+export const progressTotalStepsSelector = state =>
+    state?.sensitivityMapping?.progressTotalSteps ?? 0;

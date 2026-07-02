@@ -24,22 +24,24 @@ import tooltip from '@mapstore/framework/components/misc/enhancers/tooltip';
 import {
     setPrintApplication,
     updatePrintProperty,
-    createPrintConfig
+    createPrintConfig,
+    dismissProgressCard
 } from '@js/actions/sensitivitymapping';
 import { getMessageById } from '@mapstore/framework/utils/LocaleUtils';
 import {
     enabledSelector,
-    sensitivityMappingStateSelector
+    sensitivityMappingStateSelector,
+    progressCardVisibleSelector,
+    progressMessagesSelector,
+    progressCurrentStepSelector,
+    progressTotalStepsSelector
 } from '@js/selectors/sensitivitymapping';
+import SensitivityMappingProgressCard from '@js/components/SensitivityMapping/SensitivityMappingProgressCard';
 
 const Button = tooltip(GNButton);
 
 /** @module SensitivityMapping */
 
-/**
- * NEEC GeoPortal printing tool.
- * (See plugin JSDoc in the original file for full prop documentation.)
- */
 function SensitivityMapping({
     style,
     userGroups,
@@ -50,11 +52,18 @@ function SensitivityMapping({
     onClose,
     onSelectPrintApplication,
     onUpdatePrintProperty,
-    onCreatePrintConfig
+    onCreatePrintConfig,
+    // Progress card props
+    progressCardVisible,
+    progressMessages,
+    progressCurrentStep,
+    progressTotalSteps,
+    onDismissProgressCard
 }) {
     const {
         printApplications,
         loading,
+        error,
         downloadUrl,
         selectedPrintCapabilities,
         printProperties,
@@ -76,294 +85,325 @@ function SensitivityMapping({
         printAppProperties.find(p => p.name === name)?.options ?? [];
 
     return (
-        <div className="sensitivity-mapping" style={style}>
-            <div className="sensitivity-mapping-head">
-                <div className="sensitivity-mapping-title">
-                    <Message msgId="sensitivitymapping.sensitivityMappingTitle" />
-                </div>
-                <Button
-                    className="ms-close square-button-md _border-transparent btn btn-default"
-                    onClick={onClose}
-                >
-                    <Glyphicon glyph="1-close" />
-                </Button>
-            </div>
+        <>
+            {/* ---- Floating progress card ---- */}
+            <SensitivityMappingProgressCard
+                visible={progressCardVisible}
+                loading={loading}
+                error={error}
+                downloadUrl={downloadUrl}
+                currentStep={progressCurrentStep}
+                totalSteps={progressTotalSteps}
+                messages={progressMessages}
+                onDismiss={onDismissProgressCard}
+            />
 
-            {printApplications && (
-                <div className="sensitivity-mapping-body">
-                    {loading && (
-                        <div className="sensitivity-mapping-spinner-container">
-                            <Spinner />
-                        </div>
-                    )}
-
-                    <div className="sensitivity-mapping-body-content">
-                        <DropdownList
-                            className="sensitivity-mapping-dropdown"
-                            defaultValue={getMessageById(messages, defaultApplication)}
-                            onChange={onSelectPrintApplication}
-                            data={localizedPrintApplications}
-                            textField="labelId"
-                            valueField="name"
-                        />
+            {/* ---- Right panel ---- */}
+            <div className="sensitivity-mapping" style={style}>
+                <div className="sensitivity-mapping-head">
+                    <div className="sensitivity-mapping-title">
+                        <Message msgId="sensitivitymapping.sensitivityMappingTitle" />
                     </div>
+                    <Button
+                        className="ms-close square-button-md _border-transparent btn btn-default"
+                        onClick={onClose}
+                    >
+                        <Glyphicon glyph="1-close" />
+                    </Button>
+                </div>
 
-                    {selectedPrintCapabilities && printProperties && (
+                {printApplications && (
+                    <div className="sensitivity-mapping-body">
+                        {loading && (
+                            <div className="sensitivity-mapping-spinner-container">
+                                <Spinner />
+                            </div>
+                        )}
+
                         <div className="sensitivity-mapping-body-content">
-                            <form>
-                                {/* Title */}
-                                <div className="form-group">
-                                    <label htmlFor="title">
-                                        <Message msgId="sensitivitymapping.mapTitle" />
-                                    </label>
-                                    <input
-                                        className="form-control"
-                                        type="text"
-                                        name="title"
-                                        value={printProperties.title}
-                                        onChange={({ target: { name, value } }) =>
-                                            onUpdatePrintProperty({ name, value })
-                                        }
-                                    />
-                                </div>
+                            <DropdownList
+                                className="sensitivity-mapping-dropdown"
+                                defaultValue={getMessageById(messages, defaultApplication)}
+                                onChange={onSelectPrintApplication}
+                                data={localizedPrintApplications}
+                                textField="labelId"
+                                valueField="name"
+                            />
+                        </div>
 
-                                {/* Language */}
-                                <div className="form-group row">
-                                    <label htmlFor="language" className="col-sm-4 col-form-label">
-                                        <Message msgId="sensitivitymapping.mapLanguage" />
-                                    </label>
-                                    <div className="col-sm-8">
-                                        <select
-                                            className="form-control"
-                                            name="language"
-                                            value={printProperties.language}
-                                            onChange={({ target: { name, value } }) =>
-                                                onUpdatePrintProperty({ name, value })
-                                            }
-                                        >
-                                            <option value="en">English</option>
-                                            <option value="fr">Français</option>
-                                        </select>
-                                    </div>
-                                </div>
-
-                                {/* Format */}
-                                <div className="form-group row">
-                                    <label htmlFor="format" className="col-sm-4 col-form-label">
-                                        <Message msgId="sensitivitymapping.mapFormat" />
-                                    </label>
-                                    <div className="col-sm-8">
-                                        <select
-                                            className="form-control"
-                                            name="format"
-                                            value={printProperties.format}
-                                            onChange={({ target: { name, value } }) =>
-                                                onUpdatePrintProperty({ name, value })
-                                            }
-                                        >
-                                            {selectedPrintCapabilities.formats.map(fmt => (
-                                                <option key={fmt} value={fmt}>{fmt}</option>
-                                            ))}
-                                        </select>
-                                    </div>
-                                </div>
-
-                                {/* Resolution */}
-                                <div className="form-group row">
-                                    <label htmlFor="resolution" className="col-sm-4 col-form-label">
-                                        <Message msgId="sensitivitymapping.mapResolution" />
-                                    </label>
-                                    <div className="col-sm-8">
-                                        <select
-                                            className="form-control"
-                                            name="resolution"
-                                            value={printProperties.resolution}
-                                            onChange={({ target: { name, value } }) =>
-                                                onUpdatePrintProperty({ name, value })
-                                            }
-                                        >
-                                            {selectedPrintApplication.resolutions.map(res => (
-                                                <option key={res} value={res}>{res}</option>
-                                            ))}
-                                        </select>
-                                    </div>
-                                </div>
-
-                                {/* Coordinate system */}
-                                <div className="form-group row">
-                                    <label htmlFor="projection" className="col-sm-4 col-form-label">
-                                        <Message msgId="sensitivitymapping.mapCoordinatesSystem" />
-                                    </label>
-                                    <div className="col-sm-8">
-                                        <select
-                                            className="form-control"
-                                            name="projection"
-                                            value={printProperties.projection}
-                                            onChange={({ target: { name, value } }) =>
-                                                onUpdatePrintProperty({ name, value })
-                                            }
-                                        >
-                                            {(sensitivityMappingStore.projections ?? []).map(proj => (
-                                                <option key={proj.code} value={proj.code}>
-                                                    {proj.name}
-                                                </option>
-                                            ))}
-                                        </select>
-                                    </div>
-                                </div>
-
-                                {/* Scale */}
-                                <div className="form-group row">
-                                    <label htmlFor="scale" className="col-sm-4 col-form-label">
-                                        <Message msgId="sensitivitymapping.mapScale" />
-                                    </label>
-                                    <div className="col-sm-8">
+                        {selectedPrintCapabilities && printProperties && (
+                            <div className="sensitivity-mapping-body-content">
+                                <form>
+                                    {/* Title */}
+                                    <div className="form-group">
+                                        <label htmlFor="title">
+                                            <Message msgId="sensitivitymapping.mapTitle" />
+                                        </label>
                                         <input
                                             className="form-control"
-                                            type="number"
-                                            name="scale"
-                                            value={printProperties.scale}
-                                            step={
-                                                Math.round(printProperties.scale / 10000) * 100
-                                            }
+                                            type="text"
+                                            name="title"
+                                            value={printProperties.title}
                                             onChange={({ target: { name, value } }) =>
                                                 onUpdatePrintProperty({ name, value })
                                             }
                                         />
                                     </div>
-                                </div>
 
-                                {/* Orientation */}
-                                {hasProp("orientation") && (
+                                    {/* Language */}
                                     <div className="form-group row">
-                                        <label htmlFor="orientation" className="col-sm-4 col-form-label">
-                                            <Message msgId="sensitivitymapping.mapOrientation" />
+                                        <label htmlFor="language" className="col-sm-4 col-form-label">
+                                            <Message msgId="sensitivitymapping.mapLanguage" />
                                         </label>
                                         <div className="col-sm-8">
                                             <select
                                                 className="form-control"
-                                                name="orientation"
-                                                value={printProperties.orientation}
+                                                name="language"
+                                                value={printProperties.language}
                                                 onChange={({ target: { name, value } }) =>
                                                     onUpdatePrintProperty({ name, value })
                                                 }
                                             >
-                                                {getPropOptions("orientation").map(o => (
-                                                    <option key={o} value={o}>{o}</option>
+                                                <option value="en">English</option>
+                                                <option value="fr">Français</option>
+                                            </select>
+                                        </div>
+                                    </div>
+
+                                    {/* Format */}
+                                    <div className="form-group row">
+                                        <label htmlFor="format" className="col-sm-4 col-form-label">
+                                            <Message msgId="sensitivitymapping.mapFormat" />
+                                        </label>
+                                        <div className="col-sm-8">
+                                            <select
+                                                className="form-control"
+                                                name="format"
+                                                value={printProperties.format}
+                                                onChange={({ target: { name, value } }) =>
+                                                    onUpdatePrintProperty({ name, value })
+                                                }
+                                            >
+                                                {selectedPrintCapabilities.formats.map(fmt => (
+                                                    <option key={fmt} value={fmt}>{fmt}</option>
                                                 ))}
                                             </select>
                                         </div>
                                     </div>
-                                )}
 
-                                {/* Grid layer */}
-                                {hasProp("gridLayer") && (
-                                    <div className="checkbox">
-                                        <label className="strong control-label" htmlFor="gridLayer">
+                                    {/* Resolution */}
+                                    <div className="form-group row">
+                                        <label htmlFor="resolution" className="col-sm-4 col-form-label">
+                                            <Message msgId="sensitivitymapping.mapResolution" />
+                                        </label>
+                                        <div className="col-sm-8">
+                                            <select
+                                                className="form-control"
+                                                name="resolution"
+                                                value={printProperties.resolution}
+                                                onChange={({ target: { name, value } }) =>
+                                                    onUpdatePrintProperty({ name, value })
+                                                }
+                                            >
+                                                {selectedPrintApplication.resolutions.map(res => (
+                                                    <option key={res} value={res}>{res}</option>
+                                                ))}
+                                            </select>
+                                        </div>
+                                    </div>
+
+                                    {/* Coordinate system */}
+                                    <div className="form-group row">
+                                        <label
+                                            htmlFor="projection"
+                                            className="col-sm-4 col-form-label"
+                                        >
+                                            <Message msgId="sensitivitymapping.mapCoordinatesSystem" />
+                                        </label>
+                                        <div className="col-sm-8">
+                                            <select
+                                                className="form-control"
+                                                name="projection"
+                                                value={printProperties.projection}
+                                                onChange={({ target: { name, value } }) =>
+                                                    onUpdatePrintProperty({ name, value })
+                                                }
+                                            >
+                                                {(sensitivityMappingStore.projections ?? []).map(
+                                                    proj => (
+                                                        <option key={proj.code} value={proj.code}>
+                                                            {proj.name}
+                                                        </option>
+                                                    )
+                                                )}
+                                            </select>
+                                        </div>
+                                    </div>
+
+                                    {/* Scale */}
+                                    <div className="form-group row">
+                                        <label htmlFor="scale" className="col-sm-4 col-form-label">
+                                            <Message msgId="sensitivitymapping.mapScale" />
+                                        </label>
+                                        <div className="col-sm-8">
                                             <input
-                                                type="checkbox"
-                                                name="gridLayer"
-                                                checked={!!printProperties.gridLayer}
-                                                onChange={({ target: { name, checked } }) =>
-                                                    onUpdatePrintProperty({ name, value: checked })
+                                                className="form-control"
+                                                type="number"
+                                                name="scale"
+                                                value={printProperties.scale}
+                                                step={
+                                                    Math.round(printProperties.scale / 10000) * 100
+                                                }
+                                                onChange={({ target: { name, value } }) =>
+                                                    onUpdatePrintProperty({ name, value })
                                                 }
                                             />
-                                            <Message msgId="sensitivitymapping.mapGridLayer" />
-                                        </label>
+                                        </div>
                                     </div>
-                                )}
 
-                                {/* Legend */}
-                                {hasProp("legend") && (
-                                    <div className="checkbox">
-                                        <label className="strong control-label" htmlFor="legend">
-                                            <input
-                                                type="checkbox"
-                                                name="legend"
-                                                checked={!!printProperties.legend}
-                                                onChange={({ target: { name, checked } }) =>
-                                                    onUpdatePrintProperty({ name, value: checked })
-                                                }
-                                            />
-                                            <Message msgId="sensitivitymapping.mapLegend" />
-                                        </label>
-                                    </div>
-                                )}
+                                    {/* Orientation */}
+                                    {hasProp("orientation") && (
+                                        <div className="form-group row">
+                                            <label
+                                                htmlFor="orientation"
+                                                className="col-sm-4 col-form-label"
+                                            >
+                                                <Message msgId="sensitivitymapping.mapOrientation" />
+                                            </label>
+                                            <div className="col-sm-8">
+                                                <select
+                                                    className="form-control"
+                                                    name="orientation"
+                                                    value={printProperties.orientation}
+                                                    onChange={({ target: { name, value } }) =>
+                                                        onUpdatePrintProperty({ name, value })
+                                                    }
+                                                >
+                                                    {getPropOptions("orientation").map(o => (
+                                                        <option key={o} value={o}>{o}</option>
+                                                    ))}
+                                                </select>
+                                            </div>
+                                        </div>
+                                    )}
 
-                                {/* Legend on 2 pages */}
-                                {hasProp("legend2Pages") && (
-                                    <div className="checkbox">
-                                        <label className="strong control-label" htmlFor="legend2Pages">
-                                            <input
-                                                type="checkbox"
-                                                name="legend2Pages"
-                                                checked={!!printProperties.legend2Pages}
-                                                onChange={({ target: { name, checked } }) =>
-                                                    onUpdatePrintProperty({ name, value: checked })
-                                                }
-                                            />
-                                            <Message msgId="sensitivitymapping.mapLegend2Page" />
-                                        </label>
-                                    </div>
-                                )}
+                                    {/* Grid layer */}
+                                    {hasProp("gridLayer") && (
+                                        <div className="checkbox">
+                                            <label
+                                                className="strong control-label"
+                                                htmlFor="gridLayer"
+                                            >
+                                                <input
+                                                    type="checkbox"
+                                                    name="gridLayer"
+                                                    checked={!!printProperties.gridLayer}
+                                                    onChange={({ target: { name, checked } }) =>
+                                                        onUpdatePrintProperty({ name, value: checked })
+                                                    }
+                                                />
+                                                <Message msgId="sensitivitymapping.mapGridLayer" />
+                                            </label>
+                                        </div>
+                                    )}
 
-                                {/* Filter legend */}
-                                {hasProp("filterLegend") && (
-                                    <div className="checkbox">
-                                        <label className="strong control-label" htmlFor="filterLegend">
-                                            <input
-                                                type="checkbox"
-                                                name="filterLegend"
-                                                checked={!!printProperties.filterLegend}
-                                                onChange={({ target: { name, checked } }) =>
-                                                    onUpdatePrintProperty({ name, value: checked })
-                                                }
-                                            />
-                                            <Message msgId="sensitivitymapping.mapFilterLegend" />
-                                        </label>
-                                    </div>
-                                )}
+                                    {/* Legend */}
+                                    {hasProp("legend") && (
+                                        <div className="checkbox">
+                                            <label
+                                                className="strong control-label"
+                                                htmlFor="legend"
+                                            >
+                                                <input
+                                                    type="checkbox"
+                                                    name="legend"
+                                                    checked={!!printProperties.legend}
+                                                    onChange={({ target: { name, checked } }) =>
+                                                        onUpdatePrintProperty({ name, value: checked })
+                                                    }
+                                                />
+                                                <Message msgId="sensitivitymapping.mapLegend" />
+                                            </label>
+                                        </div>
+                                    )}
 
-                                {/* Report */}
-                                {selectedPrintApplication.report && (
-                                    <div className="checkbox">
-                                        <label className="strong control-label" htmlFor="report">
-                                            <input
-                                                type="checkbox"
-                                                name="report"
-                                                checked={!!printProperties.report}
-                                                onChange={({ target: { name, checked } }) =>
-                                                    onUpdatePrintProperty({ name, value: checked })
-                                                }
-                                            />
-                                            <Message msgId="sensitivitymapping.mapReport" />
-                                        </label>
-                                    </div>
-                                )}
-                            </form>
+                                    {/* Legend on 2 pages */}
+                                    {hasProp("legend2Pages") && (
+                                        <div className="checkbox">
+                                            <label
+                                                className="strong control-label"
+                                                htmlFor="legend2Pages"
+                                            >
+                                                <input
+                                                    type="checkbox"
+                                                    name="legend2Pages"
+                                                    checked={!!printProperties.legend2Pages}
+                                                    onChange={({ target: { name, checked } }) =>
+                                                        onUpdatePrintProperty({ name, value: checked })
+                                                    }
+                                                />
+                                                <Message msgId="sensitivitymapping.mapLegend2Page" />
+                                            </label>
+                                        </div>
+                                    )}
 
-                            <div className="sensitivity-mapping-buttons">
-                                <Button
-                                    type="button"
-                                    className="btn btn-primary sensitivity-mapping-print-btn"
-                                    onClick={onCreatePrintConfig}
-                                >
-                                    <Message msgId="sensitivitymapping.print" />
-                                </Button>
-                                <div
-                                    className="btn btn-primary print-download"
-                                    disabled={!downloadUrl}
-                                >
-                                    <a href={downloadUrl} target="_blank" rel="noreferrer">
-                                        <Glyphicon glyph="save" />
-                                    </a>
+                                    {/* Filter legend */}
+                                    {hasProp("filterLegend") && (
+                                        <div className="checkbox">
+                                            <label
+                                                className="strong control-label"
+                                                htmlFor="filterLegend"
+                                            >
+                                                <input
+                                                    type="checkbox"
+                                                    name="filterLegend"
+                                                    checked={!!printProperties.filterLegend}
+                                                    onChange={({ target: { name, checked } }) =>
+                                                        onUpdatePrintProperty({ name, value: checked })
+                                                    }
+                                                />
+                                                <Message msgId="sensitivitymapping.mapFilterLegend" />
+                                            </label>
+                                        </div>
+                                    )}
+
+                                    {/* Report */}
+                                    {selectedPrintApplication.report && (
+                                        <div className="checkbox">
+                                            <label
+                                                className="strong control-label"
+                                                htmlFor="report"
+                                            >
+                                                <input
+                                                    type="checkbox"
+                                                    name="report"
+                                                    checked={!!printProperties.report}
+                                                    onChange={({ target: { name, checked } }) =>
+                                                        onUpdatePrintProperty({ name, value: checked })
+                                                    }
+                                                />
+                                                <Message msgId="sensitivitymapping.mapReport" />
+                                            </label>
+                                        </div>
+                                    )}
+                                </form>
+
+                                <div className="sensitivity-mapping-buttons">
+                                    <Button
+                                        type="button"
+                                        className="btn btn-primary sensitivity-mapping-print-btn"
+                                        onClick={onCreatePrintConfig}
+                                        disabled={!!loading}
+                                    >
+                                        <Message msgId="sensitivitymapping.print" />
+                                    </Button>
                                 </div>
                             </div>
-                        </div>
-                    )}
-                </div>
-            )}
-        </div>
+                        )}
+                    </div>
+                )}
+            </div>
+        </>
     );
 }
 
@@ -377,7 +417,12 @@ SensitivityMapping.propTypes = {
     onClose: PropTypes.func,
     onSelectPrintApplication: PropTypes.func,
     onUpdatePrintProperty: PropTypes.func,
-    onCreatePrintConfig: PropTypes.func
+    onCreatePrintConfig: PropTypes.func,
+    progressCardVisible: PropTypes.bool,
+    progressMessages: PropTypes.array,
+    progressCurrentStep: PropTypes.number,
+    progressTotalSteps: PropTypes.number,
+    onDismissProgressCard: PropTypes.func
 };
 
 SensitivityMapping.defaultProps = {
@@ -386,7 +431,12 @@ SensitivityMapping.defaultProps = {
     onClose: () => {},
     onSelectPrintApplication: () => {},
     onUpdatePrintProperty: () => {},
-    onCreatePrintConfig: () => {}
+    onCreatePrintConfig: () => {},
+    progressCardVisible: false,
+    progressMessages: [],
+    progressCurrentStep: 0,
+    progressTotalSteps: 0,
+    onDismissProgressCard: () => {}
 };
 
 function SensitivityMappingPlugin({ enabled, ...props }) {
@@ -400,21 +450,40 @@ const ConnectedSensitivityMappingPlugin = connect(
             enabledSelector,
             state => state?.security?.user?.info?.groups ?? [],
             state => state?.locale?.messages,
-            sensitivityMappingStateSelector
+            sensitivityMappingStateSelector,
+            progressCardVisibleSelector,
+            progressMessagesSelector,
+            progressCurrentStepSelector,
+            progressTotalStepsSelector
         ],
-        (style, enabled, userGroups, messages, sensitivityMappingStore) => ({
+        (
             style,
             enabled,
             userGroups,
             messages,
-            sensitivityMappingStore
+            sensitivityMappingStore,
+            progressCardVisible,
+            progressMessages,
+            progressCurrentStep,
+            progressTotalSteps
+        ) => ({
+            style,
+            enabled,
+            userGroups,
+            messages,
+            sensitivityMappingStore,
+            progressCardVisible,
+            progressMessages,
+            progressCurrentStep,
+            progressTotalSteps
         })
     ),
     {
         onClose: setControlProperty.bind(null, 'sensitivityMapping', 'enabled', false),
         onSelectPrintApplication: setPrintApplication,
         onUpdatePrintProperty: updatePrintProperty,
-        onCreatePrintConfig: createPrintConfig
+        onCreatePrintConfig: createPrintConfig,
+        onDismissProgressCard: dismissProgressCard
     }
 )(SensitivityMappingPlugin);
 

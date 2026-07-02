@@ -665,6 +665,20 @@
                 "loadPrintLayoutError": "Le modèle d'impression sélectionné ({printLayoutName}) ne figure pas dans la liste des modèles disponibles. Il se peut que l'outil d'impression n'ait pas été complètement chargé lors de l'ouverture de la carte. Veuillez rafraîchir la page et réessayer. Contactez l'équipe technique de NEEC GeoPortal si le problème persiste.",
                 "initSensitivityMappingPrintError": "L'application mapfish print ne semble pas être disponible pour le moment. Veuillez patienter quelques instants, puis rafraîchir la page. Veuillez contacter l'équipe technique de NEEC GeoPortal si le problème persiste.\nMessage du serveur d'impression : {message}"
             },
+            "progressCard": {
+                "title": "Progression de l'impression",
+                "processing": "En cours…",
+                "download": "Télécharger",
+                "error": "Une erreur s'est produite. Fermez et réessayez.",
+                "step": {
+                "layersExtracted": "Étape 1 : Couches visibles extraites",
+                "layerWarning": "Avertissement : certaines couches n'ont pas pu être incluses ({layers})",
+                "sendingRequest": "Étape 2 : Envoi de la requête d'impression",
+                "waitingForMap": "Étape 3 : Attente de la génération de la carte",
+                "generatingReport": "Étape 2 : Génération du rapport de sensibilité",
+                "commandStarted": "Étape 3 : Génération du rapport démarrée",
+                "ready": "La carte est prête — cliquez sur Télécharger pour sauvegarder"
+            },
             "mapTitle": "Titre de la carte",
             "mapLanguage": "Langue",
             "mapFormat": "Format",

@@ -28,6 +28,9 @@ export const LOAD_FEATURES = "SENSITIVITYMAPPING:LOAD_FEATURES";
 export const START_MANAGEMENT_COMMAND = "SENSITIVITYMAPPING:START_MANAGEMENT_COMMAND";
 export const PRINT_ERROR = "SENSITIVITYMAPPING:PRINT_ERROR";
 export const CHANGE_PRINT_STATUS = "SENSITIVITYMAPPING:CHANGE_PRINT_STATUS";
+export const ADD_PROGRESS_MESSAGE = "SENSITIVITYMAPPING:ADD_PROGRESS_MESSAGE";
+export const CLEAR_PROGRESS_MESSAGES = "SENSITIVITYMAPPING:CLEAR_PROGRESS_MESSAGES";
+export const DISMISS_PROGRESS_CARD = "SENSITIVITYMAPPING:DISMISS_PROGRESS_CARD";
 
 /**
  * Load the mapfish print applications. Also used to see if the mapfish server is available.
@@ -235,4 +238,31 @@ export const printError = (uid, title, message, values) => ({
     title,
     message,
     values
+});
+
+
+/**
+ * Append a message to the progress card.
+ * @param {string} type  - 'info' | 'warning' | 'error' | 'success'
+ * @param {string} msgId - i18n message key (optional)
+ * @param {string} text  - plain text fallback (optional)
+ * @param {object} values - i18n interpolation values (optional)
+ */
+export const addProgressMessage = (type, msgId, text, values) => ({
+    type: ADD_PROGRESS_MESSAGE,
+    message: { type, msgId, text, values }
+});
+
+/**
+ * Clear all progress messages and reset the progress card state.
+ */
+export const clearProgressMessages = () => ({
+    type: CLEAR_PROGRESS_MESSAGES
+});
+
+/**
+ * Dismiss (hide) the progress card without resetting the store.
+ */
+export const dismissProgressCard = () => ({
+    type: DISMISS_PROGRESS_CARD
 });

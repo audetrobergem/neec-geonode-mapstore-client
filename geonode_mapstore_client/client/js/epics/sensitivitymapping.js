@@ -37,6 +37,7 @@ import {
     startManagementCommand,
     printError,
     changePrintStatus,
+    addProgressMessage,
     INIT_SENSITIVITY_MAPPING_PRINT,
     SET_PRINT_APPLICATION,
     SET_PRINT_CAPABILITIES,
@@ -70,7 +71,7 @@ import { UPDATE_NODE, CHANGE_LAYER_PROPERTIES } from '@mapstore/framework/action
 import { REDUCERS_LOADED } from '@mapstore/framework/actions/storemanager';
 import { optionsToVendorParams } from '@mapstore/framework/utils/VendorParamsUtils';
 import { getFeature } from '@mapstore/framework/api/WFS';
-import { error, success, warning } from '@mapstore/framework/actions/notifications';
+import { error } from '@mapstore/framework/actions/notifications';
 import {
     hideMapinfoMarker,
     purgeMapInfoResults,
@@ -89,14 +90,8 @@ import {
 // Helpers
 // ---------------------------------------------------------------------------
 
-/**
- * Returns the GeoNode base URL from the store.
- */
 const geonodeUrlSelector = state => state?.gnsettings?.geonodeUrl ?? '';
 
-/**
- * Safely retrieve the print-extent additional layer feature ring or null.
- */
 const getPrintExtentCoordinates = (state) => {
     const layer = printExtentAdditionalLayerSelector(state);
     return layer?.options?.features?.[0]?.geometry?.coordinates?.[1] ?? null;
@@ -106,9 +101,6 @@ const getPrintExtentCoordinates = (state) => {
 // Layout epic
 // ---------------------------------------------------------------------------
 
-/**
- * Override the layout to get the correct right offset when the data print tool is open.
- */
 export const gnUpdateSensitivityMappingMapLayoutEpic = (action$, store) =>
     action$.ofType(UPDATE_MAP_LAYOUT)
         .filter(() => enabledSelector(store.getState()))
@@ -148,10 +140,6 @@ export const gnUpdateSensitivityMappingMapLayoutEpic = (action$, store) =>
 // Initialisation epics
 // ---------------------------------------------------------------------------
 
-/**
- * Captures REDUCERS_LOADED and fetches the list of MapFish print applications.
- * An error here signals the print server is unavailable.
- */
 export const initSensitivityMappingPrintEpic = (action$, store) =>
     action$.ofType(REDUCERS_LOADED)
         .switchMap(() => {
@@ -166,23 +154,16 @@ export const initSensitivityMappingPrintEpic = (action$, store) =>
                 .map(response => initSensitivityMappingPrint(response.data))
                 .catch(err =>
                     Rx.Observable.of(
-                        initSensitivityMappingPrint(
-                            err?.message ?? 'Unknown error'
-                        )
+                        initSensitivityMappingPrint(err?.message ?? 'Unknown error')
                     )
                 );
         });
 
-/**
- * Captures INIT_SENSITIVITY_MAPPING_PRINT, applies group restrictions and loads
- * each application's capabilities, then stores the full list via setPrintApplicationList.
- */
 export const loadPrintApplicationsEpic = (action$, store) =>
     action$.ofType(INIT_SENSITIVITY_MAPPING_PRINT)
         .switchMap((action) => {
             const state = store.getState();
 
-            // Server unreachable – mapfishPrintApps will be an error string
             if (typeof action.mapfishPrintApps === "string") {
                 return Rx.Observable.of(
                     setPrintApplicationList([], true),
@@ -205,14 +186,11 @@ export const loadPrintApplicationsEpic = (action$, store) =>
             }
 
             const userGroups = state?.security?.user?.info?.groups ?? [];
-
-            // Filter applications by group restrictions
             const allowedApplications = cfg.applications.filter((app) =>
                 !app.restrictions ||
                 app.restrictions.some(r => userGroups.includes(r))
             );
 
-            // Fetch capabilities for each allowed application in parallel
             const requests = allowedApplications.map((app) => {
                 const capUrl = `${geonodeUrl}${cfg.mapfishUrl}/print/${app.name}/capabilities.json`;
                 return Rx.Observable.defer(() => axios.get(capUrl))
@@ -229,7 +207,6 @@ export const loadPrintApplicationsEpic = (action$, store) =>
                     const printApplications = results
                         .filter(r => r.success)
                         .map(r => r.data);
-
                     const hasError = results.some(r => !r.success);
                     const actions = [setPrintApplicationList(printApplications, hasError)];
 
@@ -253,10 +230,6 @@ export const loadPrintApplicationsEpic = (action$, store) =>
 // Open / close epics
 // ---------------------------------------------------------------------------
 
-/**
- * Disables the layer query tool when the print tool is activated, loads initial
- * map properties and assigns the default print application.
- */
 export const openSensitivityMappingEpic = (action$, store) =>
     action$.ofType(SET_CONTROL_PROPERTY)
         .filter((action) => action.control === "sensitivityMapping")
@@ -280,10 +253,6 @@ export const openSensitivityMappingEpic = (action$, store) =>
             );
         });
 
-/**
- * Reactivates the map click, removes the print extent layer and zooms back to
- * the original map view when the print tool is closed.
- */
 export const closeSensitivityMappingEpic = (action$, store) =>
     action$.ofType(SET_CONTROL_PROPERTY)
         .filter((action) => action.control === "sensitivityMapping")
@@ -310,10 +279,6 @@ export const closeSensitivityMappingEpic = (action$, store) =>
             return Rx.Observable.from(closeActions);
         });
 
-/**
- * Adjusts the map zoom/center when the drawer (layer tree) is toggled while the
- * print tool is active, so the print extent polygon stays fully visible.
- */
 export const toggleDrawerControlEpic = (action$, store) =>
     action$.ofType(TOGGLE_CONTROL)
         .filter(() => enabledSelector(store.getState()))
@@ -322,7 +287,6 @@ export const toggleDrawerControlEpic = (action$, store) =>
             const state = store.getState();
             const coordinates = getPrintExtentCoordinates(state);
             if (!coordinates) {
-                // Print extent not yet drawn – nothing to do
                 return Rx.Observable.empty();
             }
             const printExtent = [
@@ -338,9 +302,6 @@ export const toggleDrawerControlEpic = (action$, store) =>
 // Style loading epics
 // ---------------------------------------------------------------------------
 
-/**
- * Loads the SLD style for a single layer and updates the layer list in the store.
- */
 export const loadSelectedStyleEpic = (action$, store) =>
     action$.ofType(LOAD_SELECTED_STYLE)
         .filter(() => enabledSelector(store.getState()))
@@ -368,7 +329,6 @@ export const loadSelectedStyleEpic = (action$, store) =>
 
             return Rx.Observable.defer(() => axios.get(selectedStyle.sld_url))
                 .switchMap((response) => {
-                    // Build an updated layers array (immutably)
                     const updatedLayers = layers.map(l =>
                         l.name === action.layerName
                             ? { ...l, selectedStyle: response.data }
@@ -382,10 +342,6 @@ export const loadSelectedStyleEpic = (action$, store) =>
                 });
         });
 
-/**
- * Loads SLD styles for all visible layers concurrently, then triggers
- * WFS feature loading.
- */
 export const loadSelectedStylesEpic = (action$, store) =>
     action$.ofType(LOAD_SELECTED_STYLES)
         .filter(() => enabledSelector(store.getState()))
@@ -403,7 +359,6 @@ export const loadSelectedStylesEpic = (action$, store) =>
                 return Rx.Observable.of(loadFeatures(action.layers));
             }
 
-            // For each layer, attempt to fetch its style; failures are silently skipped
             const styleRequests = localLayers.map(layer => {
                 const selectedStyle = layer.extendedParams?.mapLayer?.dataset?.styles
                     ?.find(s =>
@@ -427,7 +382,6 @@ export const loadSelectedStylesEpic = (action$, store) =>
 
             return Rx.Observable.forkJoin(styleRequests)
                 .switchMap((results) => {
-                    // Build a new layers array with fetched styles merged in
                     const styleMap = results.reduce((acc, { layer, styleData }) => {
                         if (styleData !== null) {
                             acc[layer.name] = styleData;
@@ -449,9 +403,6 @@ export const loadSelectedStylesEpic = (action$, store) =>
 // Feature loading epic
 // ---------------------------------------------------------------------------
 
-/**
- * Loads GeoJSON features for WFS layers within the current map bbox.
- */
 export const loadFeaturesEpic = (action$, store) =>
     action$.ofType(LOAD_FEATURES)
         .filter(() => enabledSelector(store.getState()))
@@ -514,7 +465,6 @@ export const loadFeaturesEpic = (action$, store) =>
                             : l
                     );
 
-                    // Dispatch the updated layers back so the store reflects loaded features
                     return Rx.Observable.of(loadFeatures(updatedLayers));
                 });
         });
@@ -523,10 +473,6 @@ export const loadFeaturesEpic = (action$, store) =>
 // Layer update epic
 // ---------------------------------------------------------------------------
 
-/**
- * Keeps the sensitivityMapping layer list in sync when a layer node is updated
- * or its properties change in the main MapStore layer tree.
- */
 export const updateLayerEpic = (action$, store) =>
     action$.ofType(UPDATE_NODE, CHANGE_LAYER_PROPERTIES)
         .filter(() => enabledSelector(store.getState()))
@@ -553,7 +499,6 @@ export const updateLayerEpic = (action$, store) =>
                 return Rx.Observable.from(actionsToDispatch);
             }
 
-            // CHANGE_LAYER_PROPERTIES
             const targetLayer = layers.find(l => l.id === action.layer);
             if (!targetLayer) {
                 return Rx.Observable.empty();
@@ -569,11 +514,6 @@ export const updateLayerEpic = (action$, store) =>
 // Map view change epic
 // ---------------------------------------------------------------------------
 
-/**
- * Reacts to CHANGE_MAP_VIEW while the print tool is open: recalculates the
- * map center (accounting for panel offsets) and refreshes WFS features and
- * coordinate systems.
- */
 export const changeMapViewEpic = (action$, store) =>
     action$.ofType(CHANGE_MAP_VIEW)
         .filter(() => enabledSelector(store.getState()))
@@ -646,18 +586,11 @@ export const changeMapViewEpic = (action$, store) =>
 // Print property update epic
 // ---------------------------------------------------------------------------
 
-/**
- * Reacts to individual print property changes and triggers downstream
- * updates (layout reload, extent recalculation, coordinate system refresh).
- * State is updated by the reducer via UPDATE_PRINT_PROPERTY; this epic only
- * orchestrates follow-on actions.
- */
 export const updatePrintPropertyEpic = (action$, store) =>
     action$.ofType(UPDATE_PRINT_PROPERTY)
         .filter(() => enabledSelector(store.getState()))
         .switchMap((action) => {
             const state = store.getState();
-            // At this point the reducer has already applied the property change
             const printProperties = state.sensitivityMapping.printProperties;
 
             if (["legend2Pages", "orientation", "language"].includes(action.printProperty.name)) {
@@ -683,10 +616,6 @@ export const updatePrintPropertyEpic = (action$, store) =>
 // Print layout epic
 // ---------------------------------------------------------------------------
 
-/**
- * Selects the correct print layout template based on the current print
- * properties (orientation, legend2Pages, language).
- */
 export const loadPrintLayoutEpic = (action$, store) =>
     action$.ofType(SET_PRINT_PROPERTIES)
         .filter(() => enabledSelector(store.getState()))
@@ -736,9 +665,6 @@ export const loadPrintLayoutEpic = (action$, store) =>
 // Print application selection epic
 // ---------------------------------------------------------------------------
 
-/**
- * Loads capabilities for the newly selected print application.
- */
 export const selectPrintApplicationEpic = (action$, store) =>
     action$.ofType(SET_PRINT_APPLICATION)
         .filter(() => enabledSelector(store.getState()))
@@ -758,11 +684,6 @@ export const selectPrintApplicationEpic = (action$, store) =>
 // Print properties initialisation epic
 // ---------------------------------------------------------------------------
 
-/**
- * Initialises print properties when capabilities are loaded (on open or
- * application change). Ensures only options available in the new template
- * are kept.
- */
 export const initiatePrintPropertiesEpic = (action$, store) =>
     action$.ofType(SET_PRINT_CAPABILITIES)
         .filter(() => enabledSelector(store.getState()))
@@ -804,7 +725,6 @@ export const initiatePrintPropertiesEpic = (action$, store) =>
                 printProperties.mapCenter?.x
             );
 
-            // Sensitivity Mapping app prefers the UTM projection
             if (action.selectedPrintCapabilities.app === "sensitivity-mapping" &&
                 printProperties.projection === "3857") {
                 const utmProjection = updatedCoordinatesSystems
@@ -815,7 +735,6 @@ export const initiatePrintPropertiesEpic = (action$, store) =>
                 }
             }
 
-            // Remove or reset template-specific properties not available in this app
             const templateProperties = ["legend2Pages", "orientation", "gridLayer"];
             templateProperties.forEach(propName => {
                 const propDef = printAppProperties?.properties
@@ -841,10 +760,6 @@ export const initiatePrintPropertiesEpic = (action$, store) =>
 // Print extent epic
 // ---------------------------------------------------------------------------
 
-/**
- * Calculates the print extent polygon from the current layout and print
- * properties, then updates the additional layer on the map.
- */
 export const setPrintExtentEpic = (action$, store) =>
     action$.ofType(SET_PRINT_EXTENT)
         .filter(() => enabledSelector(store.getState()))
@@ -965,8 +880,8 @@ export const setPrintExtentEpic = (action$, store) =>
 // ---------------------------------------------------------------------------
 
 /**
- * Assembles the MapFish Print 3 payload from the current store state and
- * dispatches sendPrintRequest (plus an optional warning notification).
+ * Assembles the MapFish Print 3 payload and dispatches sendPrintRequest.
+ * Also emits progress messages for the card.
  */
 export const createPrintConfigEpic = (action$, store) =>
     action$.ofType(CREATE_PRINT_CONFIG)
@@ -975,14 +890,21 @@ export const createPrintConfigEpic = (action$, store) =>
             const state = store.getState();
             const printProperties = state.sensitivityMapping.printProperties;
             const projections = sensitivityMappingProjectionsSelector(state);
-            const projectionDefinition = projections.find(p => p.code === printProperties.projection);
-            const projStr = projectionDefinition?.definition ?? `EPSG:${printProperties.projection}`;
+            const projectionDefinition = projections.find(
+                p => p.code === printProperties.projection
+            );
+            const projStr =
+                projectionDefinition?.definition ?? `EPSG:${printProperties.projection}`;
 
-            const projectedMapCenter = reproject(printProperties.mapCenter, "EPSG:4326", projStr);
+            const projectedMapCenter = reproject(
+                printProperties.mapCenter,
+                "EPSG:4326",
+                projStr
+            );
 
-            // Retrieve the print extent from the additional layer (already in EPSG:4326)
             const extentLayer = printExtentAdditionalLayerSelector(state);
-            const extentCoords = extentLayer?.options?.features?.[0]?.geometry?.coordinates?.[1];
+            const extentCoords =
+                extentLayer?.options?.features?.[0]?.geometry?.coordinates?.[1];
 
             if (!extentCoords) {
                 return Rx.Observable.of(
@@ -1007,7 +929,9 @@ export const createPrintConfigEpic = (action$, store) =>
                 outputFormat: printProperties.format,
                 attributes: {
                     title: printProperties.title,
-                    coordinateSystem: projections.find(p => p.code === printProperties.projection)?.name,
+                    coordinateSystem: projections.find(
+                        p => p.code === printProperties.projection
+                    )?.name,
                     mainMap: {
                         center: [projectedMapCenter.x, projectedMapCenter.y],
                         rotation: 0,
@@ -1044,7 +968,9 @@ export const createPrintConfigEpic = (action$, store) =>
                     if (formatted && Object.keys(formatted).length > 0) {
                         mainMapLayers.push(formatted);
                     } else {
-                        warningLayers.push(`${getLayerTitle(layer, mapLanguage)} (layer)`);
+                        if (layer.title !== "Ellipsoid") {
+                            warningLayers.push(`${getLayerTitle(layer, mapLanguage)} (layer)`);
+                        }
                     }
                 } else {
                     if (!layer.loadingError) {
@@ -1058,11 +984,15 @@ export const createPrintConfigEpic = (action$, store) =>
                         if (formattedLegend && Object.keys(formattedLegend).length > 0) {
                             legendClasses.push(formattedLegend);
                         } else {
-                            warningLayers.push(`${getLayerTitle(layer, mapLanguage)} (legend)`);
+                            warningLayers.push(
+                                `${getLayerTitle(layer, mapLanguage)} (legend)`
+                            );
                         }
                     } else {
                         warningLayers.push(`${getLayerTitle(layer, mapLanguage)} (layer)`);
-                        warningLayers.push(`${getLayerTitle(layer, mapLanguage)} (legend)`);
+                        warningLayers.push(
+                            `${getLayerTitle(layer, mapLanguage)} (legend)`
+                        );
                     }
                 }
             });
@@ -1119,7 +1049,6 @@ export const createPrintConfigEpic = (action$, store) =>
             printConfig.attributes.locatorMap.layers = locatorMapLayers;
             printConfig.attributes.legend.classes = legendClasses;
 
-            // Grid layer
             if (printProperties.gridLayer) {
                 let gridSpacing;
                 const scale = printProperties.scale;
@@ -1144,18 +1073,23 @@ export const createPrintConfigEpic = (action$, store) =>
                 });
             }
 
-            const resultActions = [sendPrintRequest(printConfig)];
+            // Step 1: layers extracted
+            const resultActions = [
+                addProgressMessage(
+                    'info',
+                    'sensitivitymapping.progressCard.step.layersExtracted'
+                ),
+                sendPrintRequest(printConfig)
+            ];
+
             if (warningLayers.length > 0) {
                 resultActions.push(
-                    warning({
-                        uid: "warningMessage",
-                        title: "sensitivitymapping.notifications.warning",
-                        message: "sensitivitymapping.notifications.warningMessage",
-                        action: { label: "sensitivitymapping.notifications.close" },
-                        values: { layers: warningLayers.join(", ") },
-                        position: "tr",
-                        autoDismiss: 0
-                    })
+                    addProgressMessage(
+                        'warning',
+                        'sensitivitymapping.progressCard.step.layerWarning',
+                        undefined,
+                        { layers: warningLayers.join(', ') }
+                    )
                 );
             }
 
@@ -1166,10 +1100,6 @@ export const createPrintConfigEpic = (action$, store) =>
 // Send print request epic
 // ---------------------------------------------------------------------------
 
-/**
- * Sends the assembled print config to MapFish Print or to the GeoNode
- * management command API when a report is also requested.
- */
 export const sendPrintRequestEpic = (action$, store) =>
     action$.ofType(SEND_PRINT_REQUEST)
         .filter(() => enabledSelector(store.getState()))
@@ -1182,11 +1112,60 @@ export const sendPrintRequestEpic = (action$, store) =>
                 const printApp = state.sensitivityMapping.selectedPrintApplication;
                 const printUrl = `${geonodeUrl}${cfg.mapfishUrl}/print/${printApp.name}/report.${action.printConfig.outputFormat}`;
 
-                return Rx.Observable.defer(() =>
-                    axios.post(printUrl, action.printConfig)
+                return Rx.Observable.of(
+                    addProgressMessage(
+                        'info',
+                        'sensitivitymapping.progressCard.step.sendingRequest'
+                    )
+                ).concat(
+                    Rx.Observable.defer(() => axios.post(printUrl, action.printConfig))
+                        .switchMap(response =>
+                            Rx.Observable.of(
+                                addProgressMessage(
+                                    'info',
+                                    'sensitivitymapping.progressCard.step.waitingForMap'
+                                ),
+                                getPrintStatus("waiting", response.data.statusURL)
+                            )
+                        )
+                        .catch(err =>
+                            Rx.Observable.of(
+                                printError(
+                                    "sendPrintRequestError",
+                                    "sensitivitymapping.notifications.error",
+                                    "sensitivitymapping.notifications.getPrintStatusError",
+                                    { error: err.message }
+                                )
+                            )
+                        )
+                );
+            }
+
+            return Rx.Observable.of(
+                addProgressMessage(
+                    'info',
+                    'sensitivitymapping.progressCard.step.generatingReport'
                 )
+            ).concat(
+                Rx.Observable.defer(() => {
+                    const managementCommandUrl =
+                        `${geonodeUrl}api/v2/management/commands/create_sensitivity_report/jobs/`;
+                    const data = {
+                        args: [],
+                        kwargs: {
+                            printConfig: action.printConfig,
+                            printProperties: state.sensitivityMapping.printProperties,
+                            mapLayers: sensitivityMappingLayersSelector(state)
+                        },
+                        autostart: false
+                    };
+                    return axios.post(managementCommandUrl, data);
+                })
                     .map(response =>
-                        getPrintStatus("waiting", response.data.statusURL)
+                        startManagementCommand(
+                            "create_sensitivity_report",
+                            response.data.data.id
+                        )
                     )
                     .catch(err =>
                         Rx.Observable.of(
@@ -1197,49 +1176,14 @@ export const sendPrintRequestEpic = (action$, store) =>
                                 { error: err.message }
                             )
                         )
-                    );
-            }
-
-            const managementCommandUrl =
-                `${geonodeUrl}api/v2/management/commands/create_sensitivity_report/jobs/`;
-            const data = {
-                args: [],
-                kwargs: {
-                    printConfig: action.printConfig,
-                    printProperties: state.sensitivityMapping.printProperties,
-                    mapLayers: sensitivityMappingLayersSelector(state)
-                },
-                autostart: false
-            };
-
-            return Rx.Observable.defer(() =>
-                axios.post(managementCommandUrl, data)
-            )
-                .map(response =>
-                    startManagementCommand(
-                        "create_sensitivity_report",
-                        response.data.data.id
                     )
-                )
-                .catch(err =>
-                    Rx.Observable.of(
-                        printError(
-                            "sendPrintRequestError",
-                            "sensitivitymapping.notifications.error",
-                            "sensitivitymapping.notifications.getPrintStatusError",
-                            { error: err.message }
-                        )
-                    )
-                );
+            );
         });
 
 // ---------------------------------------------------------------------------
 // Management command epic
 // ---------------------------------------------------------------------------
 
-/**
- * Starts a previously-created management command job.
- */
 export const startManagementCommandEpic = (action$, store) =>
     action$.ofType(START_MANAGEMENT_COMMAND)
         .switchMap((action) => {
@@ -1250,10 +1194,16 @@ export const startManagementCommandEpic = (action$, store) =>
                 `${commandsUrl}${action.command}/jobs/${action.jobId}/start/`;
 
             return Rx.Observable.defer(() => axios.patch(commandUrl))
-                .map(response =>
-                    getPrintStatus(
-                        response.data.status,
-                        `${commandsUrl}${action.command}/jobs/${action.jobId}/status/`
+                .switchMap(response =>
+                    Rx.Observable.of(
+                        addProgressMessage(
+                            'info',
+                            'sensitivitymapping.progressCard.step.commandStarted'
+                        ),
+                        getPrintStatus(
+                            response.data.status,
+                            `${commandsUrl}${action.command}/jobs/${action.jobId}/status/`
+                        )
                     )
                 )
                 .catch(err =>
@@ -1272,13 +1222,8 @@ export const startManagementCommandEpic = (action$, store) =>
 // Print status polling epic
 // ---------------------------------------------------------------------------
 
-// Interval between status polls (ms)
 const POLL_INTERVAL_MS = 2000;
 
-/**
- * Polls the print server (or management command API) for the status of a
- * print job. Uses a timer delay between polls to avoid hammering the server.
- */
 export const getPrintStatusEpic = (action$, store) =>
     action$.ofType(GET_PRINT_STATUS)
         .filter(() => enabledSelector(store.getState()))
@@ -1295,7 +1240,6 @@ export const getPrintStatusEpic = (action$, store) =>
                         const status = response.data.status;
 
                         if (status === "waiting" || status === "running") {
-                            // Poll again after a delay
                             return Rx.Observable.timer(POLL_INTERVAL_MS)
                                 .map(() => getPrintStatus(status, action.statusUrl));
                         }
@@ -1312,7 +1256,9 @@ export const getPrintStatusEpic = (action$, store) =>
                         }
 
                         return Rx.Observable.of(
-                            downloadMap(`${geonodeUrl}${cfg.mapfishUrl}${response.data.downloadURL}`)
+                            downloadMap(
+                                `${geonodeUrl}${cfg.mapfishUrl}${response.data.downloadURL}`
+                            )
                         );
                     })
                     .catch(err =>
@@ -1327,12 +1273,13 @@ export const getPrintStatusEpic = (action$, store) =>
                     );
             }
 
-            // Management command status polling
             return Rx.Observable.defer(() => axios.get(action.statusUrl))
                 .switchMap((response) => {
                     if (response.data.status !== "FINISHED") {
                         return Rx.Observable.timer(POLL_INTERVAL_MS)
-                            .map(() => getPrintStatus(response.data.status, action.statusUrl));
+                            .map(() =>
+                                getPrintStatus(response.data.status, action.statusUrl)
+                            );
                     }
 
                     let outputMessage;
@@ -1352,7 +1299,9 @@ export const getPrintStatusEpic = (action$, store) =>
                     }
 
                     if (outputMessage.type === "success") {
-                        return Rx.Observable.of(downloadMap(outputMessage.message));
+                        return Rx.Observable.of(
+                            downloadMap(outputMessage.message)
+                        );
                     }
 
                     return Rx.Observable.of(
@@ -1377,11 +1326,12 @@ export const getPrintStatusEpic = (action$, store) =>
         });
 
 // ---------------------------------------------------------------------------
-// Download / error notification epics
+// Download epic
 // ---------------------------------------------------------------------------
 
 /**
- * Shows a success notification once a download URL is available.
+ * When a download URL is ready, append a success message to the progress card.
+ * The old `success` toast notification is replaced by the card message.
  */
 export const downloadMapEpic = (action$, store) =>
     action$.ofType(DOWNLOAD_MAP)
@@ -1389,26 +1339,32 @@ export const downloadMapEpic = (action$, store) =>
         .filter(action => !!action.downloadUrl)
         .switchMap(() =>
             Rx.Observable.of(
-                success({
-                    uid: "printSuccess",
-                    title: "sensitivitymapping.notifications.success",
-                    message: "sensitivitymapping.notifications.printSuccess",
-                    action: { label: "sensitivitymapping.notifications.close" },
-                    position: "tr",
-                    autoDismiss: 20
-                })
+                addProgressMessage(
+                    'success',
+                    'sensitivitymapping.progressCard.step.ready'
+                )
             )
         );
 
+// ---------------------------------------------------------------------------
+// Error epic
+// ---------------------------------------------------------------------------
+
 /**
- * Shows an error notification and resets the loading/error status when a
- * print error occurs.
+ * Appends an error message to the progress card and resets loading/error status.
+ * The toast notification is kept as a fallback for visibility.
  */
 export const printErrorEpic = (action$) =>
     action$.ofType(PRINT_ERROR)
         .switchMap((action) =>
             Rx.Observable.of(
                 changePrintStatus(false, true),
+                addProgressMessage(
+                    'error',
+                    action.message,
+                    undefined,
+                    action.values
+                ),
                 error({
                     uid: action.uid,
                     title: action.title,
