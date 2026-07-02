@@ -671,13 +671,14 @@
                 "download": "Télécharger",
                 "error": "Une erreur s'est produite. Fermez et réessayez.",
                 "step": {
-                "layersExtracted": "Étape 1 : Couches visibles extraites",
-                "layerWarning": "Avertissement : certaines couches n'ont pas pu être incluses ({layers})",
-                "sendingRequest": "Étape 2 : Envoi de la requête d'impression",
-                "waitingForMap": "Étape 3 : Attente de la génération de la carte",
-                "generatingReport": "Étape 2 : Génération du rapport de sensibilité",
-                "commandStarted": "Étape 3 : Génération du rapport démarrée",
-                "ready": "La carte est prête — cliquez sur Télécharger pour sauvegarder"
+                    "layersExtracted": "Étape 1 : Couches visibles extraites",
+                    "layerWarning": "Avertissement : certaines couches n'ont pas pu être incluses ({layers})",
+                    "sendingRequest": "Étape 2 : Envoi de la requête d'impression",
+                    "waitingForMap": "Étape 3 : Attente de la génération de la carte",
+                    "generatingReport": "Étape 2 : Génération du rapport de sensibilité",
+                    "commandStarted": "Étape 3 : Génération du rapport démarrée",
+                    "ready": "La carte est prête — cliquez sur Télécharger pour sauvegarder"
+                }
             },
             "mapTitle": "Titre de la carte",
             "mapLanguage": "Langue",

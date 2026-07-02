@@ -671,13 +671,13 @@
                 "download": "Download",
                 "error": "An error occurred. Please close and try again.",
                 "step": {
-                "layersExtracted": "Step 1: Visible layers extracted",
-                "layerWarning": "Warning: some layers could not be included ({layers})",
-                "sendingRequest": "Step 2: Sending print request",
-                "waitingForMap": "Step 3: Waiting for map generation",
-                "generatingReport": "Step 2: Generating sensitivity report",
-                "commandStarted": "Step 3: Report generation started",
-                "ready": "Map is ready — click Download to save your file"
+                    "layersExtracted": "Step 1: Visible layers extracted",
+                    "layerWarning": "Warning: some layers could not be included ({layers})",
+                    "sendingRequest": "Step 2: Sending print request",
+                    "waitingForMap": "Step 3: Waiting for map generation",
+                    "generatingReport": "Step 2: Generating sensitivity report",
+                    "commandStarted": "Step 3: Report generation started",
+                    "ready": "Map is ready — click Download to save your file"
                 }
             },
             "mapTitle": "Map Title",
