@@ -61,7 +61,8 @@ import {
     formatPrintLayer,
     formatLegend,
     getProjections,
-    getLayerTitle
+    getLayerTitle,
+    isLayerVisible
 } from '@js/utils/PrintUtils';
 import {
     removeAdditionalLayer,
@@ -956,12 +957,13 @@ export const createPrintConfigEpic = (action$, store) =>
             };
 
             const layers = sensitivityMappingLayersSelector(state);
+            const layerGroups = state.layers.groups ?? [];
             let mainMapLayers = [];
             let legendClasses = [];
             let warningLayers = [];
 
             layers.slice().reverse().forEach(layer => {
-                if (!layer.visibility) return;
+                if (!isLayerVisible(layer, layerGroups)) return;
 
                 if (layer.group === "background") {
                     const formatted = formatPrintLayer(layer, state);

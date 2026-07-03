@@ -167,6 +167,37 @@ export const getProjections = (selectedPrintApplication, scale, longitude) => {
 };
 
 /**
+ * Returns true only if the layer itself is visible AND its parent group
+ * (identified by layer.group matching a group's id) is also visible.
+ *
+ * MapStore stores groups as a flat array in `state.layers.groups`. Each layer
+ * carries a `group` string that equals the `id` of its parent group.
+ *
+ * @param {object} layer  - A MapStore layer object (must have `visibility` and `group`)
+ * @param {array}  groups - `state.layers.groups` (flat array of group objects)
+ * @returns {boolean}
+ */
+export const isLayerVisible = (layer, groups) => {
+    if (!layer.visibility) {
+        return false;
+    }
+
+    // Layers without a group assignment are always considered visible
+    if (!layer.group) {
+        return true;
+    }
+
+    const parentGroup = groups.find(g => g.id === layer.group);
+
+    // If the group cannot be found, don't block the layer
+    if (!parentGroup) {
+        return true;
+    }
+
+    return parentGroup.visibility !== false;
+};
+
+/**
  * This function allows you to normalize the structure of a point object.
  * Note: this function is extracted from the MapStore core: MapStore2/web/client/utils/CoordinatesUtils.js
  * @param {object} point
