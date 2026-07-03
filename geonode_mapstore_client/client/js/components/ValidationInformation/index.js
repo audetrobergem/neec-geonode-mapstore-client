@@ -1,1 +1,1 @@
-export { default } from './ValidationInformationon';
+export { default } from './ValidationInformation';
