@@ -35,7 +35,9 @@ import {
     ZOOM_TO_REGION,
     VIDEO_ERROR,
     UPDATE_VIDEO_INFORMATION,
-    LOAD_VIDEO
+    LOAD_VIDEO,
+    SET_SHORELINE_LABELS_VISIBLE,
+    SET_SHORELINE_VALIDATION_VISIBLE
 } from '@js/actions/shorelineviewer';
 import { getFeatureInfo } from '@mapstore/framework/api/identify';
 import { getFeature } from '@mapstore/framework/api/WFS';
@@ -384,29 +386,47 @@ export const zoomToSelectedShorelineRegionEpic = (action$, store) =>
 /**
  * Intercept map clicks while the plugin is active and dispatch a
  * SHORELINE_FEATURE_INFO_CLICK with the relevant queryable layers.
+ *
+ * Layer priority (first in array = queried first, wins on hit):
+ *   1. Validation layer  (when visible)
+ *   2. Media layers      (when a media type is active)
+ *   3. Classification layer
  */
 export const selectShorelineFeatureEpic = (action$, store) =>
     action$
         .ofType(CLICK_ON_MAP)
         .filter(() => store.getState().controls?.shorelineViewer?.enabled)
         .switchMap(({ point }) => {
-            const queryLayers = [];
-            store.getState().additionallayers.forEach((additionalLayer) => {
-                if (additionalLayer.id === 'shoreline-classification-layer') {
-                    queryLayers.push(additionalLayer.options.name);
+            const state = store.getState();
+            const validationLayers = [];
+            const mediaLayers = [];
+            const classificationLayers = [];
+
+            state.additionallayers.forEach((additionalLayer) => {
+                if (additionalLayer.id === 'shoreline-validation-layer') {
+                    // Validation has highest priority – goes first
+                    validationLayers.push(additionalLayer.options.name);
+                } else if (additionalLayer.id === 'shoreline-classification-layer') {
+                    classificationLayers.push(additionalLayer.options.name);
                 } else if (additionalLayer.id.includes('shoreline-media-layer-wms')) {
-                    // Media layers should be queried first (unshift)
                     additionalLayer.options.name
                         .split(',')
-                        .forEach((layer) => queryLayers.unshift(layer));
+                        .forEach((layer) => mediaLayers.push(layer));
                 }
             });
+
+            // Build the ordered list: validation → media → classification
+            const queryLayers = [
+                ...validationLayers,
+                ...mediaLayers,
+                ...classificationLayers
+            ];
 
             if (queryLayers.length === 0) {
                 return Rx.Observable.empty();
             }
 
-            const projection = projectionSelector(store.getState());
+            const projection = projectionSelector(state);
             const updatedPoint = updatePointWithGeometricFilter(point, projection);
             return Rx.Observable.of(
                 shorelineFeatureInfoClick(updatedPoint, queryLayers)
@@ -481,6 +501,14 @@ export const getShorelineFeatureInfoClickEpic = (action$, store) =>
                             selectedFeatureProjection: mapProjection,
                             trigger: 'SHORELINE_FEATURE_INFO_CLICK'
                         });
+
+                    // ---- Validation layer (highest priority) ----
+                    if (
+                        svState.selectedRegion?.shorelineValidationDataset
+                            ?.includes(selectedLayer)
+                    ) {
+                        return Rx.Observable.of(makeSelectedFeatureAction());
+                    }
 
                     // ---- Shoreline classification layer ----
                     if (
@@ -894,6 +922,14 @@ export const shorelineStopLoadingEpic = (action$, store) =>
 
 /**
  * Apply a new WMS style to the shoreline classification layer.
+ *
+ * When the user switches back to the first (Shoreline Type) thematic and the
+ * "Show labels" checkbox was already checked, the labels style is applied
+ * immediately so the map stays consistent with the UI state.
+ *
+ * The labels style is only meaningful for the first thematic, so for any
+ * other thematic the plain thematicName is always used regardless of the
+ * labelsVisible flag.
  */
 export const changeShorelineThematicEpic = (action$, store) =>
     action$
@@ -903,9 +939,21 @@ export const changeShorelineThematicEpic = (action$, store) =>
             if (!action.selectedThematic) {
                 return Rx.Observable.empty();
             }
+
             const state = store.getState();
             const accessToken = state.security?.user?.info?.access_token;
             const geoserverUrl = state.gnsettings?.geoserverUrl;
+            const { selectedRegion, labelsVisible } = state.shorelineViewer;
+
+            // Labels are only available for the first thematic (Shoreline Type).
+            // For every other thematic, always use the plain style name.
+            const isFirstThematic =
+                selectedRegion?.thematics?.[0]?.id === action.selectedThematic.id;
+            const stylesParam =
+                isFirstThematic && labelsVisible
+                    ? `${action.selectedThematic.thematicName}_labels`
+                    : action.selectedThematic.thematicName;
+
             return Rx.Observable.of(
                 removeAdditionalLayer({ id: 'shoreline-classification-layer' }),
                 updateAdditionalLayer(
@@ -914,8 +962,9 @@ export const changeShorelineThematicEpic = (action$, store) =>
                     'overlay',
                     buildWmsLayerOptions(
                         geoserverUrl,
-                        state.shorelineViewer.selectedRegion.shorelineClassificationDataset,
-                        action.selectedThematic.thematicName,
+                        state.shorelineViewer.selectedRegion
+                            .shorelineClassificationDataset,
+                        stylesParam,
                         accessToken
                     )
                 )
@@ -1122,6 +1171,118 @@ export const videoErrorEpic = (action$) =>
         );
 
 // ---------------------------------------------------------------------------
+// Labels overlay toggle
+// ---------------------------------------------------------------------------
+
+/**
+ * When the user toggles the "Show labels" checkbox, update the WMS STYLES
+ * parameter of the shoreline classification layer.
+ *
+ * - Checked   → style = `<thematicName>_labels`
+ * - Unchecked → style = `<thematicName>` (the normal thematic style)
+ *
+ * The action is only dispatched when the Shoreline Type thematic is active,
+ * but we guard here as well for safety.
+ */
+export const toggleShorelineLabelsEpic = (action$, store) =>
+    action$
+        .ofType(SET_SHORELINE_LABELS_VISIBLE)
+        .filter(() => store.getState()?.controls?.shorelineViewer?.enabled)
+        .switchMap((action) => {
+            const state = store.getState();
+            const { selectedRegion, selectedThematic } = state.shorelineViewer;
+
+            // Guard: we need both a region and an active thematic
+            if (!selectedRegion || !selectedThematic) {
+                return Rx.Observable.empty();
+            }
+
+            const accessToken = state.security?.user?.info?.access_token;
+            const geoserverUrl = state.gnsettings?.geoserverUrl;
+
+            // When labels are visible, append "_labels" to the thematic name.
+            const stylesParam = action.visible
+                ? `${selectedThematic.thematicName}_labels`
+                : selectedThematic.thematicName;
+
+            return Rx.Observable.of(
+                removeAdditionalLayer({ id: 'shoreline-classification-layer' }),
+                updateAdditionalLayer(
+                    'shoreline-classification-layer',
+                    'ShorelineViewer',
+                    'overlay',
+                    buildWmsLayerOptions(
+                        geoserverUrl,
+                        selectedRegion.shorelineClassificationDataset,
+                        stylesParam,
+                        accessToken
+                    )
+                )
+            );
+        });
+
+// ---------------------------------------------------------------------------
+// Validation layer toggle
+// ---------------------------------------------------------------------------
+
+/**
+ * When the user toggles the "Show validation" checkbox:
+ * - Checked   → add the validation WMS layer for the current region
+ * - Unchecked → remove it
+ *
+ * The checkbox is only rendered when selectedRegion.shorelineValidationDataset
+ * is non-null, so by the time this epic fires we can rely on that value being
+ * present. We guard anyway for safety.
+ */
+export const toggleShorelineValidationEpic = (action$, store) =>
+    action$
+        .ofType(SET_SHORELINE_VALIDATION_VISIBLE)
+        .filter(() => store.getState()?.controls?.shorelineViewer?.enabled)
+        .switchMap((action) => {
+            if (!action.visible) {
+                return Rx.Observable.of(
+                    removeAdditionalLayer({ id: 'shoreline-validation-layer' })
+                );
+            }
+
+            const state = store.getState();
+            const { selectedRegion } = state.shorelineViewer;
+            const validationDataset = selectedRegion?.shorelineValidationDataset;
+
+            if (!validationDataset) {
+                return Rx.Observable.empty();
+            }
+
+            const accessToken = state.security?.user?.info?.access_token;
+            const geoserverUrl = state.gnsettings?.geoserverUrl;
+
+            return Rx.Observable.of(
+                updateAdditionalLayer(
+                    'shoreline-validation-layer',
+                    'ShorelineViewer',
+                    'overlay',
+                    buildWmsLayerOptions(
+                        geoserverUrl,
+                        validationDataset,
+                        null,          // use the layer's default GeoServer style
+                        accessToken
+                    )
+                )
+            );
+        });
+
+/**
+ * When the user selects a different region, remove the validation layer if it
+ * was visible. The reducer already resets validationVisible → false, so we
+ * just need to clean up the map.
+ */
+export const removeValidationLayerOnRegionChangeEpic = (action$, store) =>
+    action$
+        .ofType(SET_SHORELINE_REGION)
+        .filter(() => store.getState()?.controls?.shorelineViewer?.enabled)
+        .mapTo(removeAdditionalLayer({ id: 'shoreline-validation-layer' }));
+
+// ---------------------------------------------------------------------------
 // Exports
 // ---------------------------------------------------------------------------
 
@@ -1144,5 +1305,8 @@ export default {
     changeShorelineThematicEpic,
     loadVideoEpic,
     updateVideoInformationEpic,
-    videoErrorEpic
+    videoErrorEpic,
+    toggleShorelineLabelsEpic,
+    toggleShorelineValidationEpic,
+    removeValidationLayerOnRegionChangeEpic
 };

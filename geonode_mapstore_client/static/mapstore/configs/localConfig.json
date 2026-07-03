@@ -2056,6 +2056,7 @@
                                     "thematicName": "shoreline_fetch_int"
                                 }
                             ],
+                            "shorelineValidationDataset": null,
                             "extent": [-141.00006103515625, 51.1119499206543, -75.17058563232422, 74.9911880493164]
                         },
                         {
@@ -2103,6 +2104,7 @@
                                     "thematicName": "shoreline_backshore_access_int"
                                 }
                             ],
+                            "shorelineValidationDataset": "neec_geodb:shoreline_validation",
                             "extent": [-67.25785827636719, 43.38965606689453, -52.619354248046875, 56.6020469665527347]
                         },
                         {
@@ -2168,6 +2170,7 @@
                                     "thematicName": "shoreline_processes_bc"
                                 }
                             ],
+                            "shorelineValidationDataset": null,
                             "extent": [-133.20208740234375, 49.26633834838867, -122.83486938476562, 54.25862121582031]
                         },
                         {
@@ -2203,6 +2206,7 @@
                                     "thematicName": "shoreline_fetch_int"
                                 }
                             ],
+                            "shorelineValidationDataset": "neec_geodb:shoreline_validation",
                             "extent": [-89.580432896, 41.681420922, -74.344020278, 49.0189440720001]
                         },
                         {
@@ -2233,6 +2237,7 @@
                                     "thematicName": "shoreline_fetch_int"
                                 }
                             ],
+                            "shorelineValidationDataset": "neec_geodb:shoreline_validation",
                             "extent": [-74.790208842, 45.000024013, -56.999995836, 51.750075494]
                         }
                     ],

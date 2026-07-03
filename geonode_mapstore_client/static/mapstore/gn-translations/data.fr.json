@@ -596,6 +596,10 @@
                     "tooltip": "Processus qui affectent/influencent la zone intertidale d'un segment ou qui pourraient affecter une personne se trouvant sur la rive.<br><br><center><img src='../static/mapstore/img/shoreline_processes_legend_fr.png'/></center>"
                 }
             },
+            "showLabels": "Afficher les noms des segments",
+            "showLabelsTooltip": "Les noms des segments ne sont affichés qu'aux échelles de 1:150 000 ou plus. Veuillez zoomer sur la carte si vous ne voyez pas les noms.",
+            "showValidation": "Afficher la validation des segments",
+            "showValidationTooltip": "Affiche les segments qui ont été validés pendant les opérations sur le terrain. Disponible uniquement pour les régions où des données de validation ont été recueillies.<br><br><strong>Légende:</strong><br><center><img src='../static/mapstore/img/shoreline_validation_legend_fr.png'/></center>",
             "segment": {
                 "name": "Nom",
                 "general": "Général",
@@ -625,13 +629,29 @@
                 "primaryLandCoverClass": "Type de rivage et d'arrière-plage principal",
                 "secondaryLandCoverClass": "Type de rivage et d'arrière-plage secondaire"
             },
+            "validation": {
+                "segmentName": "Nom du segment",
+                "surveyDate": "Date de l'enquête",
+                "description": "Description",
+                "shorelineComment": "Commentaire sur le rivage",
+                "isChanged": "Est changé",
+                "newEcccScatClass": "Nouvelle classe SCAT d'ECCC",
+                "photos": "Photos",
+                "alongshorePhoto1": "Photo le long du rivage 1",
+                "alongshorePhoto2": "Photo le long du rivage 2",
+                "acrossShorePhoto1": "Photo de l'autre côté du rivage 1",
+                "acrossShorePhoto2": "Photo de l'autre côté du rivage 2",
+                "miscPhoto1": "Divers photo 1",
+                "miscPhoto2": "Divers photo 2",
+                "miscPhoto3": "Divers photo 3"
+            },
             "notifications": {
                 "error": "Erreur",
                 "close": "Fermet",
                 "videoDurationError": "La vidéo demandée ne peut pas être lue car la durée de la vidéo ({heure}) correspondant au point sélectionné dépasse la durée totale de la vidéo ({durée}) sélectionnée.",
                 "videoUnauthorized": "Authentification requise pour charger la vidéo \"{fileName}\". Veuillez vous connecter et réessayer.",
                 "videoForbidden": "Accès refusé pour la vidéo \"{fileName}\" (HTTP {status}).",
-                "videoNotFound": "Le fichier vidéo \"{fileName}\" n’a pas été trouvé sur le serveur.",
+                "videoNotFound": "Le fichier vidéo \"{fileName}\" n'a pas été trouvé sur le serveur.",
                 "videoLoadError": "Impossible de charger la vidéo \"{fileName}\" (erreur : {status}).",
                 "emptyVideoResponse": "Le serveur a renvoyé une réponse vide pour la vidéo demandée."
             }

@@ -36,7 +36,9 @@ import {
     zoomToRegion,
     updateVideoInformation,
     videoError,
-    setVideoInformations
+    setVideoInformations,
+    setShorelineLabelsVisible,
+    setShorelineValidationVisible
 } from '@js/actions/shorelineviewer';
 import ShorelineViewerEpics from '@js/epics/shorelineviewer';
 import shorelineViewer from '@js/reducers/shorelineviewer';
@@ -48,6 +50,7 @@ import InfoPopover from '@mapstore/framework/components/widgets/widget/InfoPopov
 import parse from 'html-react-parser';
 import ShorelineInformation from '@js/components/ShorelineInformation';
 import VideoPlayer from '@js/components/VideoPlayer';
+import ValidationInformation from '@js/components/ValidationInformation';
 
 const Button = tooltip(GNButton);
 
@@ -306,6 +309,8 @@ function ShorelineViewer({
     selectedFeature,
     videoInformations,
     loading,
+    labelsVisible,
+    validationVisible,
     messages,
     onClose,
     regions,
@@ -315,7 +320,9 @@ function ShorelineViewer({
     onSelectThematic,
     onUpdateVideoInformation,
     onVideoError,
-    onSetVideoInformations
+    onSetVideoInformations,
+    onSetLabelsVisible,
+    onSetValidationVisible
 }) {
     const handlePlayerReady = (player) => {
         player.on('loadedmetadata', () => {
@@ -360,10 +367,22 @@ function ShorelineViewer({
 
     const isClassificationFeature =
         selectedFeature?.id?.includes('shoreline_classification');
+
+    const isValidationFeature =
+        selectedFeature &&
+        selectedRegion?.shorelineValidationDataset &&
+        selectedFeature.id
+            ?.substring(0, selectedFeature.id.indexOf('.'))
+            .split(':')
+            .some((part) =>
+                selectedRegion.shorelineValidationDataset.includes(part)
+            );
+
     const isVideoFeature =
         selectedFeature &&
         selectedMediaType?.name === 'Videos' &&
         videoInformations?.videoUri;
+
     const isPhotoFeature =
         selectedFeature &&
         selectedMediaType?.name === 'Photos' &&
@@ -416,40 +435,89 @@ function ShorelineViewer({
 
                 {/* Thematic selector */}
                 {selectedRegion?.thematics && (
-                    <div className="shoreline-viewer-body-thematics">
-                        <div className="shoreline-viewer-body-thematics-left">
-                            <Message msgId="shorelineviewer.selectStyle" />
-                        </div>
-                        <div className="shoreline-viewer-body-thematics-center">
-                            <DropdownList
-                                className="shoreline-viewer-dropdown"
-                                defaultValue={getMessageById(
-                                    messages,
-                                    `shorelineviewer.thematics.${selectedThematic.id}.label`
-                                )}
-                                onChange={onSelectThematic}
-                                data={localizedThematics}
-                                textField="labelId"
-                                valueField="id"
-                            />
-                        </div>
-                        <div className="shoreline-viewer-body-thematics-right">
-                            <InfoPopover
-                                text={parse(
-                                    getMessageById(
+                    <>
+                        <div className="shoreline-viewer-body-thematics">
+                            <div className="shoreline-viewer-body-thematics-left">
+                                <Message msgId="shorelineviewer.selectStyle" />
+                            </div>
+                            <div className="shoreline-viewer-body-thematics-center">
+                                <DropdownList
+                                    className="shoreline-viewer-dropdown"
+                                    defaultValue={getMessageById(
                                         messages,
-                                        `shorelineviewer.thematics.${selectedThematic.id}.tooltip`
-                                    )
-                                )}
-                                placement="left"
-                                title={getMessageById(
-                                    messages,
-                                    `shorelineviewer.thematics.${selectedThematic.id}.label`
-                                )}
-                                popoverStyle={{ maxWidth: 500 }}
-                            />
+                                        `shorelineviewer.thematics.${selectedThematic.id}.label`
+                                    )}
+                                    onChange={onSelectThematic}
+                                    data={localizedThematics}
+                                    textField="labelId"
+                                    valueField="id"
+                                />
+                            </div>
+                            <div className="shoreline-viewer-body-thematics-right">
+                                <InfoPopover
+                                    text={parse(
+                                        getMessageById(
+                                            messages,
+                                            `shorelineviewer.thematics.${selectedThematic.id}.tooltip`
+                                        )
+                                    )}
+                                    placement="left"
+                                    title={getMessageById(
+                                        messages,
+                                        `shorelineviewer.thematics.${selectedThematic.id}.label`
+                                    )}
+                                    popoverStyle={{ maxWidth: 500 }}
+                                />
+                            </div>
                         </div>
-                    </div>
+
+                        {/* Labels checkbox – only shown for the first (Shoreline Type) thematic */}
+                        {selectedRegion.thematics[0]?.id === selectedThematic?.id && (
+                            <div className="shoreline-viewer-body-labels">
+                                <label className="shoreline-viewer-labels-checkbox-label">
+                                    <input
+                                        type="checkbox"
+                                        className="shoreline-viewer-labels-checkbox"
+                                        checked={labelsVisible}
+                                        onChange={(e) => onSetLabelsVisible(e.target.checked)}
+                                    />
+                                    <Message msgId="shorelineviewer.showLabels" />
+                                </label>
+                                <InfoPopover
+                                    text={
+                                        <Message msgId="shorelineviewer.showLabelsTooltip" />
+                                    }
+                                    placement="left"
+                                    popoverStyle={{ maxWidth: 350 }}
+                                />
+                            </div>
+                        )}
+
+                        {/* Validation checkbox – only shown when the region has validation data */}
+                        {selectedRegion.shorelineValidationDataset && (
+                            <div className="shoreline-viewer-body-labels">
+                                <label className="shoreline-viewer-labels-checkbox-label">
+                                    <input
+                                        type="checkbox"
+                                        className="shoreline-viewer-labels-checkbox"
+                                        checked={validationVisible}
+                                        onChange={(e) => onSetValidationVisible(e.target.checked)}
+                                    />
+                                    <Message msgId="shorelineviewer.showValidation" />
+                                </label>
+                                <InfoPopover
+                                    text={parse(
+                                        getMessageById(
+                                            messages,
+                                            `shorelineviewer.showValidationTooltip`
+                                        )
+                                    )}
+                                    placement="left"
+                                    popoverStyle={{ maxWidth: 350 }}
+                                />
+                            </div>
+                        )}
+                    </>
                 )}
 
                 {/* Media type toggle */}
@@ -467,7 +535,13 @@ function ShorelineViewer({
                         </div>
                     )}
 
-                    {isClassificationFeature && (
+                    {isValidationFeature && (
+                        <ValidationInformation
+                            properties={selectedFeature.properties}
+                        />
+                    )}
+
+                    {isClassificationFeature && !isValidationFeature && (
                         <ShorelineInformation
                             segmentProperties={selectedFeature.properties}
                             tabs={tabs}
@@ -499,6 +573,8 @@ ShorelineViewer.propTypes = {
     selectedFeature: PropTypes.object,
     videoInformations: PropTypes.object,
     loading: PropTypes.bool,
+    labelsVisible: PropTypes.bool,
+    validationVisible: PropTypes.bool,
     messages: PropTypes.object,
     regions: PropTypes.array,
     tabs: PropTypes.array,
@@ -508,7 +584,9 @@ ShorelineViewer.propTypes = {
     onSelectThematic: PropTypes.func,
     onUpdateVideoInformation: PropTypes.func,
     onVideoError: PropTypes.func,
-    onSetVideoInformations: PropTypes.func
+    onSetVideoInformations: PropTypes.func,
+    onSetLabelsVisible: PropTypes.func,
+    onSetValidationVisible: PropTypes.func
 };
 
 ShorelineViewer.defaultProps = {
@@ -516,13 +594,17 @@ ShorelineViewer.defaultProps = {
     regions: [],
     tabs: [],
     loading: false,
+    labelsVisible: false,
+    validationVisible: false,
     onClose: () => {},
     onSelectRegion: () => {},
     onZoomToSelectedRegion: () => {},
     onSelectThematic: () => {},
     onUpdateVideoInformation: () => {},
     onVideoError: () => {},
-    onSetVideoInformations: () => {}
+    onSetVideoInformations: () => {},
+    onSetLabelsVisible: () => {},
+    onSetValidationVisible: () => {}
 };
 
 // ---------------------------------------------------------------------------
@@ -544,6 +626,8 @@ const ConnectedShorelineViewerPlugin = connect(
             (state) => state?.shorelineViewer?.selectedFeature?.selectedFeature,
             (state) => state?.shorelineViewer?.videoInformations,
             (state) => state?.shorelineViewer?.loading ?? false,
+            (state) => state?.shorelineViewer?.labelsVisible ?? false,
+            (state) => state?.shorelineViewer?.validationVisible ?? false,
             (state) => state?.locale?.messages
         ],
         (
@@ -555,6 +639,8 @@ const ConnectedShorelineViewerPlugin = connect(
             selectedFeature,
             videoInformations,
             loading,
+            labelsVisible,
+            validationVisible,
             messages
         ) => ({
             style,
@@ -565,6 +651,8 @@ const ConnectedShorelineViewerPlugin = connect(
             selectedFeature,
             videoInformations,
             loading,
+            labelsVisible,
+            validationVisible,
             messages
         })
     ),
@@ -576,7 +664,9 @@ const ConnectedShorelineViewerPlugin = connect(
         addMarkers: updateAdditionalLayer,
         onUpdateVideoInformation: updateVideoInformation,
         onVideoError: videoError,
-        onSetVideoInformations: setVideoInformations
+        onSetVideoInformations: setVideoInformations,
+        onSetLabelsVisible: setShorelineLabelsVisible,
+        onSetValidationVisible: setShorelineValidationVisible
     }
 )(ShorelineViewerPlugin);
 

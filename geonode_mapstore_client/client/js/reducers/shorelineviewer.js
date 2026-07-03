@@ -11,7 +11,9 @@ import {
     SET_VIDEO_INFORMATIONS,
     UPDATE_VIDEO_INFORMATION,
     LOAD_VIDEO,
-    VIDEO_ERROR
+    VIDEO_ERROR,
+    SET_SHORELINE_LABELS_VISIBLE,
+    SET_SHORELINE_VALIDATION_VISIBLE
 } from '@js/actions/shorelineviewer';
 
 const defaultState = {
@@ -25,7 +27,9 @@ const defaultState = {
     loading: false,
     videoInformations: null,
     clickPoint: null,
-    clickLayers: []
+    clickLayers: [],
+    labelsVisible: false,
+    validationVisible: false
 };
 
 export const shorelineViewer = (state = defaultState, action) => {
@@ -33,7 +37,9 @@ export const shorelineViewer = (state = defaultState, action) => {
     case SET_SHORELINE_REGION: {
         return {
             ...state,
-            selectedRegion: action.selectedRegion
+            selectedRegion: action.selectedRegion,
+            labelsVisible: false,
+            validationVisible: false
         };
     }
     case UPDATE_SHORELINE_SELECTED_MEDIA_TYPE: {
@@ -52,8 +58,6 @@ export const shorelineViewer = (state = defaultState, action) => {
     case SHORELINE_SELECTED_FEATURE: {
         return {
             ...state,
-            // Store the full context object AND expose selectedLayer at the top level
-            // so epics can access state.shorelineViewer.selectedLayer directly.
             selectedFeature: action.selectedFeature,
             selectedLayer: action.selectedFeature
                 ? action.selectedFeature.selectedLayer
@@ -97,8 +101,6 @@ export const shorelineViewer = (state = defaultState, action) => {
         };
     }
     case UPDATE_VIDEO_INFORMATION: {
-        // Fix: never mutate state directly. Spread existing videoInformations
-        // and overwrite only the named property.
         return {
             ...state,
             videoInformations: state.videoInformations
@@ -122,6 +124,18 @@ export const shorelineViewer = (state = defaultState, action) => {
             errorTitle: action.title,
             errorMessage: action.message,
             errorValues: action.values
+        };
+    }
+    case SET_SHORELINE_LABELS_VISIBLE: {
+        return {
+            ...state,
+            labelsVisible: action.visible
+        };
+    }
+    case SET_SHORELINE_VALIDATION_VISIBLE: {
+        return {
+            ...state,
+            validationVisible: action.visible
         };
     }
     default:

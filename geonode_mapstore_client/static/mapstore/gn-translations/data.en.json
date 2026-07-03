@@ -596,6 +596,10 @@
                     "tooltip": "Processes which affect/influence a segment's intertidal zone or which could affect someone standing on the shoreline.<br><br><center><img src='../static/mapstore/img/shoreline_processes_legend_en.png'/></center>"
                 }
             },
+            "showLabels": "Show segment names",
+            "showLabelsTooltip": "Segment names are only displayed at scales of 1:150,000 or larger. Please zoom in on the map if you cannot see the names.",
+            "showValidation": "Show segments validation",
+            "showValidationTooltip": "Displays segments that have been validated during field operations. Only available for regions where validation data has been collected.<br><br><strong>Legend:</strong><br><center><img src='../static/mapstore/img/shoreline_validation_legend_en.png'/></center>",
             "segment": {
                 "name": "Name",
                 "general": "General",
@@ -624,6 +628,22 @@
                 "tertiarySubstrate": "Tertiary Substrate",
                 "primaryLandCoverClass": "Primary Land Cover Class",
                 "secondaryLandCoverClass": "Secondary Land Cover Class"
+            },
+            "validation": {
+                "segmentName": "Segment name",
+                "surveyDate": "Survey date",
+                "description": "Description",
+                "shorelineComment": "Shoreline comment",
+                "isChanged": "Is changed",
+                "newEcccScatClass": "New ECCC SCAT class",
+                "photos": "Photos",
+                "alongshorePhoto1": "Alongshore photo 1",
+                "alongshorePhoto2": "Alongshore photo 2",
+                "acrossShorePhoto1": "Across-shore photo 1",
+                "acrossShorePhoto2": "Across-shore photo 2",
+                "miscPhoto1": "Misc photo 1",
+                "miscPhoto2": "Misc photo 2",
+                "miscPhoto3": "Misc photo 3"
             },
             "notifications": {
                 "error": "Error",

@@ -16,6 +16,8 @@ export const SET_VIDEO_INFORMATIONS = "SHORELINE:SET_VIDEO_INFORMATIONS";
 export const UPDATE_VIDEO_INFORMATION = "SHORELINE:UPDATE_VIDEO_INFORMATION";
 export const LOAD_VIDEO = "SHORELINE:LOAD_VIDEO";
 export const VIDEO_ERROR = "SHORELINE:VIDEO_ERROR";
+export const SET_SHORELINE_LABELS_VISIBLE = "SHORELINE:SET_SHORELINE_LABELS_VISIBLE";
+export const SET_SHORELINE_VALIDATION_VISIBLE = "SHORELINE:SET_SHORELINE_VALIDATION_VISIBLE";
 
 /**
  * Edit the selected region name for the shoreline viewer plugin in the state.
@@ -183,4 +185,24 @@ export const videoError = (uid, title, message, values) => ({
     title,
     message,
     values
+});
+
+/**
+ * Toggle the segment-labels overlay on the shoreline classification layer.
+ * Only meaningful when the Shoreline Type thematic is active.
+ * @param {boolean} visible - true to show labels, false to hide them
+ */
+export const setShorelineLabelsVisible = (visible) => ({
+    type: SET_SHORELINE_LABELS_VISIBLE,
+    visible
+});
+
+/**
+ * Toggle the segment-validation WMS layer on the map.
+ * Only available for regions that have a shorelineValidationDataset defined.
+ * @param {boolean} visible - true to add the layer, false to remove it
+ */
+export const setShorelineValidationVisible = (visible) => ({
+    type: SET_SHORELINE_VALIDATION_VISIBLE,
+    visible
 });
