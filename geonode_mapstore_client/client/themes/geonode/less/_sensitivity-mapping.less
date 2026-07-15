@@ -1,0 +1,353 @@
+// **************
+// Theme
+// **************
+
+#sensitivity-mapping-theme(@theme-vars) {
+    .sensitivity-mapping {
+        .color-var(@theme-vars[main-color]);
+        .background-color-var(@theme-vars[main-bg]);
+        .sensitivity-mapping-info-fields {
+            .sensitivity-mapping-info-row {
+                .border-bottom-color-var(@theme-vars[main-border-color]);
+            }
+        }
+    }
+    .sensitivity-mapping-spinner-container {
+        .background-color-var(@theme-vars[main-bg]);
+    }
+
+    // Progress card — uses theme CSS variables so it adapts to every instance
+    .sensitivity-mapping-progress-card {
+        background-color: var(--ms-main-bg, #ffffff);
+        color: var(--ms-main-color, #000000);
+        border: 1px solid var(--ms-main-border-color, #dddddd);
+        box-shadow: 0 4px 16px rgba(0, 0, 0, 0.18);
+
+        .sensitivity-mapping-progress-card-header {
+            background-color: var(--ms-primary, #2c3e50);
+            color: var(--ms-primary-contrast, #e3dcdc);
+        }
+
+        .sensitivity-mapping-progress-card-close {
+            color: var(--ms-primary-contrast, #e3dcdc);
+            &:hover {
+                color: var(--ms-main-hover-color, #212f3e);
+                background-color: var(--ms-main-hover-bg, #eeeeee);
+            }
+        }
+
+        .sensitivity-mapping-progress-bar-track {
+            background-color: var(--ms-main-border-color, #dddddd);
+        }
+
+        .sensitivity-mapping-progress-bar-fill {
+            background-color: var(--ms-primary, #2c3e50);
+            transition: width 0.4s ease;
+        }
+
+        .sensitivity-mapping-progress-card-step {
+            border-bottom: 1px solid var(--ms-main-border-color, #dddddd);
+            color: var(--ms-main-color, #000000);
+
+            &--info {
+                .sensitivity-mapping-progress-card-step-icon {
+                    color: var(--ms-info, #3498db);
+                }
+            }
+            &--warning {
+                background-color: rgba(243, 156, 18, 0.08);
+                .sensitivity-mapping-progress-card-step-icon {
+                    color: var(--ms-warning, #f39c12);
+                }
+            }
+            &--error {
+                background-color: rgba(231, 76, 60, 0.08);
+                .sensitivity-mapping-progress-card-step-icon {
+                    color: var(--ms-danger, #e74c3c);
+                }
+            }
+            &--success {
+                background-color: rgba(0, 188, 140, 0.08);
+                .sensitivity-mapping-progress-card-step-icon {
+                    color: var(--ms-success, #00bc8c);
+                }
+            }
+        }
+
+        .sensitivity-mapping-progress-card-footer {
+            border-top: 1px solid var(--ms-main-border-color, #dddddd);
+        }
+
+        .sensitivity-mapping-progress-card-loading-label {
+            color: var(--ms-main-color, #000000);
+        }
+
+        .sensitivity-mapping-progress-card-error-label {
+            color: var(--ms-danger, #e74c3c);
+        }
+
+        .sensitivity-mapping-progress-card-download {
+            background-color: var(--ms-success, #00bc8c);
+            border-color: var(--ms-success, #00bc8c);
+            color: var(--ms-success-contrast, #ffffff);
+            &:hover {
+                background-color: var(--ms-button-success-hover-bg, #008966);
+                border-color: var(--ms-button-success-hover-border-color, #007f5e);
+                color: var(--ms-button-success-hover-color, #ffffff);
+                text-decoration: none;
+            }
+        }
+    }
+}
+
+// **************
+// Layout
+// **************
+
+.sensitivity-mapping {
+    position: absolute;
+    top: 0;
+    right: 0;
+    z-index: 2000;
+    width: 425px;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    .shadow-soft();
+
+    .sensitivity-mapping-head {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        .sensitivity-mapping-title {
+            padding: 0 0.5rem;
+            font-size: @font-size-lg;
+        }
+    }
+
+    .sensitivity-mapping-body {
+        position: relative;
+        overflow-y: auto;
+        overflow-x: hidden;
+        flex: 1;
+        padding: 0.5rem;
+
+        .sensitivity-mapping-spinner-container {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 10;
+            opacity: 0.7;
+            top: 0;
+            left: 0;
+            font-size: 5rem;
+        }
+    }
+
+    .sensitivity-mapping-body-alert {
+        margin: 0.5rem;
+    }
+
+    .sensitivity-mapping-body-content {
+        padding-bottom: 10px;
+    }
+
+    .sensitivity-mapping-body-form {
+        width: 100%;
+    }
+
+    .sensitivity-mapping-buttons {
+        &:extend(.btn-primary, .btn-primary.active);
+        margin-left: 0.2rem !important;
+        margin-right: 0.2rem !important;
+        display: flex;
+        background-color: #ffffff !important;
+    }
+
+    .sensitivity-mapping-dropdown {
+        align-items: center;
+        position: relative;
+    }
+
+    .sensitivity-mapping-alert {
+        width: 100%;
+        padding: 0.25rem;
+        padding-top: 1rem;
+        text-align: center;
+        font-style: italic;
+        position: relative;
+    }
+
+    .sensitivity-mapping-info-fields {
+        padding: 0.5rem 0;
+        font-size: @font-size-small;
+        position: relative;
+        * { position: relative; }
+
+        .sensitivity-mapping-info-row {
+            display: flex;
+            border-bottom: 1px solid transparent;
+            word-break: break-word;
+
+            .sensitivity-mapping-info-label {
+                width: 250px;
+                padding: 0.25rem;
+                font-weight: lighter;
+            }
+
+            .sensitivity-mapping-info-value {
+                padding: 0.25rem;
+                flex: 1;
+                padding-left: 1rem;
+                max-width: calc(100% - 250px);
+            }
+        }
+    }
+
+    .sensitivity-mapping-list {
+        padding-left: 0.7rem;
+    }
+
+    .sensitivity-mapping-print-btn {
+        width: 100%;
+        margin-right: 10px;
+    }
+}
+
+// ---------------------------------------------------------------
+// Progress card — positioned at the top-centre of the viewport
+// ---------------------------------------------------------------
+
+.sensitivity-mapping-progress-card-overlay {
+    position: fixed;
+    top: 70px;           // below the GeoNode top-bar
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 3000;       // above the side panel (z-index: 2000)
+    width: 480px;
+    max-width: calc(100vw - 2rem);
+    pointer-events: none; // let clicks pass through the transparent wrapper
+}
+
+.sensitivity-mapping-progress-card {
+    pointer-events: all;
+    border-radius: 6px;
+    overflow: hidden;
+    font-size: 0.9rem;
+
+    // Header
+    .sensitivity-mapping-progress-card-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 0.6rem 0.9rem;
+    }
+
+    .sensitivity-mapping-progress-card-title {
+        font-weight: 600;
+        font-size: 1rem;
+    }
+
+    .sensitivity-mapping-progress-card-close {
+        background: none;
+        border: none;
+        cursor: pointer;
+        padding: 0.2rem 0.4rem;
+        border-radius: 3px;
+        line-height: 1;
+    }
+
+    // Progress bar
+    .sensitivity-mapping-progress-bar-wrapper {
+        padding: 0.6rem 0.9rem 0.2rem;
+    }
+
+    .sensitivity-mapping-progress-bar-track {
+        height: 6px;
+        width: 100%;
+        border-radius: 3px;
+        overflow: hidden;
+    }
+
+    .sensitivity-mapping-progress-bar-fill {
+        height: 100%;
+        min-width: 6px;
+        border-radius: 3px;
+        transition: width 0.4s ease;
+    }
+
+    // Step list
+    .sensitivity-mapping-progress-card-steps {
+        max-height: 240px;
+        overflow-y: auto;
+        padding: 0.4rem 0;
+    }
+
+    .sensitivity-mapping-progress-card-step {
+        display: flex;
+        align-items: flex-start;
+        gap: 0.6rem;
+        padding: 0.4rem 0.9rem;
+        font-size: 0.85rem;
+
+        &:last-child {
+            border-bottom: none;
+        }
+    }
+
+    .sensitivity-mapping-progress-card-step-icon {
+        flex-shrink: 0;
+        margin-top: 1px;
+        font-size: 1rem;
+        // Spinner alignment
+        .spinner {
+            font-size: 0.85rem;
+        }
+    }
+
+    .sensitivity-mapping-progress-card-step-text {
+        flex: 1;
+        word-break: break-word;
+    }
+
+    // Footer
+    .sensitivity-mapping-progress-card-footer {
+        display: flex;
+        align-items: center;
+        justify-content: flex-end;
+        gap: 0.6rem;
+        padding: 0.6rem 0.9rem;
+    }
+
+    .sensitivity-mapping-progress-card-loading-label {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        font-size: 0.85rem;
+        font-style: italic;
+    }
+
+    .sensitivity-mapping-progress-card-error-label {
+        font-size: 0.85rem;
+        font-weight: 600;
+    }
+
+    .sensitivity-mapping-progress-card-download {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.4rem;
+        padding: 0.4rem 0.9rem;
+        border-radius: 4px;
+        font-size: 0.9rem;
+        font-weight: 600;
+        text-decoration: none;
+        cursor: pointer;
+    }
+}
+
+.notifications-tr {
+    width: 500px !important;
+}

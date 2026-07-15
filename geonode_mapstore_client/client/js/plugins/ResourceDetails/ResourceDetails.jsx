@@ -158,6 +158,15 @@ function ResourceDetailsPanel({
                     }
                 },
                 {
+                    "type": "query",
+                    "labelId": "gnviewer.group",
+                    "value": "{context.get(state('gnResourceData'), 'group.name')}",
+                    "pathname": "/",
+                    "query": {
+                        "filter{group.pk.in}": "{get(state('gnResourceSelectedLayerDataset'), 'group.pk')}"
+                    }
+                },
+                {
                     "type": "link",
                     "labelId": "gnviewer.pointOfContact",
                     "value": "{getUserResourceNames(get(state('gnResourceData'), 'poc'))}",
@@ -461,9 +470,9 @@ export default createPlugin('ResourceDetails', {
                 () => ({}),
                 { onClick: toggleEditMode }
             )(({ onClick, size }) => {
-                return <Button size={size} onClick={onClick}>
+                return (<Button size={size} onClick={onClick}>
                     <Message msgId="gnviewer.editData" />
-                </Button>;
+                </Button>);
             }),
             priority: 1,
             doNotHide: true

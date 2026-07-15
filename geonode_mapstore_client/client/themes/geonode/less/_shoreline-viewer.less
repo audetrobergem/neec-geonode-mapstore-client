@@ -1,0 +1,291 @@
+// **************
+// Theme
+// **************
+
+#shoreline-viewer-theme(@theme-vars) {
+    .shoreline-viewer {
+        .color-var(@theme-vars[main-color]);
+        .background-color-var(@theme-vars[main-bg]);
+        .shoreline-viewer-info-fields {
+            .shoreline-viewer-info-row {
+                .border-bottom-color-var(@theme-vars[main-border-color]);
+            }
+        }
+    }
+    .validation-photos-title {
+        .border-bottom-color-var(@theme-vars[main-border-color]);
+    }
+    .validation-photo-thumbnail {
+        .border-color-var(@theme-vars[main-border-color]);
+    }
+    .shoreline-viewer-spinner-container {
+        .background-color-var(@theme-vars[main-bg]);
+    }
+}
+
+// **************
+// Layout
+// **************
+
+.shoreline-viewer {
+    position: absolute;
+    top: 0;
+    right: 0;
+    z-index: 2000;
+    width: 550px;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    .shadow-soft();
+    .shoreline-viewer-head {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        .shoreline-viewer-title {
+            padding: 0 0.5rem;
+            font-size: @font-size-lg;
+        }
+    }
+    .shoreline-viewer-body {
+        overflow: auto;
+        flex: 1;
+        padding: 0.5rem;
+    }
+    .shoreline-viewer-body-regions {
+        display: flex;
+    }
+    .shoreline-viewer-body-regions-left {
+        width: 100%;
+        align-content: center;
+    }
+    .shoreline-viewer-body-regions-right {
+        flex: 1;
+    }
+    .shoreline-viewer-body-thematics {
+        display: flex;
+        padding: 0.5rem;
+    }
+    .shoreline-viewer-body-thematics-left {
+        flex: 0 1 auto;
+        padding: 6px;
+    }
+    .shoreline-viewer-body-thematics-right {
+        width: 20px;
+        align-content: center;
+        padding-left: 7px;
+    }
+    .shoreline-viewer-body-labels {
+        display: flex;
+        align-items: center;
+        padding: 0.25rem 0.5rem 0.5rem 0.5rem;
+        .btn.btn-tray {
+            margin-left: auto;
+        }
+    }
+    .shoreline-viewer-labels-checkbox-label {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        margin: 0;
+        font-weight: normal;
+        cursor: pointer;
+        flex: 1;
+    }
+    .shoreline-viewer-labels-checkbox {
+        margin: 0;
+        cursor: pointer;
+    }
+    .shoreline-viewer-body-thematics-center {
+        flex: 1;
+    }
+    .shoreline-viewer-body-content {
+        min-height: 100px;
+    }
+    .shoreline-viewer-buttons {
+        &:extend(.btn-primary, .btn-primary.active);
+        margin-left: 0.2rem !important;
+        margin-right: 0.2rem !important;
+    }
+    .shoreline-viewer-media-button {
+        height: 40px;
+        width: 40px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        margin-left: 0.2rem !important;
+        margin-right: 0.2rem !important;
+    }
+    .shoreline-viewer-media-navigation-button {
+        height: 30px;
+        width: 30px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        outline: 0;
+        padding: 0;
+        border: 1px solid transparent;
+    }
+    .shoreline-viewer-media-navigation-button:focus {
+        outline: 0;
+        box-shadow: none;
+    }
+    .shoreline-viewer-dropdown {
+        align-items: center;
+        position: relative;
+        height: 31px;
+    }
+    .shoreline-viewer-alert {
+        width: 100%;
+        padding: 0.25rem;
+        padding-top: 1rem;
+        text-align: center;
+        font-style: italic;
+        position: relative;
+    }
+    .shoreline-viewer-spinner-container {
+        position: absolute;
+        margin-top: 90px;
+        width: 100%;
+        height: 75%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 10;
+        opacity: 0.7;
+        top: 0;
+        left: 0;
+        font-size: 2rem;
+    }
+    // The following section is extracted from geonode's css and modified
+    // according to the tool's needs.
+    .shoreline-viewer-info {
+        padding: 1rem;
+    }
+    .shoreline-viewer-info > .nav {
+        position: sticky;
+        top: 40px;
+        z-index: 1;
+    }
+    .shoreline-viewer-info .tab-content {
+        margin-top: 0.5rem;
+    }
+    .shoreline-viewer-info .tab-content .linked-resources > span {
+        font-size: 0.765625rem;
+    }
+    .shoreline-viewer-info-fields {
+        padding: 0.5rem 0;
+        font-size: 0.765625rem;
+        position: relative;
+    }
+    .shoreline-viewer-info-fields * {
+        position: relative;
+    }
+    .shoreline-viewer-info-fields .shoreline-viewer-info-row {
+        display: flex;
+        border-bottom: 1px solid transparent;
+        word-break: break-word;
+    }
+    .shoreline-viewer-info-fields .shoreline-viewer-info-row .shoreline-viewer-info-label {
+        width: 200px;
+        padding: 0.25rem;
+        font-weight: lighter;
+    }
+    .shoreline-viewer-info-fields .shoreline-viewer-info-row .shoreline-viewer-info-value {
+        padding: 0.25rem;
+        flex: 1;
+        padding-left: 1rem;
+        max-width: calc(100% - 200px);
+    }
+    .shoreline-viewer-info-fields .shoreline-viewer-info-row .shoreline-viewer-info-value .shoreline-viewer-info-html.collapsed {
+        display: flex;
+        width: 100%;
+    }
+    .shoreline-viewer-info-fields .shoreline-viewer-info-row .shoreline-viewer-info-value .shoreline-viewer-info-html.collapsed .shoreline-viewer-info-html-value {
+        overflow: hidden;
+        white-space: nowrap;
+        text-overflow: ellipsis;
+    }
+    .shoreline-viewer-info-fields .shoreline-viewer-info-row .shoreline-viewer-info-value .shoreline-viewer-info-html .btn {
+        padding: 0;
+        border: none;
+        border-bottom: 1px solid transparent;
+    }
+    .shoreline-viewer-info-fields .shoreline-viewer-info-row .shoreline-viewer-info-value > a {
+        margin-right: 0.5rem;
+        white-space: nowrap;
+    }
+    .shoreline-viewer-info-fields .shoreline-viewer-info-row.linked-resources {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+    .shoreline-viewer-info-fields .shoreline-viewer-info-row.link {
+        border-bottom: none;
+    }
+    .shoreline-viewer-info-fields .shoreline-viewer-info-row.link .shoreline-viewer-info-label {
+        padding: 0.25rem;
+        font-weight: bold;
+    }
+    .shoreline-viewer-info-fields .shoreline-viewer-info-list {
+        padding-left: 0;
+        list-style: none;
+    }
+    .shoreline-viewer-info-fields .shoreline-viewer-info-list-indent {
+        padding-left: 15px;
+        list-style: none;
+    }
+
+    // ── Validation information panel ─────────────────────────────────────
+
+    .validation-information {
+        padding: 1rem;
+    }
+
+    .validation-photos-section {
+        margin-top: 1rem;
+    }
+
+    // Border colour comes from the theme mixin above; the static declaration
+    // here provides the width/style and a transparent fallback.
+    .validation-photos-title {
+        font-weight: bold;
+        font-size: 0.765625rem;
+        padding: 0.25rem 0;
+        border-bottom: 1px solid transparent;
+        margin-bottom: 0.5rem;
+    }
+
+    .validation-photos-grid {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.5rem;
+    }
+
+    .validation-photo-item {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        width: calc(50% - 0.25rem);
+    }
+
+    .validation-photo-label {
+        font-size: 0.7rem;
+        font-weight: lighter;
+        text-align: center;
+        margin-bottom: 0.25rem;
+        word-break: break-word;
+    }
+
+    // Border colour comes from the theme mixin above.
+    .validation-photo-thumbnail {
+        width: 100%;
+        height: 120px;
+        object-fit: cover;
+        cursor: pointer;
+        border: 1px solid transparent;
+
+        &:hover {
+            opacity: 0.85;
+        }
+    }
+}

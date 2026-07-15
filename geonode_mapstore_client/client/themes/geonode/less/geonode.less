@@ -29,6 +29,11 @@
 @import '~font-awesome/css/font-awesome.min.css';
 @import '~ol/ol.css';
 
+@import '_shoreline-viewer.less';
+@import '_zone-identify.less';
+@import '_sensitivity-mapping.less';
+@import '_marine-traffic.less';
+
 :root {
     font-size: 16px;
 }
@@ -36,3 +41,7 @@
 // compose theme based on mapstore and custom components
 .write-ms-theme(@ms-theme-vars);
 .get-root-css-variables(@ms-theme-vars);
+#shoreline-viewer-theme(@ms-theme-vars);
+#zone-identify-theme(@ms-theme-vars);
+#sensitivity-mapping-theme(@ms-theme-vars);
+#marine-traffic-theme(@ms-theme-vars);

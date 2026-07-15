@@ -155,5 +155,13 @@ export const getPluginsContext = () => ({
     },
     getDashboardCatalogueServices: (settings) => {
         return settings?.dashboardCatalogueServices || {};
+    },
+    isGeoTechMember: (user) => {
+        const groups = user.info.groups;
+        return groups.includes('geomatics-and-technology') ? true : false;
+    },
+    isNeecMember: (user) => {
+        const groups = user.info.groups;
+        return groups.includes('neec') ? true : false;
     }
 });

@@ -308,14 +308,31 @@ const resourceTypes = {
                             ? axios.all([{...resource}, getGeoAppByPk(mapViewers?.pk, {api_preset: 'catalog_list', include: ['data', 'linked_resources']})])
                             : Promise.resolve([{...resource}]);
                     })
+                    .catch(() => null),
+                ...options?.params?.query?.center ? [options.params.query.center] : [],
+                ...options?.params?.query?.incident ? [options.params.query.incident] : []
             ]))
-                .switchMap(([baseConfig, resource]) => {
+                .switchMap(([baseConfig, resource, center, incident]) => {
                     const [mapResource, mapViewerResource] = resource ?? [];
                     const viewerData = mapViewerResource?.data ?? null;
                     const viewerPk = mapViewerResource?.pk;
                     const mapConfig = options.data
                         ? options.data
                         : toMapStoreMapConfig(mapResource, baseConfig);
+                    // finds the incident layer in the map if it exists.
+                    let incidentLayerId = null;
+                    for (let i = 0; i < mapConfig.map.layers.length; i++) {
+                        if (mapConfig.map.layers[i].name === "neec_geodb:neeoc_incidents") {
+                            incidentLayerId = i;
+                        }
+                    }
+                    if (!incidentLayerId === null && typeof (incident) !== "undefined") {
+                        mapConfig.map.layers[incidentLayerId].layerFilter.filterFields[0].value = incident;
+                    }
+                    mapConfig.map.zoom = center ? 14 : mapConfig.map.zoom;
+                    mapConfig.map.center = center
+                        ? { "crs": "EPSG:4326", "x": center.split(',')[1], "y": center.split(',')[0] }
+                        : mapConfig.map.center;
 
                     const initialActions = Observable.of(
                         setContext(viewerData),

@@ -72,7 +72,15 @@ function Legend({
                         language,
                         currentLocale,
                         scales,
-                        zoom: currentZoomLvl
+                        zoom: currentZoomLvl,
+                        layerOptions: {
+                            legendOptions: {
+                                scaleDependent: true,
+                                WMSLegendOptions: "forceLabels:on;fontAntialiasing:true;fontName:Montserrat Regular;wrap:true;wrap_limit:600",
+                                legendWidth: 24,
+                                legendHeight: 24
+                            }
+                        }
                     }}
                     onChangeMap={(newMap) => {
                         newMap.layers.forEach(layer => {
