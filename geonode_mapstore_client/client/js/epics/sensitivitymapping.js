@@ -316,11 +316,11 @@ export const loadSelectedStyleEpic = (action$, store) =>
                 return Rx.Observable.empty();
             }
 
-            const [workspace, layerName] = layerToEdit.name.split(":")
+            const workspace = layerToEdit.name.split(":")[0];
             const selectedStyle = {
                 name: layerToEdit.style,
                 sld_url: `${geonodeUrl}geoserver/rest/workspaces/${workspace}/styles/${layerToEdit.style}.sld`
-            }
+            };
 
             return Rx.Observable.defer(() => axios.get(selectedStyle.sld_url))
                 .switchMap((response) => {
@@ -356,11 +356,11 @@ export const loadSelectedStylesEpic = (action$, store) =>
             }
 
             const styleRequests = localLayers.map(layer => {
-                const [workspace, layerName] = layer.name.split(":")
+                const workspace = layer.name.split(":")[0];
                 const selectedStyle = {
                     name: layer.style,
                     sld_url: `${geonodeUrl}geoserver/rest/workspaces/${workspace}/styles/${layer.style}.sld`
-                }
+                };
 
                 if (!selectedStyle?.sld_url) {
                     return Rx.Observable.of({ layer, styleData: null });
