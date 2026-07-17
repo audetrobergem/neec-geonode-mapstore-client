@@ -316,16 +316,10 @@ export const loadSelectedStyleEpic = (action$, store) =>
                 return Rx.Observable.empty();
             }
 
-            let selectedStyle = layerToEdit.extendedParams?.mapLayer?.dataset?.styles
-                ?.find(s =>
-                    layerToEdit.style.includes(s.name) ||
-                    s.name.includes(layerToEdit.style)
-                );
-
-            if (!selectedStyle) {
-                selectedStyle = {
-                    sld_url: `${geonodeUrl}geoserver/rest/workspaces/neec_geodb/styles/${layerToEdit.style.replace("neec_geodb:", "")}.sld`
-                };
+            const [workspace, layerName] = layerToEdit.name.split(":")
+            const selectedStyle = {
+                name: layerToEdit.style,
+                sld_url: `${geonodeUrl}geoserver/rest/workspaces/${workspace}/styles/${layerToEdit.style}.sld`
             }
 
             return Rx.Observable.defer(() => axios.get(selectedStyle.sld_url))
@@ -347,12 +341,13 @@ export const loadSelectedStylesEpic = (action$, store) =>
     action$.ofType(LOAD_SELECTED_STYLES)
         .filter(() => enabledSelector(store.getState()))
         .switchMap((action) => {
+            const state = store.getState();
+            const geonodeUrl = geonodeUrlSelector(state);
             const localLayers = action.layers
                 .slice()
                 .reverse()
                 .filter(layer =>
                     layer.group !== "basemaps" &&
-                    layer.extendedParams &&
                     layer.style?.length > 0
                 );
 
@@ -361,11 +356,11 @@ export const loadSelectedStylesEpic = (action$, store) =>
             }
 
             const styleRequests = localLayers.map(layer => {
-                const selectedStyle = layer.extendedParams?.mapLayer?.dataset?.styles
-                    ?.find(s =>
-                        layer.style.includes(s.name) ||
-                        s.name.includes(layer.style)
-                    );
+                const [workspace, layerName] = layer.name.split(":")
+                const selectedStyle = {
+                    name: layer.style,
+                    sld_url: `${geonodeUrl}geoserver/rest/workspaces/${workspace}/styles/${layer.style}.sld`
+                }
 
                 if (!selectedStyle?.sld_url) {
                     return Rx.Observable.of({ layer, styleData: null });
