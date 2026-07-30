@@ -4306,7 +4306,7 @@
                                     "value": "map",
                                     "type": "link",
                                     "href": "/emergency-mapping/create-sensitivity-map/",
-                                    "disableIf": "{!state('user').info.groups.includes('neec')}"
+                                    "disableIf": "{not isGeoTechMember(state('user'))}"
                                 },
                                 {
                                     "labelId": "gnhome.uploadDataset",
@@ -4320,7 +4320,7 @@
                                     "value": "document",
                                     "type": "link",
                                     "href": "{getCataloguePath('/catalogue/#/upload/document')}",
-                                    "disableIf": "{!state('user').info.groups.includes('neec')}"
+                                    "disableIf": "{not isGeoTechMember(state('user'))}"
                                 },
                                 {
                                     "labelId": "gnhome.createDataset",
@@ -4340,14 +4340,14 @@
                                     "value": "geostory",
                                     "type": "link",
                                     "href": "{getCataloguePath('/catalogue/#/geostory/new')}",
-                                    "disableIf": "{!state('user').info.groups.includes('neec')}"
+                                    "disableIf": "{not isGeoTechMember(state('user'))}"
                                 },
                                 {
                                     "labelId": "gnhome.createDashboard",
                                     "value": "dashboard",
                                     "type": "link",
                                     "href": "{getCataloguePath('/catalogue/#/dashboard/new')}",
-                                    "disableIf": "{!state('user').info.groups.includes('neec')}"
+                                    "disableIf": "{not isGeoTechMember(state('user'))}"
                                 },
                                 {
                                     "labelId": "gnhome.remoteServices",
