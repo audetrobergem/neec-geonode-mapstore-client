@@ -633,7 +633,7 @@
                                 },
                                 {
                                     "type": "link",
-                                    "href": "{'../data-management/datasets/' + (state('gnResourceData') || {}).store + ':' + (state('gnResourceData') || {}).alternate + '/edit_fields'}",
+                                    "href": "{getEditFieldsUrl(state('gnResourceData'))}",
                                     "labelId": "gnviewer.editFields",
                                     "disableIf": "{not isGeoTechMember(state('user')) && !context.resourceHasPermission(state('gnResourceData'), 'change_dataset_data')}"
                                 },
