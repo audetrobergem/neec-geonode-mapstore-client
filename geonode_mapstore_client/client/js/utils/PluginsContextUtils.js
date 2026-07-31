@@ -164,5 +164,5 @@ export const getPluginsContext = () => ({
         const groups = user.info.groups;
         return groups.includes('neec') ? true : false;
     },
-    getEditFieldsUrl: (resource) => `../data-management/datasets/${resource?.store}:${resource?.alternate}/edit_fields`,
+    getEditFieldsUrl: (resource) => `../dataset/${resource?.store}:${resource?.alternate}/edit-fields`,
 });
