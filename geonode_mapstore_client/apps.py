@@ -163,6 +163,16 @@ def run_setup_hooks(*args, **kwargs):
             "is_published"
         ],
     }
+    settings.REST_API_PRESETS["qgis_list"] = {
+        "exclude[]": ["*"],
+        "include[]": [
+            "title",
+            "alternate",
+            "regions",
+            "category",
+            "supplemental_information"
+        ],
+    }
     settings.REST_API_PRESETS["map_list"] = {
         "exclude[]": ["*"],
         "include[]": [
