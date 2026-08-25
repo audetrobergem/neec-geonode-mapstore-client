@@ -1034,11 +1034,18 @@ export const createPrintConfigEpic = (action$, store) =>
                     }
                 },
                 {
-                    baseURL: "https://maps.geosolutionsgroup.com/geoserver/osm/wms",
-                    imageFormat: "image/png",
-                    layers: ["osm"],
+                    baseURL: "https://tiles.ueee.ca/geoserver/wms?",
                     opacity: 1,
-                    type: "WMS"
+                    type: "WMS",
+                    layers: ["osm:osm"],
+                    imageFormat: "image/png",
+                    styles: [""],
+                    customParams: {
+                        TRANSPARENT: true,
+                        TILED: true,
+                        scaleMethod: "accurate"
+                    },
+                    serverType: "geoserver"
                 }
             ];
 
