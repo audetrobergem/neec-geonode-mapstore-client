@@ -326,7 +326,7 @@ const resourceTypes = {
                             incidentLayerId = i;
                         }
                     }
-                    if (!incidentLayerId === null && typeof (incident) !== "undefined") {
+                    if (incidentLayerId !== null && typeof incident !== "undefined") {
                         mapConfig.map.layers[incidentLayerId].layerFilter.filterFields[0].value = incident;
                     }
                     mapConfig.map.zoom = center ? 14 : mapConfig.map.zoom;
